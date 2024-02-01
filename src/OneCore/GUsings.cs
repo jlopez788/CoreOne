@@ -1,0 +1,17 @@
+﻿global using OneCore.Collections;
+global using OneCore.Comparers;
+global using OneCore.Extensions;
+global using OneCore.Models;
+global using OneCore.Models.EventArgs;
+global using OneCore.Reflection;
+global using OneCore.Results;
+global using OneCore.Services;
+global using System.Collections;
+global using System.ComponentModel.DataAnnotations;
+global using System.Diagnostics.CodeAnalysis;
+global using System.Globalization;
+global using System.Linq.Expressions;
+global using System.Reflection;
+global using NJsonConverter = Newtonsoft.Json.JsonConverterAttribute;
+global using ReferenceEqualityComparer = OneCore.Comparers.ReferenceEqualityComparer;
+global using SJsonConverter = System.Text.Json.Serialization.JsonConverterAttribute;
