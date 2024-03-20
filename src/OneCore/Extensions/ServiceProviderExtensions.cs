@@ -2,7 +2,7 @@
 
 public static class ServiceProviderExtensions
 {
-    private class CtorInfo(ConstructorInfo? info, ServiceProviderExtensions.Create create)
+    private class CtorInfo(ConstructorInfo? info, Create create)
     {
         public Create Create { get; } = create;
         public ConstructorInfo? Ctor { get; } = info;

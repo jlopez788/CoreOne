@@ -23,7 +23,7 @@ public class MValidationResult
         ErrorMessages = errorMessages?.ToList();
         IsValid = ErrorMessages is null || ErrorMessages.Count == 0;
     }
-    
+
     public static implicit operator bool(MValidationResult? result) => result?.IsValid == true;
 
     public override bool Equals(object? obj) => obj is MValidationResult result && IsValid == result.IsValid &&
@@ -33,4 +33,6 @@ public class MValidationResult
     public string? GetErrorMessages() => ErrorMessages?.Count > 0 ? string.Join(". ", ErrorMessages) : null;
 
     public override int GetHashCode() => (ErrorMessages, IsValid).GetHashCode();
+
+    public IResult ToResult() => IsValid ? Result.Ok : Result.Fail(GetErrorMessages());
 }

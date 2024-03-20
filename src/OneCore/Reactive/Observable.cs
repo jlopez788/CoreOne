@@ -2,7 +2,7 @@
 
 public static class Observable
 {
-    private partial class AnonymousObserver<T>(Action<T> onNext, Action? onComplete) : Subject<T>
+    private class AnonymousObserver<T>(Action<T> onNext, Action? onComplete) : Subject<T>
     {
         private readonly Action<T> Callback = onNext;
         private readonly Action? Completed = onComplete;
@@ -12,6 +12,18 @@ public static class Observable
         protected override void OnCompletedCore() => Completed?.Invoke();
 
         protected override void OnNextCore(T value) => Callback.Invoke(value);
+    }
+
+    private class AsyncObserver<T>(Func<T, Task> callback, Action? onComplete) : Subject<T>
+    {
+        private readonly Func<T, Task> Callback = callback;
+        private readonly Action? Completed = onComplete;
+
+        public override string ToString() => $"{nameof(AsyncObserver<T>)}:: ({Observers.Count})";
+
+        protected override void OnCompletedCore() => Completed?.Invoke();
+
+        protected override void OnNextCore(T value) => Task.Factory.StartNew(() => Callback.Invoke(value));
     }
 
     private class DistinctObserver<T, TKey> : Subject<T>
@@ -88,6 +100,15 @@ public static class Observable
     public static void Subscribe<T>(this IObservable<T> source, Action<T> onNext, Action? oncomplete, CancellationToken token)
     {
         var sub = source.Subscribe(new AnonymousObserver<T>(onNext, oncomplete));
+        if (token != SToken.Empty)
+            token.Register(sub.Dispose);
+    }
+
+    public static void Subscribe<T>(this IObservable<T> source, Func<T, Task> onNext, CancellationToken token) => Subscribe(source, onNext, null, token);
+
+    public static void Subscribe<T>(this IObservable<T> source, Func<T, Task> onNext, Action? oncomplete, CancellationToken token)
+    {
+        var sub = source.Subscribe(new AsyncObserver<T>(onNext, oncomplete));
         if (token != SToken.Empty)
             token.Register(sub.Dispose);
     }

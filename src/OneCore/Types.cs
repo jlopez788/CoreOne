@@ -165,7 +165,8 @@ public static class Types
             typeof(float), typeof(float?), typeof(double), typeof(double?),
             typeof(decimal), typeof(decimal?), typeof(uint), typeof(uint?),
             typeof(int), typeof(int?), typeof(bool), typeof(bool?), typeof(string),
-            typeof(DateTime), typeof(DateTime?), typeof(Guid), typeof(Guid?)
+            typeof(DateTime), typeof(DateTime?), typeof(Guid), typeof(Guid?),
+            typeof(DateOnly), typeof(DateOnly?)
         ];
 
     private static bool TryParseBoolean(string? str, out bool flag)
@@ -190,7 +191,7 @@ public static class Types
         var formats = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "d", "g" };
         formats.AddRange(dates);
         dates.Each(d => times.Each(t => formats.Add($"{d} {t}")));
-        return System.DateTime.TryParseExact(value?.ToString() ?? string.Empty, formats.ToArray(), null, DateTimeStyles.None, out date);
+        return System.DateTime.TryParseExact(value?.ToString() ?? string.Empty, [.. formats], null, DateTimeStyles.None, out date);
     }
 }
 

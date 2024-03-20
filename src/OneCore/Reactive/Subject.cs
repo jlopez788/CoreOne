@@ -58,7 +58,7 @@ public class Subject<T> : ObserverBase<T>, IObserver<T>, IObservable<T>, IDispos
         {
             CheckDisposed();
 
-            os = Observers.ToArray();
+            os = [.. Observers];
             Observers = [];
         }
         os.Each(p => p.OnCompleted());
@@ -71,7 +71,7 @@ public class Subject<T> : ObserverBase<T>, IObserver<T>, IObservable<T>, IDispos
         {
             CheckDisposed();
 
-            os = Observers.ToArray();
+            os = [.. Observers];
             Observers = [];
         }
         os.Each(p => p.OnError(exception));
@@ -81,7 +81,7 @@ public class Subject<T> : ObserverBase<T>, IObserver<T>, IObservable<T>, IDispos
     {
         var os = default(IObserver<T>[]);
         lock (Sync)
-            os = Observers.ToArray();
+            os = [.. Observers];
 
         os.Each(p => p.OnNext(value));
     }

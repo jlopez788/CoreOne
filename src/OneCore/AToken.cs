@@ -2,7 +2,7 @@
 
 namespace OneCore;
 
-public class AToken :  IAsyncDisposable
+public class AToken : IAsyncDisposable
 {
     public static readonly AToken Empty = new(Guid.Empty, null);
     internal CancellationTokenSource? TokenSource;
@@ -64,7 +64,7 @@ public class AToken :  IAsyncDisposable
             Tasks = Tasks.Add(callback);
     }
 
-    public void RegisterAsync(IAsyncDisposable asyncDisposable) => Register(() => asyncDisposable.DisposeAsync());
+    public void RegisterAsync(IAsyncDisposable asyncDisposable) => Register(() => Task.Factory.StartNew(asyncDisposable.DisposeAsync));
 
     public override string ToString() => $"Token: {Id}. Cancelled? {(IsCancellationRequested ? "YES" : "")}";
 }

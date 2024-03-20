@@ -14,6 +14,13 @@ public class Result : IResult
     public static IResult Fail(string? message = null) => new Result(ResultType.Fail, message ?? "Invalid result");
 
     /// <summary>
+    /// Create a failed instance
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    public static IResult<T> Fail<T>(string? message = null) => new Result<T>(ResultType.Fail, message ?? "Invalid result");
+
+    /// <summary>
     /// Create an execption instance
     /// </summary>
     /// <param name="ex"></param>
@@ -94,6 +101,4 @@ public class Result<T> : Result, IResult<T>
     public static implicit operator Result<T>(T model) => new(model);
 
     public static implicit operator T?(Result<T> response) => (response is not null) ? response.Model : default;
-
-    public virtual Result ToResult() => new(ResultType, Message ?? string.Empty);
 }

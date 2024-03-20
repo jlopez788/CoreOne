@@ -2,7 +2,7 @@
 
 public sealed class ReferenceEqualityComparer : IEqualityComparer<object>, IEqualityComparer
 {
-    public static readonly IEqualityComparer<object> Default = new ReferenceEqualityComparer();
+    public static readonly ReferenceEqualityComparer Default = new();
 
     private ReferenceEqualityComparer()
     { }
@@ -20,7 +20,7 @@ public sealed class ReferenceEqualityComparer : IEqualityComparer<object>, IEqua
 
 public sealed class ReferenceEqualityComparer<T> : IEqualityComparer<T>
 {
-    public static readonly IEqualityComparer<T> Default = new ReferenceEqualityComparer<T>();
+    public static readonly ReferenceEqualityComparer<T> Default = new();
 
     private ReferenceEqualityComparer()
     { }

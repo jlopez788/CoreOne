@@ -330,4 +330,100 @@ public static class EnumerableExtensions
             formatted = value?.ToString() ?? string.Empty;
         return formatted;
     }
+
+    /// <summary>
+    /// Creates data dictionary from given items
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
+    /// <param name="items"></param>
+    /// <param name="keyGetter"></param>
+    /// <param name="valueGetter"></param>
+    /// <returns></returns>
+    public static Data<TKey, TValue> ToData<T, TKey, TValue>(this IEnumerable<T>? items, Func<T, TKey> keyGetter, Func<T, TValue> valueGetter) where TKey : notnull
+    {
+        var data = new Data<TKey, TValue>();
+        if (items is not null)
+        {
+            foreach (var item in items)
+            {
+                var key = keyGetter(item);
+                var value = valueGetter(item);
+                data.Set(key, value);
+            }
+        }
+        return data;
+    }
+
+    /// <summary>
+    /// Creates data dictionary from given items
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
+    /// <param name="items"></param>
+    /// <param name="keyGetter"></param>
+    /// <param name="valueGetter"></param>
+    /// <param name="comparer"></param>
+    /// <returns></returns>
+    public static Data<TKey, TValue> ToData<T, TKey, TValue>(this IEnumerable<T>? items, Func<T, TKey> keyGetter, Func<T, TValue> valueGetter, IEqualityComparer<TKey> comparer) where TKey : notnull
+    {
+        var data = new Data<TKey, TValue>(comparer);
+        if (items is not null)
+        {
+            foreach (var item in items)
+            {
+                var key = keyGetter(item);
+                var value = valueGetter(item);
+                data.Set(key, value);
+            }
+        }
+        return data;
+    }
+
+    /// <summary>
+    /// Creates data dictionary from given items
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TKey"></typeparam>
+    /// <param name="items"></param>
+    /// <param name="keyGetter"></param>
+    /// <returns></returns>
+    public static Data<TKey, T> ToData<T, TKey>(this IEnumerable<T>? items, Func<T, TKey> keyGetter) where TKey : notnull
+    {
+        var data = new Data<TKey, T>();
+        if (items is not null)
+        {
+            foreach (var item in items)
+            {
+                var key = keyGetter(item);
+                data.Set(key, item);
+            }
+        }
+        return data;
+    }
+
+    /// <summary>
+    /// Creates data dictionary from given items
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TKey"></typeparam>
+    /// <param name="items"></param>
+    /// <param name="keyGetter"></param>
+    /// <param name="comparer"></param>
+    /// <returns></returns>
+    public static Data<TKey, T> ToData<T, TKey>(this IEnumerable<T>? items, Func<T, TKey> keyGetter, IEqualityComparer<TKey> comparer) where TKey : notnull
+    {
+        var data = new Data<TKey, T>(comparer);
+        if (items is not null)
+        {
+            foreach (var item in items)
+            {
+                var key = keyGetter(item);
+                data.Set(key, item);
+            }
+        }
+        return data;
+    }
 }

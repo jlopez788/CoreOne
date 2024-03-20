@@ -1,8 +1,6 @@
-﻿using System.Reflection;
+﻿namespace OneCore.Lookups;
 
-namespace OneCore.Lookups;
-
-public class LookupType<T> : ILookupType<T> where T : LookupType<T>
+public class LookupType<T>  : ILookupType<T> where T : LookupType<T>
 {
     public static List<T> Items { get; private set; } = [];
     public string Code { get; set; }
@@ -44,7 +42,7 @@ public class LookupType<T> : ILookupType<T> where T : LookupType<T>
         var properties = type.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
         if (properties != null)
         {
-            Items = new List<T>(properties.Select(p => p.GetValue(null) as T).ExcludeNulls());
+            Items = [.. properties.Select(p => p.GetValue(null) as T).ExcludeNulls()];
         }
     }
 }

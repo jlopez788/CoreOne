@@ -45,9 +45,9 @@ public readonly struct Metadata : IEquatable<Metadata>
 
     public T? GetCustomAttribute<T>(bool inherits) where T : Attribute => Member?.GetCustomAttribute<T>(inherits);
 
-    public IEnumerable<T> GetCustomAttributes<T>() where T : Attribute => Member?.GetCustomAttributes<T>() ?? Array.Empty<T>();
+    public IEnumerable<T> GetCustomAttributes<T>() where T : Attribute => Member?.GetCustomAttributes<T>() ?? [];
 
-    public IEnumerable<T> GetCustomAttributes<T>(bool inherits) where T : Attribute => Member?.GetCustomAttributes<T>(inherits) ?? Array.Empty<T>();
+    public IEnumerable<T> GetCustomAttributes<T>(bool inherits) where T : Attribute => Member?.GetCustomAttributes<T>(inherits) ?? [];
 
     public override int GetHashCode() => Member?.GetHashCode() ?? 0;
 

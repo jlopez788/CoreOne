@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using OneCore.Attributes;
 using System.Runtime.CompilerServices;
 
 namespace OneCore.Services;
@@ -8,11 +7,11 @@ namespace OneCore.Services;
 public class BaseService : IDisposable, IAsyncDisposable
 {
     private volatile bool IsDisposed;
-    [Service] protected ILogger<BaseService> Logger { get; init; } = default!;
-    protected IServiceProvider ServiceProvider { get; init; }
+    [Service(Optional = true)] protected ILogger<BaseService>? Logger { get; init; } = default!;
+    protected IServiceProvider? ServiceProvider { get; init; }
     protected AToken Token { get; init; } = default!;
 
-    public BaseService(IServiceProvider services)
+    public BaseService(IServiceProvider? services)
     {
         Token = AToken.Create();
         ServiceProvider = services;

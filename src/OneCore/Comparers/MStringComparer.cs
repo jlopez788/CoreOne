@@ -3,7 +3,7 @@
 /// <summary>
 /// String comparer that equates null string and empty string
 /// </summary>
-public sealed class MStringComparer : IEqualityComparer<string?>, IComparer<string?>
+public sealed class MStringComparer : IEqualityComparer<string?>, IComparer<string?>, IEqualityComparer
 {
     public static readonly MStringComparer Ordinal = new(false);
     public static readonly MStringComparer OrdinalIgnoreCase = new(true);
@@ -20,9 +20,13 @@ public sealed class MStringComparer : IEqualityComparer<string?>, IComparer<stri
 
     public bool Equals(string? x, string? y) => Compare(x, y) == 0;
 
+    public new bool Equals(object? x, object? y) => Compare(x?.ToString(), y?.ToString()) == 0;
+
     public int GetHashCode(string? value)
     {
         var comparer = IgnoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
         return comparer.GetHashCode(value ?? string.Empty);
     }
+    
+    public int GetHashCode(object obj) => GetHashCode(obj.ToString());
 }

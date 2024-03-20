@@ -55,6 +55,64 @@ public static partial class Utility
     /// <returns></returns>
     public static async Task<T?> SafeAwait<T>(Task<T>? callback) => callback is not null ? await callback : default;
 
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="callback"></param>
+    /// <returns></returns>
+    public static IResult Try(Action? callback)
+    {
+        try
+        { callback?.Invoke(); }
+        catch (Exception ex) { return Result.FromException(ex); }
+        return Result.Ok;
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="callback"></param>
+    /// <returns></returns>
+    public static async Task<IResult> Try(Func<Task>? callback)
+    {
+        try
+        { await SafeAwait(callback?.Invoke()); }
+        catch (Exception ex) { return Result.FromException(ex); }
+        return Result.Ok;
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="callback"></param>
+    /// <returns></returns>
+    public static async Task<IResult<T>> Try<T>(Func<Task<T?>>? callback)
+    {
+        try
+        {
+            var model = callback is not null ? await callback.Invoke() : default;
+            return new Result<T>(model);
+        }
+        catch (Exception ex) { return Result.FromException<T>(ex); }
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="callback"></param>
+    /// <returns></returns>
+    public static IResult<T> Try<T>(Func<T?>? callback)
+    {
+        try
+        {
+            var model = callback is not null ? callback.Invoke() : default;
+            return new Result<T>(model);
+        }
+        catch (Exception ex) { return Result.FromException<T>(ex); }
+    }
+
     public static string EncodeForUrl(string value) => HttpUtility.UrlEncode(value);
 
     [GeneratedRegex(@"(\d{1,3})(\d{3})(\d{3})(\d{4})")]

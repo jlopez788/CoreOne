@@ -15,3 +15,4 @@ global using System.Reflection;
 global using NJsonConverter = Newtonsoft.Json.JsonConverterAttribute;
 global using ReferenceEqualityComparer = OneCore.Comparers.ReferenceEqualityComparer;
 global using SJsonConverter = System.Text.Json.Serialization.JsonConverterAttribute;
+global using OneCore.Attributes;

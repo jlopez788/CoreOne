@@ -66,7 +66,7 @@ public class SToken : IComponent, IDisposable
     {
         if (AToken is not null)
         {
-            _ = AToken.DisposeAsync();
+            Task.Factory.StartNew(AToken.DisposeAsync);
         }
         try
         {

@@ -114,5 +114,5 @@ public static class TypeExtensions
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
-    public static bool IsPrimitive(this Type? type) => type is not null && (type == Types.String || (type.IsValueType && type.IsPrimitive));
+    public static bool IsPrimitive(this Type? type) => type is not null && (type == Types.String || (type.IsValueType && type.IsPrimitive) || Types.DotNetTypes.Contains(type));
 }

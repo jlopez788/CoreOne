@@ -31,7 +31,7 @@ public readonly struct FileSize(long size)
     {
         int i;
         double dblSByte = bytes;
-        string[] Suffix = ["B", "KB", "MB", "GB", "TB"];
+        string[] Suffix = ["B", "KB", "MB", "GB", "TB", "PB"];
         for (i = 0; i < Suffix.Length && bytes >= 1024; i++, bytes /= 1024)
         {
             dblSByte = bytes / 1024.0;

@@ -11,7 +11,7 @@ public class Debounce<T>(Action<T> callback, TimeSpan delay) : IDisposable
 {
     private readonly Action<T> Callback = callback;
     private readonly TimeSpan Delay = delay;
-    private CancellationTokenSource? Token = new CancellationTokenSource();
+    private CancellationTokenSource? Token = new();
 
     public Debounce(Action<T> callback, int delayMS) : this(callback, TimeSpan.FromMilliseconds(delayMS)) { }
 
