@@ -62,6 +62,24 @@ public static class Observable
         public override string ToString() => $"{nameof(FilterObserver<T>)}:: ({Observers.Count})";
     }
 
+    private class SelectAsyncObserver<TSource, TResult> : Subject<TResult>
+    {
+        public SelectAsyncObserver(IObservable<TSource> source, Func<TSource, Task<TResult>> selector)
+        {
+            var token = SToken.Create();
+            token.Register(this);
+            source.Subscribe(next => selector.Invoke(next)
+                .ContinueWith(p => {
+                    if (p.IsCompletedSuccessfully)
+                        OnNext(p.Result);
+                    else if (p.IsFaulted && p.Exception is not null)
+                        OnError(p.Exception);
+                }), token.Dispose, token);
+        }
+
+        public override string ToString() => $"{nameof(SelectObserver<TSource, TResult>)}:: ({Observers.Count})";
+    }
+
     private class SelectObserver<TSource, TResult> : Subject<TResult>
     {
         public SelectObserver(IObservable<TSource> source, Func<TSource, TResult> selector)
@@ -94,6 +112,8 @@ public static class Observable
     public static IObservable<TSource> Distinct<TSource, TKey>(this IObservable<TSource> source, Func<TSource, TKey> keySelector, IEqualityComparer<TKey>? comparer = null) => new DistinctObserver<TSource, TKey>(source, keySelector, comparer);
 
     public static IObservable<TResult> Select<TSource, TResult>(this IObservable<TSource> source, Func<TSource, TResult> selector) => new SelectObserver<TSource, TResult>(source, selector);
+
+    public static IObservable<TResult> Select<TSource, TResult>(this IObservable<TSource> source, Func<TSource, Task<TResult>> selector) => new SelectAsyncObserver<TSource, TResult>(source, selector);
 
     public static void Subscribe<T>(this IObservable<T> source, Action<T> onNext, CancellationToken token) => Subscribe(source, onNext, null, token);
 

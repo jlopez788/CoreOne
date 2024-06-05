@@ -20,15 +20,10 @@ public static partial class Utility
     /// <returns></returns>
     public static IResult<string> CheckDirectory(string path)
     {
-        if (!string.IsNullOrWhiteSpace(path) && !Directory.Exists(path))
-        {
-            path = path.Remove(Invalid);
-            try
-            { Directory.CreateDirectory(path); }
-            catch (Exception ex) { return Result.FromException<string>(ex); }
-        }
-
-        return new Result<string>(path);
+        return !string.IsNullOrWhiteSpace(path) && !Directory.Exists(path) ?
+            Try(() => Directory.CreateDirectory(path))
+                     .Select(p => path) :
+            new Result<string>(path);
     }
 
     /// <summary> Fast file copy with big buffers
