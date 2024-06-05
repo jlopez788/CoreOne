@@ -35,7 +35,7 @@ public class LookupType<T>  : ILookupType<T> where T : LookupType<T>
         };
     }
 
-    public override int GetHashCode() => Code?.GetHashCode() ?? 0;
+    public override int GetHashCode() => MStringComparer.OrdinalIgnoreCase.GetHashCode(Code);
 
     protected static void Initialize(Type type)
     {
