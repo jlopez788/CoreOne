@@ -40,7 +40,7 @@ public static class StringExtensions
         if (!string.IsNullOrEmpty(value))
         {
             var chars = value.Where(c => Array.BinarySearch(remove, c) < 0);
-            value = new string(chars.ToArray());
+            value = new string([.. chars]);
         }
         return value;
     }

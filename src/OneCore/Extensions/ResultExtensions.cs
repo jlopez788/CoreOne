@@ -130,7 +130,7 @@ public static class ResultExtensions
         return result.Success ? await callback.Invoke() : Fail<T>(result);
     }
 
-    public static async Task<IResult<R>> SelectResultAsync<T, R>(this IResult<T> result, Func<T, Task<IResult<R>>> callback)
+    public static async Task<IResult<R>> SelectResultAsync<T, R>(this IResult<T> result, Func<T?, Task<IResult<R>>> callback)
     {
         return result.Success ? await callback.Invoke(result.Model) : Fail<R>(result);
     }
