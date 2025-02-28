@@ -44,4 +44,45 @@ public static class StringExtensions
         }
         return value;
     }
+
+    public static string? ToXString<T>(this T? model, string? format = null, bool usedefault = true)
+    {
+        string formatted = "";
+        InvokeCallback method;
+        var type = typeof(T);
+        object? value = model;
+        if (usedefault && (type != null))
+        {
+            object? alt = type.GetDefault();
+            if (type.IsNullable())
+            {
+                Type? underlying = Nullable.GetUnderlyingType(type);
+                if (underlying is not null)
+                {
+                    method = MetaType.GetInvokeMethod(type, "GetValueOrDefault", underlying);
+                    type = underlying;
+                    value = method.Invoke(model, [alt]);
+                }
+            }
+            else if (alt is not null)
+                value ??= alt;
+        }
+
+        if (!string.IsNullOrEmpty(format))
+        {
+            if ((type != null) && type.IsNullable())
+                type = Nullable.GetUnderlyingType(type);
+            method = MetaType.GetInvokeMethod(type, "ToString", Types.String);
+
+            try
+            {
+                object? temp = method.Invoke(model, [format]);
+                value = temp;
+            }
+            catch { }
+        }
+        if (value != null)
+            formatted = value?.ToString() ?? string.Empty;
+        return formatted;
+    }
 }

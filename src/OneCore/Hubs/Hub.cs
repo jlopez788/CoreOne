@@ -7,11 +7,11 @@ public sealed class Hub : IHub
     private readonly Guid Id;
     private readonly DataList<Type, IHubMessageIntercept> Intercepts = [];
     private readonly DataList<Type, IHubSubscription> Subscriptions = [];
-    private readonly object Sync = new();
+    private readonly Lock Sync = new();
 
     public Hub()
     {
-        Id = Guid.NewGuid();
+        Id = ID.Create();
         Instances.Add(this);
     }
 

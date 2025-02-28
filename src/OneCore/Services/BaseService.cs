@@ -60,7 +60,7 @@ public class BaseService : IDisposable, IAsyncDisposable
 
     protected virtual ValueTask DisposeAsync(bool disposing) => ValueTask.CompletedTask;
 
-    protected TService Get<TService>() where TService : notnull => ServiceProvider.GetRequiredService<TService>();
+    protected TService Get<TService>() where TService : notnull => ServiceProvider!.GetRequiredService<TService>();
 
     protected void LogResult<TResult>(TResult? result, string msg, [CallerMemberName] string? name = null) where TResult : IResult
     {

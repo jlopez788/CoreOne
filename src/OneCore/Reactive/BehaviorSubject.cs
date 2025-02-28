@@ -2,15 +2,13 @@
 
 public sealed class BehaviorSubject<T>(T? value = default) : Subject<T>
 {
-    private readonly object Sync = new();
+    private readonly Lock Sync = new();
     private T? CurrentValue = value;
 
     public T? Value {
         get {
-            lock (Sync)
+            using (Sync.EnterScope())
             {
-                CheckDisposed();
-
                 return Exception != null ? throw Exception : CurrentValue;
             }
         }
@@ -18,7 +16,7 @@ public sealed class BehaviorSubject<T>(T? value = default) : Subject<T>
 
     public bool TryGetValue([NotNullWhen(true)] out T? value)
     {
-        lock (Sync)
+        using (Sync.EnterScope())
         {
             if (IsDisposed)
             {
@@ -38,7 +36,7 @@ public sealed class BehaviorSubject<T>(T? value = default) : Subject<T>
 
     protected override void OnDispose()
     {
-        lock (Sync)
+        using (Sync.EnterScope())
             CurrentValue = default;
 
         base.OnDispose();
@@ -46,7 +44,7 @@ public sealed class BehaviorSubject<T>(T? value = default) : Subject<T>
 
     protected override void OnNextCore(T next)
     {
-        lock (Sync)
+        using (Sync.EnterScope())
             CurrentValue = next;
         base.OnNextCore(next);
     }

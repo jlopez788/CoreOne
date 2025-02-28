@@ -2,7 +2,7 @@
 
 public abstract class DataCollection<K, V, C> : Data<K, C> where C : ICollection<V> where K : notnull
 {
-    protected int Capacity { get; set; }
+    protected new int Capacity { get; set; }
 
     public DataCollection() : this(50) { }
 

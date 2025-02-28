@@ -4,28 +4,7 @@ namespace OneCore.Reactive;
 
 public class Subject<T> : ObserverBase<T>, IObserver<T>, IObservable<T>, IDisposable
 {
-    private sealed class Subscription(Subject<T> subject, IObserver<T> observer) : IDisposable
-    {
-        private readonly Subject<T> Subject = subject;
-        private IObserver<T>? Observer = observer;
-
-        public void Dispose()
-        {
-            if (Observer != null)
-            {
-                lock (Subject.Sync)
-                {
-                    if (!Subject.IsDisposed && Observer != null)
-                    {
-                        Subject.Observers = Subject.Observers.Remove(Observer);
-                        Observer = null;
-                    }
-                }
-            }
-        }
-    }
-
-    private readonly object Sync = new();
+    private readonly Lock Sync = new();
     public bool HasObservers => Observers != null && !Observers.IsEmpty;
     protected ImmutableList<IObserver<T>> Observers { get; set; }
 
@@ -43,21 +22,26 @@ public class Subject<T> : ObserverBase<T>, IObserver<T>, IObservable<T>, IDispos
 
         lock (Sync)
         {
-            CheckDisposed();
-
             Observers = Observers.Add(observer);
             OnSubscribe(observer);
-            return new Subscription(this, observer);
         }
+        return new Subscription(() => {
+            if (observer != null)
+            {
+                using (Sync.EnterScope())
+                {
+                    if (!IsDisposed && observer != null)
+                        Observers = Observers.Remove(observer);
+                }
+            }
+        });
     }
 
     protected override void OnCompletedCore()
     {
         var os = Array.Empty<IObserver<T>>();
-        lock (Sync)
+        using (Sync.EnterScope())
         {
-            CheckDisposed();
-
             os = [.. Observers];
             Observers = [];
         }
@@ -67,20 +51,18 @@ public class Subject<T> : ObserverBase<T>, IObserver<T>, IObservable<T>, IDispos
     protected override void OnErrorCore(Exception exception)
     {
         var os = default(IObserver<T>[]);
-        lock (Sync)
+        using (Sync.EnterScope())
         {
-            CheckDisposed();
-
             os = [.. Observers];
             Observers = [];
         }
         os.Each(p => p.OnError(exception));
     }
-    
+
     protected override void OnNextCore(T value)
     {
         var os = default(IObserver<T>[]);
-        lock (Sync)
+        using (Sync.EnterScope())
             os = [.. Observers];
 
         os.Each(p => p.OnNext(value));

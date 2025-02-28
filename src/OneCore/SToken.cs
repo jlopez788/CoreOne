@@ -11,7 +11,7 @@ public class SToken : IComponent, IDisposable
 
     public static readonly SToken Empty = new(Guid.Empty, null);
     private readonly AToken? AToken;
-    private readonly object Sync = new();
+    private readonly Lock Sync = new();
     private CancellationTokenSource? TokenSource;
     public string Id { get; }
     public bool IsCancellationRequested => TokenSource is null || (TokenSource is not null && TokenSource.IsCancellationRequested);

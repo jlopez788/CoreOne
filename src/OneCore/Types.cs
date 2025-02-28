@@ -41,7 +41,9 @@ public static class Types
         TaskT = typeof(Task<>),
         Delegate = typeof(Delegate),
         EnumerableT = typeof(IEnumerable<>),
-        CollectionT = typeof(ICollection<>);
+        CollectionT = typeof(ICollection<>),
+        IDisposable = typeof(IDisposable),
+        IAsyncDisposable = typeof(IAsyncDisposable);
 
     private static readonly Lazy<HashSet<Type>> CoreDotNetTypes = new(InitiallizeTypes);
     public static HashSet<Type> DotNetTypes => CoreDotNetTypes.Value;

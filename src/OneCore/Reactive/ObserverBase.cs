@@ -2,8 +2,9 @@
 
 public abstract class ObserverBase<T> : Disposable, IObserver<T>, IDisposable
 {
-    private readonly object Sync = new();
+    private readonly Lock Sync = new();
     protected Exception? Exception { get; private set; }
+    private bool IsFinalized;
 
     protected ObserverBase()
     { }
@@ -13,8 +14,11 @@ public abstract class ObserverBase<T> : Disposable, IObserver<T>, IDisposable
     /// </summary>
     public void OnCompleted()
     {
-        lock (Sync)
+        using (Sync.EnterScope())
+        {
             Exception = null;
+            IsFinalized = true;
+        }
 
         OnCompletedCore();
     }
@@ -27,11 +31,10 @@ public abstract class ObserverBase<T> : Disposable, IObserver<T>, IDisposable
     {
         ArgumentNullException.ThrowIfNull(exception);
 
-        lock (Sync)
+        using (Sync.EnterScope())
         {
-            CheckDisposed();
-
             Exception = exception;
+            IsFinalized = true;
         }
 
         OnErrorCore(exception);
@@ -43,17 +46,11 @@ public abstract class ObserverBase<T> : Disposable, IObserver<T>, IDisposable
     /// <param name="value"></param>
     public void OnNext(T value)
     {
-        lock (Sync)
+        if (!IsFinalized)
         {
-            CheckDisposed();
-            OnNextCore(value);
+            using (Sync.EnterScope())
+                OnNextCore(value);
         }
-    }
-
-    protected void CheckDisposed()
-    {
-        //if (IsDisposed)
-        //    throw new ObjectDisposedException(string.Empty);
     }
 
     protected virtual void OnCompletedCore()

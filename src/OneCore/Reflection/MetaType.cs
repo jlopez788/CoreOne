@@ -206,7 +206,7 @@ public static class MetaType
             do
             { names.Push(member.Member.Name); }
             while (TryFindMemberExpression(member.Expression, out member));
-            name = string.Join(".", [.. names]);
+            name = string.Join(".", names.ToArray());
         }
         return name;
     }
@@ -320,7 +320,7 @@ public static class MetaType
         }
     }
 
-    private static Expression[] CreateParameterExpressions(MethodInfo method, Expression argumentsParameter) => method.GetParameters().Select((parameter, index) => Expression.Convert(Expression.ArrayIndex(argumentsParameter, Expression.Constant(index)), parameter.ParameterType)).ToArray();
+    private static Expression[] CreateParameterExpressions(MethodInfo method, Expression argumentsParameter) => [.. method.GetParameters().Select((parameter, index) => Expression.Convert(Expression.ArrayIndex(argumentsParameter, Expression.Constant(index)), parameter.ParameterType))];
 
     private static bool IsConversion(Expression? exp) => exp is not null && (exp.NodeType == ExpressionType.Convert || exp.NodeType == ExpressionType.ConvertChecked);
 
