@@ -7,6 +7,4 @@ public partial class Utility
         int rand = minVal < maxVal ? Random.Shared.Next(minVal, maxVal) : Random.Shared.Next(maxVal, minVal);
         return rand;
     }
-
-    public static double NextGaussian(double meanValue = 0, double stdDev = 1) => Random.Shared.NextGaussian(meanValue, stdDev);
 }

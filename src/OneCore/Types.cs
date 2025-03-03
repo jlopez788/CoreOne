@@ -180,6 +180,10 @@ public static class Types
         {
             var flags = new string[] { "1", "true", "yes", "t", "y", "0", "false", "f", "n", "no" };
             var idx = Array.IndexOf(flags, value.ToLower());
+            if (idx == -1)
+            {
+                return false;
+            }
             parsed = idx >= 0;
             flag = idx is >= 0 and <= 4; // True uses index 0-3
         }
