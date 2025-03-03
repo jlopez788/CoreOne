@@ -19,7 +19,7 @@ public static class IDExtensions
 #if NET6
         MemoryMarshal.TryWrite(guidBytes, ref guid); // write bytes from the Guid
 #endif
-#if NET8_0
+#if NET8_0_OR_GREATER
         MemoryMarshal.TryWrite(guidBytes, in guid); // write bytes from the Guid
 #endif
         Base64.EncodeToUtf8(guidBytes, encodedBytes, out _, out _);
