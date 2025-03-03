@@ -90,24 +90,25 @@ public static partial class IOUtility
     /// <param name="access"></param>
     /// <param name="share"></param>
     /// <returns></returns>
-    public static byte[]? ReadAllBytes(string path, FileMode mode = FileMode.Open, FileAccess access = FileAccess.Read, FileShare share = FileShare.Read)
+    public static async Task<IResult<byte[]>> ReadAllBytes(string path, FileMode mode = FileMode.Open, FileAccess access = FileAccess.Read, FileShare share = FileShare.Read)
     {
-        byte[]? buffer = null;
+        var result = Result.Fail<byte[]>("Empty path");
         if (!string.IsNullOrEmpty(path))
         {
             try
             {
                 using (var stream = new FileStream(path, mode, access, share))
-                    buffer = stream.ReadFully();
+                    result = await stream.ReadFully();
 
                 File.SetLastAccessTime(path, DateTime.Now);
             }
-            catch
+            catch (Exception ex)
             {
+                return Result.FromException<byte[]>(ex);
             }
         }
 
-        return buffer;
+        return result;
     }
 
     /// <summary>
@@ -166,7 +167,7 @@ public static partial class IOUtility
     {
         return Utility.Try(() => {
             using var stream = new FileStream(path, mode, access, share);
-            stream.Append(buffer);
+            stream.Write(buffer, 0, buffer.Length);
             return true;
         });
     }
