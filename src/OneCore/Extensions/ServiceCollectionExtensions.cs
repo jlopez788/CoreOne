@@ -12,7 +12,9 @@ public static class ServiceCollectionExtensions
     /// <returns></returns>
     public static IServiceCollection AddCoreServices(this IServiceCollection services)
     {
-        services.AddScoped<IHub, Hub>();
+        services.AddScoped<IHub, Hub>()
+            .AddSingleton(new NewtonSettings())
+            .AddKeyedSingleton<ISerializer>("json", (p, _) => new NJsonService(p.GetRequiredService<NewtonSettings>()));
         return services;
     }
 
