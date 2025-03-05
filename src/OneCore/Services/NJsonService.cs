@@ -3,9 +3,9 @@ using System.Text;
 
 namespace OneCore.Services;
 
-public class NJsonService(JsonSerializerSettings? settings = null) : ISerializer
+public class NJsonService(JsonSerializerSettings? settings) : ISerializer
 {
-    public static readonly NJsonService Instance = new();
+    public static readonly NJsonService Instance = new(null);
     public Encoding Encoding { get; set; } = Encoding.UTF8;
     public JsonSerializerSettings Settings { get; } = settings ?? new NewtonSettings();
 

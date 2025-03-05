@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using OneCore.Hubs;
 
 namespace OneCore.Extensions;
@@ -13,8 +14,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddCoreServices(this IServiceCollection services)
     {
         services.AddScoped<IHub, Hub>()
-            .AddSingleton(new NewtonSettings())
-            .AddKeyedSingleton<ISerializer>("json", (p, _) => new NJsonService(p.GetRequiredService<NewtonSettings>()));
+            .AddSingleton<JsonSerializerSettings>(new NewtonSettings())
+            .AddKeyedSingleton<ISerializer, NJsonService>("json");
         return services;
     }
 
