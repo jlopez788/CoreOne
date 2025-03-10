@@ -23,7 +23,7 @@ public partial class Utility
     {
         InitializeSettings();
         try
-        {
+        {  
             using var txtReader = new StreamReader(stream);
             using var reader = new JsonTextReader(txtReader);
             var serializer = JsonSerializer.Create(JsonSettings);
