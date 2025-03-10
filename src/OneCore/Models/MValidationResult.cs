@@ -1,10 +1,12 @@
 ﻿namespace OneCore.Models;
 
-public class MValidationResult
+public class MValidationResult : IResult
 {
     public static readonly MValidationResult Success = new();
     public IReadOnlyList<string>? ErrorMessages { get; init; }
     public bool IsValid { get; init; }
+    public string? Message { get; private set; }
+    public ResultType ResultType { get; private set; }
 
     public MValidationResult()
     {
@@ -16,12 +18,14 @@ public class MValidationResult
     {
         ErrorMessages = string.IsNullOrEmpty(errorMsg) ? null : new List<string> { errorMsg };
         IsValid = ErrorMessages is null || ErrorMessages.Count == 0;
+        InitializeProperties();
     }
 
     public MValidationResult(IEnumerable<string>? errorMessages)
     {
         ErrorMessages = errorMessages?.ToList();
         IsValid = ErrorMessages is null || ErrorMessages.Count == 0;
+        InitializeProperties();
     }
 
     public static implicit operator bool(MValidationResult? result) => result?.IsValid == true;
@@ -35,4 +39,10 @@ public class MValidationResult
     public override int GetHashCode() => (ErrorMessages, IsValid).GetHashCode();
 
     public IResult ToResult() => IsValid ? Result.Ok : Result.Fail(GetErrorMessages());
+
+    private void InitializeProperties()
+    {
+        ResultType = IsValid ? ResultType.Success : ResultType.Fail;
+        Message = GetErrorMessages();
+    }
 }
