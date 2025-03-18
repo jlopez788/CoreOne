@@ -65,12 +65,10 @@ public sealed class Hub : IHub
             return PublishGlobal(message);
         }
 
-        var task = Task.Factory.StartNew(async () => {
+        return new HubPublish<TEvent>(Task.Factory.StartNew(async () => {
             await PublishInternal(message);
             return message;
-        }).Unwrap();
-
-        return new HubPublish<TEvent>(task);
+        }).Unwrap());
     }
 
     public void Subscribe<TEvent>(Func<TEvent, Task> onmessage, CancellationToken token, Predicate<TEvent>? messageFilter = null) where TEvent : IHubMessage

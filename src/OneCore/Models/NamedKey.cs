@@ -54,7 +54,7 @@ public sealed class NamedKey : IEquatable<NamedKey>
             var otherKeys = other.Entries.Keys.Where(p => !checkedKey.Contains(p));
             foreach (var key in otherKeys)
             {
-                if (!Entries.TryGetValue(key, out object? value) || !Compare(value, value))
+                if (!Entries.TryGetValue(key, out var value) || !Compare(value, other.Entries[key]))
                     return false;
             }
             return true;
