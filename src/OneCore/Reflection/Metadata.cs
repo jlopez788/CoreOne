@@ -1,4 +1,4 @@
-﻿namespace OneCore.Reflection;
+﻿namespace CoreOne.Reflection;
 
 public readonly struct Metadata : IEquatable<Metadata>
 {

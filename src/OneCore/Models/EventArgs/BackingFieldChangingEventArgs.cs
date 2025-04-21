@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace OneCore.Models.EventArgs;
+namespace CoreOne.Models.EventArgs;
 
 public class BackingFieldChangingEventArgs<T>(T? current, T? next) : CancelEventArgs
 {

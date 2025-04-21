@@ -1,4 +1,4 @@
-﻿namespace OneCore.Lookups;
+﻿namespace CoreOne.Lookups;
 
 public class LookupType<T>  : ILookupType<T> where T : LookupType<T>
 {

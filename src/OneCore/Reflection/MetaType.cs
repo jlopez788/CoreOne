@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace OneCore.Reflection;
+namespace CoreOne.Reflection;
 
 public static class MetaType
 {

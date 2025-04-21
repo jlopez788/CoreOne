@@ -1,4 +1,4 @@
-﻿namespace OneCore.Results;
+﻿namespace CoreOne.Results;
 
 public class HttpResult : IResult, IStatusResult<int>
 {

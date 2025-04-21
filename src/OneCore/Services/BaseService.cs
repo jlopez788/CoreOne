@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
 
-namespace OneCore.Services;
+namespace CoreOne.Services;
 
 public class BaseService : IDisposable, IAsyncDisposable
 {

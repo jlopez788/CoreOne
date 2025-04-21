@@ -1,4 +1,4 @@
-﻿namespace OneCore.Services;
+﻿namespace CoreOne.Services;
 
 public class FileStore<T> : Disposable where T : class
 {

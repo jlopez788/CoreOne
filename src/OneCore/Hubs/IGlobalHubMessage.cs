@@ -1,4 +1,4 @@
-﻿namespace OneCore.Hubs;
+﻿namespace CoreOne.Hubs;
 
 public interface IGlobalHubMessage : IHubMessage
 {

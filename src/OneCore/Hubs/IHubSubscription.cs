@@ -1,4 +1,4 @@
-﻿namespace OneCore.Hubs;
+﻿namespace CoreOne.Hubs;
 
 internal interface IHubSubscription
 {

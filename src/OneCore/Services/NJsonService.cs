@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Text;
 
-namespace OneCore.Services;
+namespace CoreOne.Services;
 
 public class NJsonService(JsonSerializerSettings? settings) : ISerializer
 {

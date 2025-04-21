@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace OneCore;
+namespace CoreOne;
 
 /// <summary>
 /// Wrapper around <see cref="CancellationTokenSource"/>

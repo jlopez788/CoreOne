@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 
-namespace OneCore.IO;
+namespace CoreOne.IO;
 
 public static partial class IOUtility
 {

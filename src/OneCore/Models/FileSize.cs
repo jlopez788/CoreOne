@@ -1,6 +1,6 @@
-﻿using OneCore.Converters;
+﻿using CoreOne.Converters;
 
-namespace OneCore.Models;
+namespace CoreOne.Models;
 
 [NJsonConverter(typeof(FileSizeConverter.NewtonsoftConverter))]
 [SJsonConverter(typeof(FileSizeConverter.SystemJsonConverter))]

@@ -1,4 +1,4 @@
-﻿namespace OneCore.Comparers;
+﻿namespace CoreOne.Comparers;
 
 public sealed class ReferenceEqualityComparer : IEqualityComparer<object>, IEqualityComparer
 {

@@ -1,4 +1,4 @@
-﻿namespace OneCore.Operations;
+﻿namespace CoreOne.Operations;
 
 public class PageResult<T> : PageRequest, IResult<ICollection<T>>
 {

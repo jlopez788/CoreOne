@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace OneCore.Operations;
+namespace CoreOne.Operations;
 
 [DebuggerDisplay("OrderBy: {Field} {Direction}")]
 public class OrderBy : IOperation

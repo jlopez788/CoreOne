@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Text;
 
-namespace OneCore;
+namespace CoreOne;
 
 public partial class Utility
 {

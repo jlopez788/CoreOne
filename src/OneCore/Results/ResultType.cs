@@ -1,4 +1,4 @@
-﻿namespace OneCore.Results;
+﻿namespace CoreOne.Results;
 
 [Flags]
 public enum ResultType

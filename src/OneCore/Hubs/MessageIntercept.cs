@@ -1,4 +1,4 @@
-﻿namespace OneCore.Hubs;
+﻿namespace CoreOne.Hubs;
 
 internal class MessageIntercept<TEvent>(InterceptHubMessage<TEvent> onintercept, int order) : IHubMessageIntercept where TEvent : IHubMessage
 {

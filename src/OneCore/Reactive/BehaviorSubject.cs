@@ -1,4 +1,4 @@
-﻿namespace OneCore.Reactive;
+﻿namespace CoreOne.Reactive;
 
 public sealed class BehaviorSubject<T>(T? value = default) : Subject<T>
 {

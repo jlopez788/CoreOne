@@ -1,7 +1,7 @@
-﻿using OneCore.Attributes;
+﻿using CoreOne.Attributes;
 using System.Diagnostics;
 
-namespace OneCore.Reflection;
+namespace CoreOne.Reflection;
 
 public static class ServiceInitializer
 {

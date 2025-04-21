@@ -1,4 +1,4 @@
-﻿namespace OneCore.Collections;
+﻿namespace CoreOne.Collections;
 
 public abstract class DataCollection<K, V, C> : Data<K, C> where C : ICollection<V> where K : notnull
 {

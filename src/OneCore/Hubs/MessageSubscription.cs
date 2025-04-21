@@ -1,4 +1,4 @@
-﻿namespace OneCore.Hubs;
+﻿namespace CoreOne.Hubs;
 
 internal class MessageSubscription<TEvent>(Func<TEvent, Task> deliveryAction, Predicate<TEvent>? messageFilter) : IHubSubscription where TEvent : IHubMessage
 {

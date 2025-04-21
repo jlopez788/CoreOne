@@ -1,4 +1,4 @@
-﻿namespace OneCore.Attributes;
+﻿namespace CoreOne.Attributes;
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter, AllowMultiple = true)]
 public sealed class ComparisonAttribute(string comparisonProperty, ComparisonType comparisonType) : ValidationAttribute

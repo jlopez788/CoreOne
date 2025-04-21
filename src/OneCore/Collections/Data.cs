@@ -1,4 +1,4 @@
-﻿namespace OneCore.Collections;
+﻿namespace CoreOne.Collections;
 
 /// <summary>
 /// Dictionary helper class

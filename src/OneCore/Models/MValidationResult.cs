@@ -1,4 +1,4 @@
-﻿namespace OneCore.Models;
+﻿namespace CoreOne.Models;
 
 public class MValidationResult : IResult
 {

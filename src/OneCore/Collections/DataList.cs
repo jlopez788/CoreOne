@@ -1,4 +1,4 @@
-﻿namespace OneCore.Collections;
+﻿namespace CoreOne.Collections;
 
 public class DataList<K, V> : DataCollection<K, V, List<V>> where K : notnull
 {

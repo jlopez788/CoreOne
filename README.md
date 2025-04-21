@@ -1,1 +1,1 @@
-# OneCore
+# CoreOne

@@ -1,4 +1,4 @@
-﻿namespace OneCore.Services;
+﻿namespace CoreOne.Services;
 
 public class Debounce(Action callback, TimeSpan delay) : Debounce<object?>(p => callback(), delay)
 {

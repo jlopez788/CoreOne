@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
-using OneCore.Converters;
+using CoreOne.Converters;
 
-namespace OneCore.Models;
+namespace CoreOne.Models;
 
 public class NewtonSettings : JsonSerializerSettings
 {

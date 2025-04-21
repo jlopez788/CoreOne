@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace OneCore.Extensions;
+namespace CoreOne.Extensions;
 
 public static class HttpClientExtensions
 {

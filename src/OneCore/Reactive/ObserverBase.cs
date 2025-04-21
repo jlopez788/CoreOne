@@ -1,4 +1,4 @@
-﻿namespace OneCore.Reactive;
+﻿namespace CoreOne.Reactive;
 
 public abstract class ObserverBase<T> : Disposable, IObserver<T>, IDisposable
 {

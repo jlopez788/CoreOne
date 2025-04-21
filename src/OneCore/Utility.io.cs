@@ -1,4 +1,4 @@
-﻿namespace OneCore;
+﻿namespace CoreOne;
 
 public static partial class Utility
 {

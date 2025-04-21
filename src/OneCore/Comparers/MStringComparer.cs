@@ -1,4 +1,4 @@
-﻿namespace OneCore.Comparers;
+﻿namespace CoreOne.Comparers;
 
 /// <summary>
 /// String comparer that equates null string and empty string

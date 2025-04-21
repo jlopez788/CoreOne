@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace OneCore.Models;
+namespace CoreOne.Models;
 
 [DebuggerDisplay("{DebugLabel}")]
 public sealed class NamedKey : IEquatable<NamedKey>

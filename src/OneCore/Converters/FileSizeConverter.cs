@@ -2,7 +2,7 @@
 using System.Text.Json;
 using JsonSerializer = Newtonsoft.Json.JsonSerializer;
 
-namespace OneCore.Converters;
+namespace CoreOne.Converters;
 
 public class FileSizeConverter
 {

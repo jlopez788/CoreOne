@@ -11,7 +11,7 @@
         <Authors>Juan Lopez</Authors>
         <Company>Juan Lopez</Company>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageProjectUrl>https://github.com/jlopez788/OneCore</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/jlopez788/CoreOne</PackageProjectUrl>
         <PackageId>OneCore</PackageId>
         <Product>OneCore</Product>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>

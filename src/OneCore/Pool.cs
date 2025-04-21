@@ -1,6 +1,6 @@
 ﻿using System.Buffers;
 
-namespace OneCore;
+namespace CoreOne;
 
 public static class Pool
 {

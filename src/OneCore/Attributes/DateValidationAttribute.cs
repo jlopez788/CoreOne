@@ -1,4 +1,4 @@
-﻿namespace OneCore.Attributes;
+﻿namespace CoreOne.Attributes;
 
 /// <summary>
 /// Date validation, ensure date is > 1900 or not null

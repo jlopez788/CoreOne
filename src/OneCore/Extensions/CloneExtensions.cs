@@ -1,4 +1,4 @@
-﻿namespace OneCore.Extensions;
+﻿namespace CoreOne.Extensions;
 
 public static class ArrayExtensions
 {

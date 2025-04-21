@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace OneCore;
+namespace CoreOne;
 
 public sealed class Crc32 : HashAlgorithm
 {

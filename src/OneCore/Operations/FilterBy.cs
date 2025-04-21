@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Text;
 
-namespace OneCore.Operations;
+namespace CoreOne.Operations;
 
 [DebuggerDisplay("FilterBy: {Field} {Value}")]
 public class FilterBy : IOperation

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-namespace OneCore;
+namespace CoreOne;
 
 public class AToken : IAsyncDisposable
 {

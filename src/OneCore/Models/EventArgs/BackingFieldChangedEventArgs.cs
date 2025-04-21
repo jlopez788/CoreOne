@@ -1,4 +1,4 @@
-﻿namespace OneCore.Models.EventArgs;
+﻿namespace CoreOne.Models.EventArgs;
 
 public class BackingFieldChangedEventArgs<T>(T? currentValue)
 {

@@ -1,4 +1,4 @@
-﻿namespace OneCore.Collections;
+﻿namespace CoreOne.Collections;
 
 public class DataHashSet<K, V> : DataCollection<K, V, HashSet<V>> where K : notnull
 {

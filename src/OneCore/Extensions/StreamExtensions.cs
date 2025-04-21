@@ -1,6 +1,6 @@
 ﻿using System.Buffers;
 
-namespace OneCore.Extensions;
+namespace CoreOne.Extensions;
 
 public static class StreamExtensions
 {

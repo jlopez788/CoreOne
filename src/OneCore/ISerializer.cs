@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace OneCore;
+namespace CoreOne;
 
 public interface ISerializer
 {

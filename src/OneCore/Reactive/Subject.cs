@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-namespace OneCore.Reactive;
+namespace CoreOne.Reactive;
 
 public class Subject<T> : ObserverBase<T>, IObserver<T>, IObservable<T>, IDisposable
 {

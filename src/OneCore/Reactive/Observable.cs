@@ -1,4 +1,4 @@
-﻿namespace OneCore.Reactive;
+﻿namespace CoreOne.Reactive;
 
 public static class Observable
 {

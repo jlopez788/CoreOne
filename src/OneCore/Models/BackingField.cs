@@ -1,20 +1,17 @@
-﻿namespace OneCore.Models;
+﻿using CoreOne.Reactive;
 
-public class BackingField<T>
+namespace CoreOne.Models;
+
+
+public class BackingField<T> : Disposable
 {
-    /// <summary>
-    /// Event fired after value has changed
-    /// </summary>
-    public event EventHandler<BackingFieldChangedEventArgs<T>>? AfterValueChange;
-    /// <summary>
-    /// Event fired before a value is changing
-    /// </summary>
-    public event EventHandler<BackingFieldChangingEventArgs<T>>? BeforeValueChange;
     private static readonly Lazy<Comparison<T>> Method = new(InitializeMethod);
     private readonly IComparer<T>? Comparer;
     private readonly Comparison<T>? Comparison;
     private readonly SemaphoreSlim Semaphore = new(1, 1);
     private readonly Type TComparable = typeof(IComparable<T>);
+    public readonly Subject<BackingFieldChangedEventArgs<T>> ValueChanged = new();
+    public readonly Subject<BackingFieldChangingEventArgs<T>> ValueChanging = new();
     private bool IsValueSet;
     public bool IgnoreNullValues { get; set; }
     public bool IsChanged { get; protected set; }
@@ -60,6 +57,16 @@ public class BackingField<T>
     {
         Value = value;
         IsValueSet = true;
+    }
+
+    public void SubscribeOnValueChanged(Action<BackingFieldChangedEventArgs<T>> callback, CancellationToken cancellationToken)
+    {
+        ValueChanged.Subscribe(callback, cancellationToken);
+    }
+
+    public void SubscribeOnValueChanging(Action<BackingFieldChangingEventArgs<T>> callback, CancellationToken cancellationToken)
+    {
+        ValueChanging.Subscribe(callback, cancellationToken);
     }
 
     public bool UpdateValue(T? nextValue)
@@ -124,8 +131,6 @@ public class BackingField<T>
 
     private static int Compare<TC>(TC x, TC y) where TC : IComparable<TC> => x is not null && y is not null ? x.CompareTo(y) : -1;
 
-    private static Expression[] CreateParameterExpressions(MethodInfo method, Expression argumentsParameter) => method.GetParameters().Select((parameter, index) => Expression.Convert(Expression.ArrayIndex(argumentsParameter, Expression.Constant(index)), parameter.ParameterType)).ToArray();
-
     private static Comparison<T> InitializeMethod()
     {
         var type = typeof(T);
@@ -135,7 +140,7 @@ public class BackingField<T>
             ?.MakeGenericMethod(type);
         var x = Expression.Parameter(type, "x");
         var y = Expression.Parameter(type, "y");
-        var call = Expression.Call(method!, new[] { x, y });
+        var call = Expression.Call(method!, [x, y]);
         var lambda = Expression.Lambda<Comparison<T>>(call, [x, y]);
         return lambda.Compile();
     }
@@ -145,12 +150,12 @@ public class BackingField<T>
         IsChanged = true;
         PreviousValue = Value;
         Value = nextValue;
-        AfterValueChange?.Invoke(this, new BackingFieldChangedEventArgs<T>(Value));
+        ValueChanged.OnNext(new BackingFieldChangedEventArgs<T>(Value));
     }
 
     private void OnBeforeUpdateCore(BackingFieldChangingEventArgs<T> args)
     {
-        BeforeValueChange?.Invoke(this, args);
+        ValueChanging.OnNext(args);
         if (!args.Cancel)
             OnBeforeUpdate(args);
     }

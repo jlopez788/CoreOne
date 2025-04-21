@@ -1,6 +1,6 @@
-﻿using ValidationStore = OneCore.Collections.DataList<string, string?>;
+﻿using ValidationStore = CoreOne.Collections.DataList<string, string?>;
 
-namespace OneCore.Models;
+namespace CoreOne.Models;
 
 public class ModelValidationContext(IServiceProvider? serviceProvider) : IResult
 {

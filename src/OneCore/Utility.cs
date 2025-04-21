@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using System.Web;
 
-namespace OneCore;
+namespace CoreOne;
 
 public static partial class Utility
 {

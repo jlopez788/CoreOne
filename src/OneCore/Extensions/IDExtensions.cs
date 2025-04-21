@@ -1,7 +1,7 @@
 ﻿using System.Buffers.Text;
 using System.Runtime.InteropServices;
 
-namespace OneCore.Extensions;
+namespace CoreOne.Extensions;
 
 public static class IDExtensions
 {

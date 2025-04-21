@@ -1,6 +1,6 @@
-﻿using OneCore.Hubs;
+﻿using CoreOne.Hubs;
 
-namespace OneCore.Extensions;
+namespace CoreOne.Extensions;
 
 public static class HubExtensions
 {

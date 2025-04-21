@@ -1,4 +1,4 @@
-﻿namespace OneCore;
+﻿namespace CoreOne;
 
 public struct Subscription(Action callback) : IDisposable
 {

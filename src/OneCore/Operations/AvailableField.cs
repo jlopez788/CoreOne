@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace OneCore.Operations;
+namespace CoreOne.Operations;
 
 [DebuggerDisplay("Available: {Field}")]
 public class AvailableField : IOperation

@@ -1,4 +1,4 @@
-﻿namespace OneCore.Operations;
+﻿namespace CoreOne.Operations;
 
 public class MergeFilter(string? field, Func<FilterBy?, FilterBy> onmerge) : IOperation
 {

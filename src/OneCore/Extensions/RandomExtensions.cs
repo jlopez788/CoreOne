@@ -1,4 +1,4 @@
-﻿namespace OneCore.Extensions;
+﻿namespace CoreOne.Extensions;
 
 /// <summary>
 /// Some extension methods for <see cref="Random"/> for creating a few more kinds of random stuff.

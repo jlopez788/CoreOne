@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace OneCore.Attributes;
+namespace CoreOne.Attributes;
 
 /// <summary>
 /// Provides conditional validation based on related property value.
