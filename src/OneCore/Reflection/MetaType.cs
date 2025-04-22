@@ -7,7 +7,7 @@ public static class MetaType
     private readonly struct Key : IEquatable<Key>
     {
         private readonly string Value;
-        public IReadOnlyCollection<Type> Arguments { get; }
+        public IReadOnlyList<Type> Arguments { get; }
         public string Name { get; }
         public Type Type { get; }
 
@@ -19,7 +19,7 @@ public static class MetaType
             Value = $"{type?.FullName}::{name}";
         }
 
-        public Key(Type type, Type[] arguments, string name)
+        public Key(Type type, Type[]? arguments, string name)
         {
             Type = type;
             Name = name;

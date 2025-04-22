@@ -42,7 +42,6 @@ public static partial class Utility
     /// <summary>
     /// Safe await a nullable task
     /// </summary>
-    /// <typeparam name="T"></typeparam>
     /// <param name="callback"></param>
     /// <returns></returns>
     public static Task SafeAwait(Task? callback) => callback is not null ? callback : Task.CompletedTask;

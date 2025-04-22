@@ -20,7 +20,7 @@ public class PageResult<T> : PageRequest, IResult<ICollection<T>>
     public PageResult(IEnumerable<T>? data, int page, int pageSize, int total)
     {
         ResultType = ResultType.Success;
-        Results = data is not null ? new List<T>(data) : new List<T>(10);
+        Results = data is not null ? [.. data] : new List<T>(10);
         CurrentPage = page;
         PageSize = pageSize;
         TotalCount = total;

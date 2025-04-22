@@ -46,7 +46,7 @@ public sealed class Crc32 : HashAlgorithm
         return hashBuffer;
     }
 
-    private static uint CalculateHash(uint[] table, uint seed, IList<byte> buffer, int start, int size)
+    private static uint CalculateHash(uint[] table, uint seed, byte[] buffer, int start, int size)
     {
         var hash = seed;
         for (var i = start; i < start + size; i++)

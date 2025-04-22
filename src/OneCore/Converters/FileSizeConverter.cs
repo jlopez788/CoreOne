@@ -14,7 +14,7 @@ public class FileSizeConverter
 
         public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
         {
-            var value = serializer.Deserialize(reader, typeof(long)) as long?;
+            var value = serializer.Deserialize(reader) as long?;
             return value.HasValue ? new FileSize(value.Value) : new FileSize(0);
         }
 

@@ -58,12 +58,12 @@ public class Data<K, V> : Dictionary<K, V> where K : notnull
     /// <summary>
     /// Initializes a new instance of the
     /// class that is empty, has the specified initial capacity, and uses the specified
-    /// System.Collections.Generic.IEqualityComparer<T>.
+    ///  <see cref="System.Collections.Generic.IEqualityComparer{T}"/>.
     /// </summary>
     /// <param name="size">Initial number of element it can contain</param>
     /// <param name="comparer">
     /// The System.Collections.Generic.IEqualityComparer T implementation to use
-    /// when comparing keys, or null to use the default System.Collections.Generic.EqualityComparer<T>
+    /// when comparing keys, or null to use the default <see cref="System.Collections.Generic.IEqualityComparer{T}"/>.
     /// for the type of the key.
     /// </param>
     public Data(int size, IEqualityComparer<K> comparer) : base(size, comparer) { }
@@ -71,11 +71,11 @@ public class Data<K, V> : Dictionary<K, V> where K : notnull
     /// <summary>
     /// Initializes a new instance of the
     /// class that is empty, has the default initial capacity, and uses the specified
-    /// System.Collections.Generic.IEqualityComparer T
+    /// S <see cref="System.Collections.Generic.IEqualityComparer{T}"/>.
     /// </summary>
     /// <param name="comparer">
-    /// The System.Collections.Generic.IEqualityComparer T implementation to use
-    /// when comparing keys, or null to use the default System.Collections.Generic.EqualityComparer<T>
+    /// The <see cref="System.Collections.Generic.IEqualityComparer{T}"/> implementation to use
+    /// when comparing keys, or null to use the default  <see cref="System.Collections.Generic.IEqualityComparer{T}"/>.
     /// for the type of the key.
     /// </param>
     public Data(IEqualityComparer<K> comparer) : base(comparer) { }

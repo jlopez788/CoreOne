@@ -138,7 +138,7 @@ public static partial class IOUtility
         // trim hyphens (-) from ends
         return value.Trim('-');
 
-        /// See: http://www.siao2.com/2007/05/14/2629747.aspx
+        // See: http://www.siao2.com/2007/05/14/2629747.aspx
         static string RemoveDiacritics(string stIn)
         {
             var formD = stIn.Normalize(NormalizationForm.FormD);

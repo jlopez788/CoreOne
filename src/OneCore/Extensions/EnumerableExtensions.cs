@@ -256,6 +256,8 @@ public static class EnumerableExtensions
         }
     }
 
+    public static R[] SelectArray<T, R>(this IEnumerable<T>? enumerable, Func<T, R> callback) => enumerable is not null && callback is not null ? [.. enumerable.Select(callback)] : [];
+
     /// <summary>
     /// Maps an enumerable to list of given type <typeparamref name="R"/>
     /// </summary>
@@ -264,31 +266,7 @@ public static class EnumerableExtensions
     /// <param name="enumerable"></param>
     /// <param name="callback"></param>
     /// <returns></returns>
-    public static List<R> SelectList<T, R>(this IEnumerable<T>? enumerable, Func<T, R> callback) => enumerable is not null && callback is not null ? enumerable.Select(callback).ToList() : [];
-
-    /// <summary>
-    /// Converts metadata collection to a dictionary, accessible by property namess
-    /// </summary>
-    /// <param name="entries"></param>
-    /// <returns></returns>
-    public static Data<string, Metadata> ToDictionary(this IReadOnlyCollection<Metadata>? entries)
-    {
-        if (entries is not null)
-        {
-            var data = entries.ToDictionary(p => p.Name, p => p);
-            return new Data<string, Metadata>(data, MStringComparer.OrdinalIgnoreCase);
-        }
-        return [];
-    }
-
-    /// <summary>
-    /// Maps and filters an enumerable into a list
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="items"></param>
-    /// <param name="predicate"></param>
-    /// <returns></returns>
-    public static List<T> ToList<T>(this IEnumerable<T>? items, Func<T, bool> predicate) => items?.Where(predicate).ToList() ?? [];
+    public static List<R> SelectList<T, R>(this IEnumerable<T>? enumerable, Func<T, R> callback) => enumerable is not null && callback is not null ? [.. enumerable.Select(callback)] : [];
 
     /// <summary>
     /// Creates data dictionary from given items
@@ -385,4 +363,28 @@ public static class EnumerableExtensions
         }
         return data;
     }
+
+    /// <summary>
+    /// Converts metadata collection to a dictionary, accessible by property namess
+    /// </summary>
+    /// <param name="entries"></param>
+    /// <returns></returns>
+    public static Data<string, Metadata> ToDictionary(this IReadOnlyCollection<Metadata>? entries)
+    {
+        if (entries is not null)
+        {
+            var data = entries.ToDictionary(p => p.Name, p => p);
+            return new Data<string, Metadata>(data, MStringComparer.OrdinalIgnoreCase);
+        }
+        return [];
+    }
+
+    /// <summary>
+    /// Maps and filters an enumerable into a list
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="items"></param>
+    /// <param name="predicate"></param>
+    /// <returns></returns>
+    public static List<T> ToList<T>(this IEnumerable<T>? items, Func<T, bool> predicate) => items?.Where(predicate).ToList() ?? [];
 }

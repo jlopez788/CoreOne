@@ -6,7 +6,7 @@ public class AToken : IAsyncDisposable
 {
     public static readonly AToken Empty = new(Guid.Empty, null);
     internal CancellationTokenSource? TokenSource;
-    private readonly object Sync = new();
+    private readonly Lock Sync = new();
     private ImmutableList<Func<Task>> Tasks;
     public string Id { get; }
     public bool IsCancellationRequested => TokenSource is null || (TokenSource is not null && TokenSource.IsCancellationRequested);

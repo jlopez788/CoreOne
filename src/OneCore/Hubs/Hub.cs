@@ -60,15 +60,12 @@ public sealed class Hub : IHub
 
     public HubPublish<TEvent> Publish<TEvent>(TEvent message) where TEvent : IHubMessage
     {
-        if (message is IGlobalHubMessage gmessage && gmessage.IsGlobal)
-        {
-            return PublishGlobal(message);
-        }
-
-        return new HubPublish<TEvent>(Task.Factory.StartNew(async () => {
-            await PublishInternal(message);
-            return message;
-        }).Unwrap());
+        return message is IGlobalHubMessage gmessage && gmessage.IsGlobal ?
+            PublishGlobal(message) :
+            new HubPublish<TEvent>(Task.Factory.StartNew(async () => {
+                await PublishInternal(message);
+                return message;
+            }).Unwrap());
     }
 
     public void Subscribe<TEvent>(Func<TEvent, Task> onmessage, CancellationToken token, Predicate<TEvent>? messageFilter = null) where TEvent : IHubMessage

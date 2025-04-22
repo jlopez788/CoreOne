@@ -22,9 +22,9 @@ public static class ServiceInitializer
         }).Where(p => p.attr is not null)
             .Each(p => {
                 var isnull = p.attr.DefaultServiceType is null;
-                var service = services.GetKnownService(p.meta.FPType!, isnull);
+                var service = services.Resolve(p.meta.FPType!);
                 if (service is null && !isnull)
-                    service = services.GetKnownService(p.attr.DefaultServiceType!, !p.attr.Optional);
+                    service = services.Resolve(p.attr.DefaultServiceType!);
                 var set = p.meta.SetValue(instance, service);
                 if (!set)
                 {
