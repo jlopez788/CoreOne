@@ -7,14 +7,15 @@
         <LangVersion>13</LangVersion>
         <Version>1.0</Version>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-        <Title>OneCore</Title>
+        <Title>CoreOne</Title>
         <Authors>Juan Lopez</Authors>
         <Company>Juan Lopez</Company>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageProjectUrl>https://github.com/jlopez788/CoreOne</PackageProjectUrl>
-        <PackageId>OneCore</PackageId>
-        <Product>OneCore</Product>
+        <PackageId>CoreOne</PackageId>
+        <Product>CoreOne</Product>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
     </PropertyGroup>
    
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
