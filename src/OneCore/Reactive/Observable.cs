@@ -1,7 +1,26 @@
-﻿namespace CoreOne.Reactive;
+﻿using CoreOne.Hubs;
+
+namespace CoreOne.Reactive;
 
 public static class Observable
 {
+    internal sealed class HubObserver<T> : Subject<T> where T : IHubMessage
+    {
+        private readonly SToken Token = SToken.Create();
+
+        public HubObserver(IHub hub)
+        {
+            Token.Register(this);
+            hub.Subscribe<T>(OnNext, Token);
+        }
+
+        protected override void OnDispose()
+        {
+            Token.Dispose();
+            base.OnDispose();
+        }
+    }
+
     private class AnonymousObserver<T>(Action<T> onNext, Action? onComplete) : Subject<T>
     {
         private readonly Action<T> Callback = onNext;
