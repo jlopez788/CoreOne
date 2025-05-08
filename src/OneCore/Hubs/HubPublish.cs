@@ -1,6 +1,6 @@
 ﻿namespace CoreOne.Hubs;
 
-public sealed record HubPublish<TEvent>
+public sealed class HubPublish<TEvent>
 {
     private readonly Task<TEvent> Task;
 

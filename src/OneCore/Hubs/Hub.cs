@@ -6,6 +6,8 @@ public sealed class Hub : IHub
     private static readonly List<Hub> Instances = [];
     private readonly Guid Id;
     private readonly DataList<Type, IHubMessageIntercept> Intercepts = [];
+    private readonly AsyncTaskQueue Queue = new();
+    private readonly Data<StateKey, IStateMessage> States = [];
     private readonly DataList<Type, IHubSubscription> Subscriptions = [];
     private readonly Lock Sync = new();
 
@@ -62,15 +64,26 @@ public sealed class Hub : IHub
     {
         return message is IGlobalHubMessage gmessage && gmessage.IsGlobal ?
             PublishGlobal(message) :
-            new HubPublish<TEvent>(Task.Factory.StartNew(async () => {
+            new HubPublish<TEvent>(Queue.Enqueue(async () => {
                 await PublishInternal(message);
                 return message;
-            }).Unwrap());
+            }));
+    }
+
+    public void PublishState<T>(T? model, string? name = null)
+    {
+        var key = StateKey.Create<T>(name);
+        var state = new StateMessage<T>(key, model);
+        if (model is null)
+            States.Remove(key);
+        else
+            States.Set(key, state);
+        Publish(state);
     }
 
     public void Subscribe<TEvent>(Func<TEvent, Task> onmessage, CancellationToken token, Predicate<TEvent>? messageFilter = null) where TEvent : IHubMessage
     {
-        if (onmessage == null)
+        if (onmessage is null)
             return;
 
         var key = typeof(TEvent);
@@ -90,7 +103,27 @@ public sealed class Hub : IHub
         });
     }
 
-    private static HubPublish<TEvent> PublishGlobal<TEvent>(TEvent message) where TEvent : IHubMessage
+    public void SubscribeState<T>(string? name, Func<T?, Task> onstate, CancellationToken token)
+    {
+        var key = StateKey.Create<T>(name);
+        Subscribe<StateMessage<T>>(p => onstate.Invoke(p.Model), token, p => p.Key.Equals(key));
+        if (TryGetState<T>(name, out var state) && state is StateMessage<T> current)
+            _ = onstate.Invoke(current.Model);
+    }
+
+    public bool TryGetState<T>(string? name, [NotNullWhen(true)] out T? state)
+    {
+        var key = StateKey.Create<T>(name);
+        state = default;
+        if (States.TryGetValue(key, out var value) && value is StateMessage<T> current)
+            state = current.Model;
+
+        return state is not null;
+    }
+
+    private void PublishExceptionMsg<T>(Exception ex) => Publish(new ExceptionMessage(ex, $"Unable to deliver message: {typeof(T).FullName}"));
+
+    private HubPublish<TEvent> PublishGlobal<TEvent>(TEvent message) where TEvent : IHubMessage
     {
         List<Hub>? targets = null;
         lock (Global.Sync)
@@ -98,13 +131,11 @@ public sealed class Hub : IHub
             targets = [.. Instances];
         }
 
-        return new HubPublish<TEvent>(Task.Factory.StartNew(async () => {
+        return new HubPublish<TEvent>(Queue.Enqueue(async () => {
             await targets.EachAsync(p => p.PublishInternal(message));
             return message;
-        }).Unwrap());
+        }));
     }
-
-    private void PublishExceptionMsg<T>(Exception ex) => Publish(new ExceptionMessage(ex, $"Unable to deliver message: {typeof(T).FullName}"));
 
     private async Task PublishInternal<TEvent>(TEvent message) where TEvent : IHubMessage
     {
