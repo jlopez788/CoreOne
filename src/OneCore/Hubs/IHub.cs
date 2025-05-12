@@ -2,15 +2,13 @@
 
 public interface IHub : IDisposable
 {
-    void Intercept<TEvent>(InterceptHubMessage<TEvent> onintercept, int order, CancellationToken token) where TEvent : IHubMessage;
+    TState GetState<TState>(string? name = null) where TState : IHubState<TState>;
 
-    HubPublish<TEvent> Publish<TEvent>(TEvent message) where TEvent : IHubMessage;
+    void Intercept<TEvent>(InterceptHubMessage<TEvent> onintercept, int order, CancellationToken token);
 
-    void PublishState<T>(T? model, string? name = null);
+    HubPublish<TEvent> Publish<TEvent>(TEvent message);
 
-    void Subscribe<TEvent>(Func<TEvent, Task> onmessage, CancellationToken token, Predicate<TEvent>? messageFilter = null) where TEvent : IHubMessage;
+    void Subscribe<TEvent>(Func<TEvent, Task> onmessage, CancellationToken token, Predicate<TEvent>? filter = null);
 
-    void SubscribeState<T>(string? name, Func<T?, Task> onstate, CancellationToken token);
-
-    bool TryGetState<TState>(string? name, [NotNullWhen(true)] out TState? state);
+    void SubscribeState<TEvent>(string? name, Func<TEvent, Task> onstate, CancellationToken token, Predicate<TEvent>? filter = null) where TEvent : IHubState<TEvent>;
 }

@@ -2,12 +2,12 @@
 
 public static class SemaphoneSlimExtensions
 {
-    public static void WaitNext(this SemaphoreSlim semaphore, Action next, CancellationToken cancellationToken) => semaphore.WaitNext(() => {
+    public static void WaitNext(this SemaphoreSlim semaphore, Action next, CancellationToken cancellationToken = default) => semaphore.WaitNext(() => {
         next();
         return 1;
     }, cancellationToken);
 
-    public static T WaitNext<T>(this SemaphoreSlim semaphore, Func<T> next, CancellationToken cancellationToken)
+    public static T WaitNext<T>(this SemaphoreSlim semaphore, Func<T> next, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -17,19 +17,19 @@ public static class SemaphoneSlimExtensions
         finally { semaphore.Release(); }
     }
 
-    public static Task WaitNextAsync(this SemaphoreSlim semaphore, Action next, CancellationToken cancellationToken) => semaphore.WaitNextAsync(() => {
+    public static Task WaitNextAsync(this SemaphoreSlim semaphore, Action next, CancellationToken cancellationToken = default) => semaphore.WaitNextAsync(() => {
         next();
         return Task.FromResult(1);
     }, cancellationToken);
 
-    public static Task<T> WaitNextAsync<T>(this SemaphoreSlim semaphore, Func<T> next, CancellationToken cancellationToken) => semaphore.WaitNextAsync(() => Task.FromResult(next()), cancellationToken);
+    public static Task<T> WaitNextAsync<T>(this SemaphoreSlim semaphore, Func<T> next, CancellationToken cancellationToken = default) => semaphore.WaitNextAsync(() => Task.FromResult(next()), cancellationToken);
 
-    public static Task WaitNextAsync(this SemaphoreSlim semaphore, Func<Task> next, CancellationToken cancellationToken) => semaphore.WaitNextAsync(async () => {
+    public static Task WaitNextAsync(this SemaphoreSlim semaphore, Func<Task> next, CancellationToken cancellationToken = default) => semaphore.WaitNextAsync(async () => {
         await next();
         return 1;
     }, cancellationToken);
 
-    public static async Task<T> WaitNextAsync<T>(this SemaphoreSlim semaphore, Func<Task<T>> next, CancellationToken cancellationToken)
+    public static async Task<T> WaitNextAsync<T>(this SemaphoreSlim semaphore, Func<Task<T>> next, CancellationToken cancellationToken = default)
     {
         T value = default!;
         try

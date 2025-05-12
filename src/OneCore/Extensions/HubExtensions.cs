@@ -1,52 +1,34 @@
 ﻿using CoreOne.Hubs;
+using CoreOne.Reactive;
 
 namespace CoreOne.Extensions;
 
-
 public static class HubExtensions
 {
-    public static void Intercept<TEvent>(this IHub hub, InterceptHubMessage<TEvent> onintercept, CancellationToken token) where TEvent : IHubMessage => hub?.Intercept(onintercept, 0, token);
+    public static void Intercept<TEvent>(this IHub hub, InterceptHubMessage<TEvent> onintercept, CancellationToken token) => hub?.Intercept(onintercept, 0, token);
 
     public static void OnComplete<TEvent>(this HubPublish<TEvent> publish, Action<TEvent> oncomplete) => publish.OnComplete(Wrapper(oncomplete));
 
-    public static void Subscribe<TEvent>(this IHub hub, Action? onmessage, CancellationToken token, Predicate<TEvent>? messageFilter = null) where TEvent : IHubMessage => hub?.Subscribe(Wrapper<TEvent>(p => onmessage?.Invoke()), token, messageFilter);
+    public static void Subscribe<TEvent>(this IHub hub, Action? onmessage, CancellationToken token, Predicate<TEvent>? filter = null) => hub?.Subscribe(Wrapper<TEvent>(p => onmessage?.Invoke()), token, filter);
 
-    public static void Subscribe<TEvent>(this IHub hub, Action<TEvent>? onmessage, CancellationToken token, Predicate<TEvent>? messageFilter = null) where TEvent : IHubMessage => hub?.Subscribe(Wrapper(onmessage), token, messageFilter);
+    public static void Subscribe<TEvent>(this IHub hub, Action<TEvent>? onmessage, CancellationToken token, Predicate<TEvent>? filter = null) => hub?.Subscribe(Wrapper(onmessage), token, filter);
 
-    public static void SubscribeState<T>(this IHub hub, Action<T?> onmessage, SToken token, Predicate<T>? messageFilter = null) => hub?.SubscribeState(null, Wrapper(onmessage), token);
-
-    public static void SubscribeState<T>(this IHub hub, string? name, Action<T?> onmessage, CancellationToken token, Predicate<T>? messageFilter = null) => hub?.SubscribeState(name, Wrapper(onmessage), token);
-
-    public static void SubscribeState<T>(this IHub hub, Func<T?, Task> onstate, SToken token) => hub?.SubscribeState(null, onstate, token);
-
-    public static IObservable<TEvent> ToObservable<TEvent>(this IHub hub) where TEvent : IHubMessage
+    public static void SubscribeState<TEvent>(this IHub hub, Action<TEvent> onstate, CancellationToken token, Predicate<TEvent>? filter = null) where TEvent : IHubState<TEvent>
     {
-        return new Observable.HubObserver<TEvent>(hub);
+        hub.SubscribeState(null, Wrapper(onstate), token, filter);
     }
 
-    [return: NotNullIfNotNull(nameof(getDefaultState))]
-    public static TState? GetState<TState>(this IHub hub, Func<TState>? getDefaultState = null) => hub.GetState(null, getDefaultState);
-
-    [return: NotNullIfNotNull(nameof(getDefaultState))]
-    public static TState? GetState<TState>(this IHub hub, string? name, Func<TState>? getDefaultState = null)
+    public static void SubscribeState<TEvent>(this IHub hub, string name, Action<TEvent> onstate, CancellationToken token, Predicate<TEvent>? filter = null) where TEvent : IHubState<TEvent>
     {
-        return hub.TryGetState(name, out var state, getDefaultState) ? state :
-            (getDefaultState is not null ? getDefaultState.Invoke() : default);
+        hub.SubscribeState(name, Wrapper(onstate), token, filter);
     }
 
-    [return: NotNullIfNotNull(nameof(getDefaultState))]
-    public static bool TryGetState<T>(this IHub hub, [NotNullWhen(true)] out T? state, Func<T>? getDefaultState = null) => hub.TryGetState(null, out state, getDefaultState);
-
-    [return: NotNullIfNotNull(nameof(getDefaultState))]
-    public static bool TryGetState<T>(this IHub hub, string? name, [NotNullWhen(true)] out T? state, Func<T>? getDefaultState = null)
+    public static void SubscribeState<TEvent>(this IHub hub, Func<TEvent, Task> onstate, CancellationToken token, Predicate<TEvent>? filter = null) where TEvent : IHubState<TEvent>
     {
-        state = default;
-        if (hub.TryGetState<T>(null, out var current))
-            state = current;
-        else if (getDefaultState is not null)
-            state = getDefaultState.Invoke();
-        return state is not null;
+        hub.SubscribeState(null, onstate, token, filter);
     }
+
+    public static IObservable<TEvent> ToObservable<TEvent>(this IHub hub) => new Observable.HubObserver<TEvent>(hub);
 
     private static Func<TEvent, Task> Wrapper<TEvent>(Action<TEvent>? callback) => msg => {
         callback?.Invoke(msg);

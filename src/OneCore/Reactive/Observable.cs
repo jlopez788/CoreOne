@@ -4,7 +4,7 @@ namespace CoreOne.Reactive;
 
 public static class Observable
 {
-    internal sealed class HubObserver<T> : Subject<T> where T : IHubMessage
+    internal sealed class HubObserver<T> : Subject<T>
     {
         private readonly SToken Token = SToken.Create();
 

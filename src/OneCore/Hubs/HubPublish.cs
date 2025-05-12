@@ -1,12 +1,8 @@
 ﻿namespace CoreOne.Hubs;
 
-public sealed class HubPublish<TEvent>
+public sealed class HubPublish<TEvent>(Task<TEvent> task)
 {
-    private readonly Task<TEvent> Task;
-
-    public HubPublish(Task<TEvent> task) => Task = task;
-
-    public void OnComplete(Func<TEvent, Task> oncomplete) => Task.ContinueWith(async p => {
+    public void OnComplete(Func<TEvent, Task> oncomplete) => task.ContinueWith(async p => {
         var result = await p;
         await oncomplete.Invoke(result);
     });
