@@ -22,7 +22,7 @@ public class TargetCreator(IServiceProvider? oservices)
     public IResult<object?> CreateInstance(Type type, object[] parameters)
     {
         var key = new TypeKey(type, parameters.SelectArray(p => p.GetType()));
-        var info = Cache.TryGetValue(key, () => CreateConstructorInfo(key, false));
+        var info = Cache.GetValue(key, () => CreateConstructorInfo(key, false));
         if (info is not null)
         {
             var target = info.Create.Invoke(parameters);
@@ -38,7 +38,7 @@ public class TargetCreator(IServiceProvider? oservices)
                .OrderByDescending(p => p.parameters.Length)
                .FirstOrDefault();
         var key = new TypeKey(type, args?.parameters);
-        var info = Cache.TryGetValue(key, () => CreateConstructorInfo(key, true));
+        var info = Cache.GetValue(key, () => CreateConstructorInfo(key, true));
         if (info is not null)
         {
             var parameters = info.Parameters.SelectArray(p => Resolve(p.ParameterType, false));
