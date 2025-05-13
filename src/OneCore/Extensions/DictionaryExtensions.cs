@@ -9,7 +9,7 @@ public static class DictionaryExtensions
             return getDefaultValue.Invoke();
         else if (key is null && getDefaultValue is null)
             return default;
-        return key is not null && data?.TryGetValue(key, out var current) == true ?
+        return key is not null && data?.TryGetValue(key, out var current) == true && current is not null ?
             current : getDefaultValue is not null ? getDefaultValue.Invoke() : default;
     }
 }
