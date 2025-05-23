@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Collections.Frozen;
 
 namespace CoreOne.Reflection;
 
@@ -7,7 +8,7 @@ public static class MetaType
     private readonly struct Key : IEquatable<Key>
     {
         private readonly string Value;
-        public IReadOnlyList<Type> Arguments { get; }
+        public FrozenSet<Type> Arguments { get; }
         public string Name { get; }
         public Type Type { get; }
 
@@ -23,7 +24,7 @@ public static class MetaType
         {
             Type = type;
             Name = name;
-            Arguments = arguments?.ToList() ?? [];
+            Arguments = (arguments ?? []).ToFrozenSet();
             var args = string.Join(", ", Arguments.Select(p => p.FullName));
             Value = $"{type?.FullName}::{name}({args})";
         }

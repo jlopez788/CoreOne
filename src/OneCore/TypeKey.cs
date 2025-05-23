@@ -1,4 +1,5 @@
 ﻿using CoreOne.Converters;
+using System.Collections.Frozen;
 
 namespace CoreOne;
 
@@ -12,14 +13,14 @@ public readonly struct TypeKey : IEquatable<TypeKey>
     private readonly int Code;
     public static TypeKey Empty { get; } = new(Types.Void);
     public string Name { get; }
-    public IReadOnlyCollection<Type> Parameters { get; }
+    public FrozenSet<Type> Parameters { get; }
     public Type Type { get; }
 
     public TypeKey(Type? type, IEnumerable<Type>? arguments = null)
     {
         Type = type ?? Types.Void;
         Name = Type.Name;
-        Parameters = arguments?.ToArray() ?? [];
+        Parameters = (arguments ?? []).ToFrozenSet();
         Code = Parameters.Count == 0 && Type == Types.Void ? 0 :
             Type != Types.Void && Parameters.Count == 0 ?
             Type.GetHashCode() : (Type, Parameters).GetHashCode();
@@ -53,7 +54,7 @@ public readonly struct TypeKey : IEquatable<TypeKey>
         _ => false
     };
 
-    public bool Equals(TypeKey other) => Type == other.Type || (Name.Matches(other.Name) && (Type == other.Type || Type == Types.Void) && (Parameters.Count == other.Parameters.Count && Parameters.SequenceEqual(other.Parameters)));
+    public bool Equals(TypeKey other) => Type == other.Type || (Name.Matches(other.Name) && (Type == other.Type || Type == Types.Void) && Parameters.Count == other.Parameters.Count && Parameters.SequenceEqual(other.Parameters));
 
     public override int GetHashCode() => Code;
 
