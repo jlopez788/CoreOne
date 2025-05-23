@@ -1,7 +1,7 @@
-﻿
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace CoreOne.Extensions;
+
 public static class ServiceProviderExtensions
 {
     public static object Resolve(this IServiceProvider services, Type type)
