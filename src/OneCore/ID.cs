@@ -19,6 +19,8 @@ public class ID : IEquatable<ID>
         return new ID(new Guid(uid));
     }
 
+    public static ID Guidv7() => new(Guid.CreateVersion7());
+
     public static implicit operator Guid(ID id) => id.Id;
 
     public static bool operator !=(ID? left, ID? right) => left?.Id != right?.Id;

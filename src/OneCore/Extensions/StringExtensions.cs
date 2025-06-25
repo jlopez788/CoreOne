@@ -3,6 +3,18 @@
 public static class StringExtensions
 {
     /// <summary>
+    /// Returns a value indicating whether a specified substring occurs within this string.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="other"></param>
+    /// <param name="comparison"></param>
+    /// <returns></returns>
+    public static bool ContainsX(this string? value, string? other, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
+    {
+        return !string.IsNullOrEmpty(value) && !string.IsNullOrEmpty(other) && value.Contains(other, comparison);
+    }
+
+    /// <summary>
     /// Compare if one string equals another string, case-insensitive by default
     /// </summary>
     /// <param name="value"></param>
