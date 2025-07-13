@@ -24,7 +24,7 @@ jobs:
       - name: Get project version
         id: get_version
         run: |
-          VERSION=$(dotnet msbuild -nologo -t:GetVersion -v:q -p:CustomAfterMicrosoftCommonTargets=GetVersion.props YourProject.csproj)
+          VERSION=$(dotnet msbuild -nologo -t:GetVersion -v:q -p:CustomAfterMicrosoftCommonTargets=GetVersion.props CoreOne.csproj)
           echo "Package version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
