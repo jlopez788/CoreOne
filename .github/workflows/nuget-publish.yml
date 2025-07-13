@@ -44,9 +44,9 @@ jobs:
           fi
 
       - name: Build project
-        run: dotnet build src/CoreOne/CoreOne.csproj --configuration Release --output src/CoreOne/bin/Release/net9.0
+        run: dotnet build src/CoreOne/CoreOne.csproj --configuration Release
 
       - name: Push to NuGet
         if: steps.check_nuget.outputs.exists == 'false'
-        run: dotnet pack src/CoreOne/CoreOne.csproj --configuration Release --no-build --output ./src/bin/
+        run: dotnet pack src/CoreOne/CoreOne.csproj --configuration Release 
 
