@@ -1,0 +1,48 @@
+name: Publish NuGet Package
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/*.csproj'  # only trigger when project file changes
+      - '.github/workflows/nuget-publish.yml'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Get project version
+        id: get_version
+        run: |
+          VERSION=$(dotnet msbuild -nologo -t:GetVersion -v:q -p:CustomAfterMicrosoftCommonTargets=GetVersion.props YourProject.csproj)
+          echo "Package version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check if package version exists
+        id: check_nuget
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          PACKAGE_NAME="YourPackageName"
+          EXISTS=$(curl -s https://api.nuget.org/v3-flatcontainer/$PACKAGE_NAME/$VERSION/$PACKAGE_NAME.$VERSION.nupkg --head | head -n 1 | grep "200 OK" || true)
+          if [ -n "$EXISTS" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build package
+        run: dotnet pack --configuration Release
+
+      - name: Publish to NuGet
+        if: steps.check_nuget.outputs.exists == 'false'
+        run: dotnet nuget push bin/Release/*.nupkg --api-key ${{ secrets.NUGET_KEY }} --source https://api.nuget.org/v3/index.json
