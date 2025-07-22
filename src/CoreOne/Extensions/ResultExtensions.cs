@@ -4,7 +4,7 @@ public static class ResultExtensions
 {
     public static IResult OnSuccess(this IResult result, Action? callback) => result.Success ? Utility.Try(callback) : result;
 
-    public static IResult<T> OnSuccess<T>(this IResult<T> result, Action<T?>? callback)
+    public static IResult<T> OnSuccess<T>(this IResult<T> result, Action<T>? callback)
     {
         return result.Success && result.Model is not null ?
             Utility.Try(() => {
@@ -15,7 +15,7 @@ public static class ResultExtensions
 
     public static async Task<IResult> OnSuccessAsync(this IResult result, Func<Task>? callback) => result.Success ? await Utility.Try(callback) : result;
 
-    public static Task<IResult<T>> OnSuccessAsync<T>(this IResult<T> result, Func<T?, Task?> callback)
+    public static Task<IResult<T>> OnSuccessAsync<T>(this IResult<T> result, Func<T, Task?> callback)
     {
         return result.Success && result.Model is not null ? Utility.Try(async () => {
             await Utility.SafeAwait(callback?.Invoke(result.Model));
@@ -105,7 +105,7 @@ public static class ResultExtensions
         catch (Exception ex) { return Result.FromException<R>(ex); }
     }
 
-    public static async Task<IResult<R>> SelectAsync<T, R>(this Task<IResult<T>> task, Func<T?, Task<R?>> callback)
+    public static async Task<IResult<R>> SelectAsync<T, R>(this Task<IResult<T>> task, Func<T, Task<R?>> callback)
     {
         try
         {
@@ -120,9 +120,9 @@ public static class ResultExtensions
         return result.Success ? callback.Invoke() : Fail<T>(result);
     }
 
-    public static IResult<R> SelectResult<T, R>(this IResult<T> result, Func<T?, IResult<R>> callback)
+    public static IResult<R> SelectResult<T, R>(this IResult<T> result, Func<T, IResult<R>> callback)
     {
-        return result.Success ? callback.Invoke(result.Model) : Fail<R>(result);
+        return result.Success && result.Model is not null ? callback.Invoke(result.Model) : Fail<R>(result);
     }
 
     public static async Task<IResult<T>> SelectResultAsync<T>(this IResult result, Func<Task<IResult<T>>> callback)
@@ -130,9 +130,9 @@ public static class ResultExtensions
         return result.Success ? await callback.Invoke() : Fail<T>(result);
     }
 
-    public static async Task<IResult<R>> SelectResultAsync<T, R>(this IResult<T> result, Func<T?, Task<IResult<R>>> callback)
+    public static async Task<IResult<R>> SelectResultAsync<T, R>(this IResult<T> result, Func<T, Task<IResult<R>>> callback)
     {
-        return result.Success ? await callback.Invoke(result.Model) : Fail<R>(result);
+        return result.Success && result.Model is not null ? await callback.Invoke(result.Model) : Fail<R>(result);
     }
 
     public static async Task<IResult<T>> SelectResultAsync<T>(this Task<IResult> task, Func<Task<IResult<T>>> callback)
@@ -141,10 +141,10 @@ public static class ResultExtensions
         return result.Success ? await callback.Invoke() : Fail<T>(result);
     }
 
-    public static async Task<IResult<R>> SelectResultAsync<T, R>(this Task<IResult<T>> task, Func<T?, Task<IResult<R>>> callback)
+    public static async Task<IResult<R>> SelectResultAsync<T, R>(this Task<IResult<T>> task, Func<T, Task<IResult<R>>> callback)
     {
         var result = await task;
-        return result.Success ? await callback.Invoke(result.Model) : Fail<R>(result);
+        return result.Success && result.Model is not null ? await callback.Invoke(result.Model) : Fail<R>(result);
     }
 
     public static IResult ToResult<T>(this IResult<T> result) => new Result(result.ResultType, result.Message);
