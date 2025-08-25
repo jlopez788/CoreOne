@@ -16,3 +16,4 @@ global using NJsonConverter = Newtonsoft.Json.JsonConverterAttribute;
 global using ReferenceEqualityComparer = CoreOne.Comparers.ReferenceEqualityComparer;
 global using SJsonConverter = System.Text.Json.Serialization.JsonConverterAttribute;
 global using CoreOne.Attributes;
+global using CoreOne.Threading;

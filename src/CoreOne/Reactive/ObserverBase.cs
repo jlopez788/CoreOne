@@ -2,7 +2,7 @@
 
 public abstract class ObserverBase<T> : Disposable, IObserver<T>, IDisposable
 {
-    private readonly Lock Sync = new();
+    private readonly SafeLock Sync = new();
     protected Exception? Exception { get; private set; }
     private bool IsFinalized;
 
@@ -28,9 +28,7 @@ public abstract class ObserverBase<T> : Disposable, IObserver<T>, IDisposable
     /// </summary>
     /// <param name="exception"></param>
     public void OnError(Exception exception)
-    {
-        ArgumentNullException.ThrowIfNull(exception);
-
+    { 
         using (Sync.EnterScope())
         {
             Exception = exception;

@@ -20,12 +20,21 @@ public static partial class Utility
         phoneNumber = regex.Replace(phoneNumber, string.Empty);
         if (mask)
         {
+#if NET9_0_OR_GREATER
             return phoneNumber.Length switch {
                 7 => "***-" + phoneNumber[^4..],
                 10 => "(***) ***-" + phoneNumber[^4..],
                 11 or 12 or 13 => code() + " (***) ***-" + phoneNumber[^4..],
                 _ => "".PadRight(phoneNumber.Length - 4, '*') + phoneNumber[^4..],
             };
+#else
+            return phoneNumber.Length switch {
+                7 => "***-" + phoneNumber.Substring(phoneNumber.Length - 4),
+                10 => "(***) ***-" + phoneNumber.Substring(phoneNumber.Length - 4),
+                11 or 12 or 13 => code() + " (***) ***-" + phoneNumber.Substring(phoneNumber.Length - 4),
+                _ => "".PadRight(phoneNumber.Length - 4, '*') + phoneNumber.Substring(phoneNumber.Length - 4),
+            };
+#endif
         }
 
         var (reg, format) = phoneNumber.Length switch {
@@ -36,7 +45,11 @@ public static partial class Utility
         };
         return reg?.Replace(phoneNumber, format!) ?? phoneNumber;
 
+#if NET9_0_OR_GREATER
         string code() => "+" + phoneNumber![..^10];
+#else
+        string code() => "+" + phoneNumber.Substring(0, phoneNumber.Length - 10);
+#endif
     }
 
     /// <summary>
@@ -114,6 +127,7 @@ public static partial class Utility
 
     public static string EncodeForUrl(string value) => HttpUtility.UrlEncode(value);
 
+#if NET9_0_OR_GREATER
     [GeneratedRegex(@"(\d{1,3})(\d{3})(\d{3})(\d{4})")]
     private static partial Regex PhonePlusReg();
 
@@ -125,4 +139,15 @@ public static partial class Utility
 
     [GeneratedRegex(@"(\d{3})(\d{3})(\d{4})")]
     private static partial Regex PhoneTenReg();
+#else
+
+    private static Regex PhonePlusReg() => new Regex(@"(\d{1,3})(\d{3})(\d{3})(\d{4})", RegexOptions.Compiled);
+
+    private static Regex PhoneReg() => new Regex(@"[^\d+]", RegexOptions.Compiled);
+
+    private static Regex PhoneSevenReg() => new Regex(@"(\d{3})(\d{4})", RegexOptions.Compiled);
+
+    private static Regex PhoneTenReg() => new Regex(@"(\d{3})(\d{3})(\d{4})", RegexOptions.Compiled);
+
+#endif
 }

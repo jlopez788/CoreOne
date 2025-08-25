@@ -10,13 +10,13 @@ public partial class Utility
     public static object? Deserialize(Type type, string? content)
     {
         InitializeSettings();
-        return !string.IsNullOrEmpty(content) ? type == Types.String ? content : JsonConvert.DeserializeObject(content, type, JsonSettings) : null;
+        return !string.IsNullOrEmpty(content) ? type == Types.String ? content : JsonConvert.DeserializeObject(content!, type, JsonSettings) : null;
     }
 
     public static T? DeserializeObject<T>(string? jsonContent)
     {
         InitializeSettings();
-        return !string.IsNullOrEmpty(jsonContent) ? jsonContent is T value ? value : JsonConvert.DeserializeObject<T>(jsonContent, JsonSettings) : default;
+        return !string.IsNullOrEmpty(jsonContent) ? jsonContent is T value ? value : JsonConvert.DeserializeObject<T>(jsonContent!, JsonSettings) : default;
     }
 
     public static IResult<T> DeserializeObject<T>(Stream stream)

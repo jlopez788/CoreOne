@@ -89,7 +89,11 @@ public static class Observable
             token.Register(this);
             source.Subscribe(next => selector.Invoke(next)
                 .ContinueWith(p => {
+#if NET9_0_OR_GREATER
                     if (p.IsCompletedSuccessfully)
+#else
+                    if (p.IsCompleted)
+#endif
                         OnNext(p.Result);
                     else if (p.IsFaulted && p.Exception is not null)
                         OnError(p.Exception);

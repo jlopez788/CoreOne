@@ -20,6 +20,7 @@ public static class DateTimeExtensions
     /// <returns></returns>
     public static int CalculateAge(this DateTime dateOfBirth) => CalculateAge(dateOfBirth, DateTime.Now);
 
+#if NET9_0_OR_GREATER
     /// <summary>
     /// Get age from date of birth
     /// </summary>
@@ -30,14 +31,14 @@ public static class DateTimeExtensions
     { // Src: https://stackoverflow.com/a/16142434/216578
         return (((targetDate.Year - dateOfBirth.Year) * 372) + ((targetDate.Month - dateOfBirth.Month) * 31) + (targetDate.Day - dateOfBirth.Day)) / 372;
     }
-
+ 
     /// <summary>
     /// Get age from date of birth
     /// </summary>
     /// <param name="dateOfBirth"></param>
     /// <returns></returns>
     public static int CalculateAge(this DateOnly dateOfBirth) => CalculateAge(dateOfBirth, DateOnly.FromDateTime(DateTime.Now));
-
+#endif
     /// <summary>
     /// Gets the date of the first day of the week for the given date.
     /// </summary>

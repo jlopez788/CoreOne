@@ -15,7 +15,11 @@ public class HttpResult : IResult, IStatusResult<int>
         try
         {
             var status = (int)response.StatusCode;
+#if NET9_0_OR_GREATER
             using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+#else
+            using var stream = await response.Content.ReadAsStreamAsync();
+#endif
             if (response.IsSuccessStatusCode)
             {
                 var result = Utility.DeserializeObject<TModel>(stream);
@@ -137,6 +141,6 @@ public class HttpResult<TModel, TError> : HttpResult, IResult<TModel>, IResult<T
 
     public HttpResult(int statusCode, string? msg) : base(statusCode, msg)
     {
-        Message = msg; 
+        Message = msg;
     }
 }

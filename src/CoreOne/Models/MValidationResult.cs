@@ -2,11 +2,12 @@
 
 public class MValidationResult : IResult
 {
-    public static readonly MValidationResult Success = new();
+    public static readonly MValidationResult MSuccess = new();
     public IReadOnlyList<string>? ErrorMessages { get; init; }
     public bool IsValid { get; init; }
     public string? Message { get; private set; }
     public ResultType ResultType { get; private set; }
+    public bool Success => ResultType == ResultType.Success;
 
     public MValidationResult()
     {
@@ -16,7 +17,7 @@ public class MValidationResult : IResult
 
     public MValidationResult(string? errorMsg)
     {
-        ErrorMessages = string.IsNullOrEmpty(errorMsg) ? null : new List<string> { errorMsg };
+        ErrorMessages = string.IsNullOrEmpty(errorMsg) ? null : new List<string> { errorMsg! };
         IsValid = ErrorMessages is null || ErrorMessages.Count == 0;
         InitializeProperties();
     }

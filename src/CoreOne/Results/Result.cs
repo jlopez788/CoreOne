@@ -58,6 +58,7 @@ public class Result : IResult
 
     public string? Message { get; init; }
     public ResultType ResultType { get; init; }
+    public bool Success => ResultType == ResultType.Success;
 
     public Result() => ResultType = ResultType.Success;
 

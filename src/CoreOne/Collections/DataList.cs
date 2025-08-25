@@ -6,11 +6,11 @@ public class DataList<K, V> : DataCollection<K, V, List<V>> where K : notnull
 
     public DataList(int capacity) : base(capacity) { }
 
-    public DataList(int size, IEqualityComparer<K> comparer) : base(size, comparer) => Capacity = size;
+    public DataList(int size, IEqualityComparer<K> comparer) : base(size, comparer) { }
 
-    public DataList(IEqualityComparer<K> comparer) : base(comparer) => Capacity = 50;
+    public DataList(IEqualityComparer<K> comparer) : base(comparer) { }
 
-    protected override List<V> CreateCollection() => new(Capacity);
+    protected override List<V> CreateCollection() => [];
 
     public void RemoveAll(Func<K, V, bool> predicate)
     {

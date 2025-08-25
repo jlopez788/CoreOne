@@ -1,12 +1,10 @@
-﻿using System.Collections.Immutable;
-
-namespace CoreOne;
+﻿namespace CoreOne;
 
 public class AToken : IAsyncDisposable
 {
     public static readonly AToken Empty = new(Guid.Empty, null);
     internal CancellationTokenSource? TokenSource;
-    private readonly Lock Sync = new();
+    private readonly SafeLock Sync = new();
     private ImmutableList<Func<Task>> Tasks;
     public string Id { get; }
     public bool IsCancellationRequested => TokenSource is null || (TokenSource is not null && TokenSource.IsCancellationRequested);
@@ -33,7 +31,7 @@ public class AToken : IAsyncDisposable
         {
             if (TokenSource is not null)
             {
-                lock (Sync)
+                using (Sync.EnterScope())
                 {
                     tasks = [.. Tasks];
                     TokenSource?.Dispose();
@@ -44,7 +42,7 @@ public class AToken : IAsyncDisposable
         catch { }
 
         await tasks.EachAsync(p => p.Invoke());
-        lock (Sync)
+        using (Sync.EnterScope())
             Tasks = [];
 
         GC.SuppressFinalize(this);
@@ -60,7 +58,7 @@ public class AToken : IAsyncDisposable
 
     public void Register(Func<Task> callback)
     {
-        lock (Sync)
+        using (Sync.EnterScope())
             Tasks = Tasks.Add(callback);
     }
 

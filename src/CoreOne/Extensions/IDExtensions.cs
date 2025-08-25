@@ -35,7 +35,11 @@ public static class IDExtensions
                 _ => (char)encodedBytes[i],
             };
         }
-
+#if NET9_0_OR_GREATER
         return new string(chars);
+#else
+        return new string(chars.ToArray());
+#endif
+
     }
 }

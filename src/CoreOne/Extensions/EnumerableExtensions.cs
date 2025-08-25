@@ -185,7 +185,7 @@ public static class EnumerableExtensions
             foreach (var item in items)
             {
                 if (!string.IsNullOrWhiteSpace(item))
-                    yield return item;
+                    yield return item!;
             }
         }
     }

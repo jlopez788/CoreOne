@@ -34,7 +34,11 @@ public static class HttpClientExtensions
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
             using var response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
+#if NET9_0_OR_GREATER
             return await HttpResult.FromResponse(response, p => p.ReadAsStringAsync(cancellationToken));
+#else
+            return await HttpResult.FromResponse(response, p => p.ReadAsStringAsync());
+#endif
         }
         catch (Exception ex) { return HttpResult.FromException<string>(ex); }
     }
@@ -83,8 +87,14 @@ public static class HttpClientExtensions
         {
             var content = model.ToStringContent();
             using var response = await client.PostAsync(requestUri, content, cancellationToken).ConfigureAwait(false);
+#if NET9_0_OR_GREATER
             return await HttpResult.FromResponse(response, p => p.ReadAsStringAsync(cancellationToken))
                     .SelectFromJsonContent<TResult>();
+#else
+            return await HttpResult.FromResponse(response, p => p.ReadAsStringAsync())
+                    .SelectFromJsonContent<TResult>();
+#endif
+
         }
         catch (Exception ex) { return HttpResult.FromException<TResult>(ex); }
     }

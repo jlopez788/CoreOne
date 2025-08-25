@@ -48,7 +48,7 @@ public class FileStore<T> : Disposable where T : class
             using (var fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
             {
                 var buffer = Serializer.Serialize(model, typeof(T));
-                await fs.WriteAsync(buffer, cancellationToken);
+                await fs.WriteAsync(buffer, 0, buffer.Length, cancellationToken);
                 await fs.FlushAsync(cancellationToken);
             }
             result = Result.Ok;

@@ -11,7 +11,12 @@ public static class StringExtensions
     /// <returns></returns>
     public static bool ContainsX(this string? value, string? other, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
     {
-        return !string.IsNullOrEmpty(value) && !string.IsNullOrEmpty(other) && value.Contains(other, comparison);
+        return !string.IsNullOrEmpty(value) && !string.IsNullOrEmpty(other) &&
+#if NET9_0_OR_GREATER
+            value.Contains(other, comparison);
+#else
+            value!.ToLower().Contains(other!.ToLower());
+#endif
     }
 
     /// <summary>

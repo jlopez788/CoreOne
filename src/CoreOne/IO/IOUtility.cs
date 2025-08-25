@@ -172,6 +172,7 @@ public static partial class IOUtility
         });
     }
 
+#if NET9_0_OR_GREATER
     [GeneratedRegex(@"[^a-z0-9\-]", RegexOptions.Compiled)]
     private static partial Regex InvalidCharRegex();
 
@@ -180,4 +181,13 @@ public static partial class IOUtility
 
     [GeneratedRegex(@"[\s—–_]", RegexOptions.Compiled)]
     private static partial Regex WordDelimiterRegex();
+#else
+
+    private static Regex InvalidCharRegex() => new Regex(@"[^a-z0-9\-]", RegexOptions.Compiled);
+
+    private static Regex MultipleHyphenRegex() => new Regex(@"-{2,}", RegexOptions.Compiled);
+
+    private static Regex WordDelimiterRegex() => new Regex(@"[\s—–_]", RegexOptions.Compiled);
+
+#endif
 }

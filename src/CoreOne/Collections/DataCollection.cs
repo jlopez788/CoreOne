@@ -2,15 +2,15 @@
 
 public abstract class DataCollection<K, V, C> : Data<K, C> where C : ICollection<V> where K : notnull
 {
-    protected new int Capacity { get; set; }
+   
 
     public DataCollection() : this(50) { }
 
-    public DataCollection(int capacity) : base(capacity) => Capacity = capacity;
+    public DataCollection(int capacity) : base(capacity) { }
 
-    public DataCollection(int size, IEqualityComparer<K> comparer) : base(size, comparer) => Capacity = size;
+    public DataCollection(int size, IEqualityComparer<K> comparer) : base(size, comparer) { }
 
-    public DataCollection(IEqualityComparer<K> comparer) : base(comparer) => Capacity = 50;
+    public DataCollection(IEqualityComparer<K> comparer) : base(comparer) { }
 
     public void Add(KeyValuePair<K, V> item)
     {

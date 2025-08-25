@@ -15,7 +15,7 @@ public sealed class TypeKeyConverter
         public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
         {
             var value = serializer.Deserialize<string>(reader)?.ToString();
-            return string.IsNullOrEmpty(value) ? TypeKey.Empty : TypeKey.FindType(value);
+            return string.IsNullOrEmpty(value) ? TypeKey.Empty : TypeKey.FindType(value!);
         }
 
         public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
@@ -29,7 +29,7 @@ public sealed class TypeKeyConverter
         public override TypeKey Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var value = reader.GetString();
-            return string.IsNullOrEmpty(value) ? TypeKey.Empty : TypeKey.FindType(value);
+            return string.IsNullOrEmpty(value) ? TypeKey.Empty : TypeKey.FindType(value!);
         }
 
         public override void Write(Utf8JsonWriter writer, TypeKey value, JsonSerializerOptions options)

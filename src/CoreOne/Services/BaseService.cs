@@ -57,8 +57,11 @@ public class BaseService : IDisposable, IAsyncDisposable
     protected virtual void Dispose(bool disposing)
     {
     }
-
+#if NET9_0_OR_GREATER
     protected virtual ValueTask DisposeAsync(bool disposing) => ValueTask.CompletedTask;
+#else
+    protected virtual Task DisposeAsync(bool disposing) => Task.CompletedTask;
+#endif
 
     protected TService Get<TService>() where TService : notnull => ServiceProvider!.GetRequiredService<TService>();
 

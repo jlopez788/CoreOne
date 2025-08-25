@@ -2,7 +2,11 @@
 
 public interface IHub : IDisposable
 {
+#if NET9_0_OR_GREATER
     TState GetState<TState>(string? name = null) where TState : IHubState<TState>;
+#else
+    TState? GetState<TState>(string? name = null) where TState : IHubState<TState>;
+#endif
 
     void Intercept<TEvent>(InterceptHubMessage<TEvent> onintercept, int order, CancellationToken token);
 

@@ -11,7 +11,9 @@ public sealed class DateValidationAttribute : ValidationAttribute
     public override bool IsValid(object? value) => (AllowNull && value is null) ||
         (value is not null && value switch {
             DateTime dt => dt.Date != DateTime.MinValue.Date && dt.Year > 1900,
+#if NET9_0_OR_GREATER
             DateOnly dto => dto != DateOnly.MinValue,
+#endif
             _ => false
         });
 }

@@ -19,7 +19,12 @@ public class ID : IEquatable<ID>
         return new ID(new Guid(uid));
     }
 
-    public static ID Guidv7() => new(Guid.CreateVersion7());
+    public static ID Guidv7() =>
+#if NET9_0_OR_GREATER
+        new(Guid.CreateVersion7());
+#else
+        Create();
+#endif
 
     public static implicit operator Guid(ID id) => id.Id;
 
@@ -34,7 +39,7 @@ public class ID : IEquatable<ID>
         {
             if (Guid.TryParse(value, out var guid))
                 id = new ID(guid);
-            else if (value.Length == 22)
+            else if (value!.Length == 22)
             {
                 try
                 {

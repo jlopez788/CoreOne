@@ -36,8 +36,13 @@ public class Debounce<T>(Action<T> callback, TimeSpan delay) : IDisposable
             .ContinueWith(t => {
                 try
                 {
+#if NET9_0_OR_GREATER
                     if (t.IsCompletedSuccessfully && !refToken.IsCancellationRequested)
                         Callback.Invoke(model);
+#else
+                    if (t.IsCompleted && !refToken.IsCancellationRequested)
+                        Callback.Invoke(model);
+#endif
                 }
                 catch { }
             });

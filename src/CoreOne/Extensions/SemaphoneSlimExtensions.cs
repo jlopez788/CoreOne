@@ -14,7 +14,7 @@ public static class SemaphoneSlimExtensions
 
     public static T WaitNext<T>(this SemaphoreSlim semaphore, Func<T> next, CancellationToken cancellationToken = default) => semaphore.WaitNext(next, null, cancellationToken);
 
-    public static T WaitNext<T>(this SemaphoreSlim semaphore, Func<T> next, Action final, CancellationToken cancellationToken = default)
+    public static T WaitNext<T>(this SemaphoreSlim semaphore, Func<T> next, Action? final, CancellationToken cancellationToken = default)
     {
         try
         {

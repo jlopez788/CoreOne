@@ -120,7 +120,7 @@ public class BackingField<T> : Disposable
         var flag = !IsValueSet ||
             (Value is null && nextValue is not null) ||
             (Value is not null && nextValue is null) ||
-            (Comparer is not null && Comparer.Compare(Value, nextValue) != 0) ||
+            (Comparer is not null && Comparer.Compare(Value!, nextValue!) != 0) ||
             (Comparison is not null && Value is not null && nextValue is not null && Comparison.Invoke(Value, nextValue) != 0);
         return (!IgnoreNullValues || nextValue is not null) && flag;
     }

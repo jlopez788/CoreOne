@@ -114,10 +114,16 @@ public static class Types
         return result.Success && parsedValue is not null;
     }
 
-    public static bool TryParseEnum<TValue>(string? input, Type conversionType, [NotNullWhen(true)] out TValue? theEnum)
+    public static bool TryParseEnum<TValue>(string? input, Type conversionType, [NotNullWhen(true)] out TValue? theEnum) where TValue : struct
     {
         theEnum = default;
-        if (!string.IsNullOrEmpty(input) && Enum.TryParse(conversionType, input, true, out var parsed) && parsed is TValue tv)
+        if (!string.IsNullOrEmpty(input) &&
+#if NET9_0_OR_GREATER
+            Enum.TryParse(conversionType, input, true, out var parsed) &&
+#else
+             Enum.TryParse<TValue>(input, true, out var parsed) &&
+#endif
+            parsed is TValue tv)
         {
             theEnum = tv;
             return true;
@@ -126,7 +132,7 @@ public static class Types
         return false;
     }
 
-    public static bool TryParseEnum<TValue>(string? input, [NotNullWhen(true)] out TValue? theEnum)
+    public static bool TryParseEnum<TValue>(string? input, [NotNullWhen(true)] out TValue? theEnum) where TValue : struct
     {
         var parsed = TryParseEnum<TValue>(input, typeof(TValue), out var entry);
         theEnum = parsed ? entry : default;
@@ -167,8 +173,10 @@ public static class Types
             typeof(float), typeof(float?), typeof(double), typeof(double?),
             typeof(decimal), typeof(decimal?), typeof(uint), typeof(uint?),
             typeof(int), typeof(int?), typeof(bool), typeof(bool?), typeof(string),
-            typeof(DateTime), typeof(DateTime?), typeof(Guid), typeof(Guid?),
-            typeof(DateOnly), typeof(DateOnly?)
+            typeof(DateTime), typeof(DateTime?), typeof(Guid), typeof(Guid?)
+#if NET9_0_OR_GREATER
+            ,typeof(DateOnly), typeof(DateOnly?)
+#endif
         ];
 
     private static bool TryParseBoolean(string? str, out bool flag)
@@ -179,7 +187,7 @@ public static class Types
         if (!string.IsNullOrEmpty(value))
         {
             var flags = new string[] { "1", "true", "yes", "t", "y", "0", "false", "f", "n", "no" };
-            var idx = Array.IndexOf(flags, value.ToLower());
+            var idx = Array.IndexOf(flags, value!.ToLower());
             if (idx == -1)
             {
                 return false;

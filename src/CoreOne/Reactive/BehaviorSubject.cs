@@ -2,7 +2,7 @@
 
 public sealed class BehaviorSubject<T>(T? value = default) : Subject<T>
 {
-    private readonly Lock Sync = new();
+    private readonly SafeLock Sync = new();
     private T? CurrentValue = value;
 
     public T? Value {

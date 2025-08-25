@@ -1,10 +1,8 @@
-﻿using System.Collections.Immutable;
-
-namespace CoreOne.Reactive;
+﻿namespace CoreOne.Reactive;
 
 public class Subject<T> : ObserverBase<T>, IObserver<T>, IObservable<T>, IDisposable
 {
-    private readonly Lock Sync = new();
+    private readonly SafeLock Sync = new();
     public bool HasObservers => Observers != null && !Observers.IsEmpty;
     protected ImmutableList<IObserver<T>> Observers { get; set; }
 
@@ -20,7 +18,7 @@ public class Subject<T> : ObserverBase<T>, IObserver<T>, IObservable<T>, IDispos
         if (observer == null)
             return Empty;
 
-        lock (Sync)
+        using (Sync.EnterScope())
         {
             Observers = Observers.Add(observer);
             OnSubscribe(observer);

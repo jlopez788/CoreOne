@@ -1,5 +1,4 @@
 ﻿using CoreOne.Converters;
-using System.Collections.Frozen;
 
 namespace CoreOne;
 
@@ -9,18 +8,18 @@ public readonly struct TypeKey : IEquatable<TypeKey>
 {
     private record Key(string Name, bool Known);
     private static readonly Data<Key, TypeKey> CoreTypes = [];
-    private static readonly Lock Sync = new();
+    private static readonly SafeLock Sync = new();
     private readonly int Code;
     public static TypeKey Empty { get; } = new(Types.Void);
     public string Name { get; }
-    public FrozenSet<Type> Parameters { get; }
+    public IReadOnlyList<Type> Parameters { get; }
     public Type Type { get; }
 
     public TypeKey(Type? type, IEnumerable<Type>? arguments = null)
     {
         Type = type ?? Types.Void;
         Name = Type.Name;
-        Parameters = (arguments ?? []).ToFrozenSet();
+        Parameters = (arguments ?? []).ToList();
         Code = Parameters.Count == 0 && Type == Types.Void ? 0 :
             Type != Types.Void && Parameters.Count == 0 ?
             Type.GetHashCode() : (Type, Parameters).GetHashCode();

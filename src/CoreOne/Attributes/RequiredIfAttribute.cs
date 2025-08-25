@@ -106,8 +106,6 @@ public class RequiredIfAttribute(string otherProperty, object? equalsValue) : Va
     /// </returns>
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
-        ArgumentNullException.ThrowIfNull(validationContext);
-
         var otherProperty = validationContext.ObjectType.GetProperty(OtherProperty);
         if (otherProperty == null)
             return new ValidationResult($"Validation: Could not find a property named '{OtherProperty}'.");

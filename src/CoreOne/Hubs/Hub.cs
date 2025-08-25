@@ -9,7 +9,7 @@ public sealed class Hub : IHub
     private readonly AsyncTaskQueue Queue = new();
     private readonly Data<StateKey, IStateMessage> States = [];
     private readonly DataList<Type, IHubSubscription> Subscriptions = [];
-    private readonly Lock Sync = new();
+    private readonly SafeLock Sync = new();
 
     public Hub()
     {
@@ -27,7 +27,7 @@ public sealed class Hub : IHub
             Instances.Clear();
         }
 
-        lock (Sync)
+        using (Sync.EnterScope())
         {
             Intercepts.Clear();
             Subscriptions.Clear();
@@ -37,12 +37,23 @@ public sealed class Hub : IHub
         GC.SuppressFinalize(this);
     }
 
+#if NET9_0_OR_GREATER
     public TState GetState<TState>(string? name = null) where TState : IHubState<TState>
     {
         var key = StateKey.Create<TState>(name);
         return States.TryGetValue(key, out var value) && value is StateMessage<TState> current ?
             current.Model ?? TState.Default : TState.Default;
     }
+#else
+
+    public TState? GetState<TState>(string? name = null) where TState : IHubState<TState>
+    {
+        var key = StateKey.Create<TState>(name);
+        return States.TryGetValue(key, out var value) && value is StateMessage<TState> current ?
+            current.Model ?? default : default;
+    }
+
+#endif
 
     public void Intercept<TEvent>(InterceptHubMessage<TEvent> onintercept, int order, CancellationToken token)
     {
@@ -51,11 +62,11 @@ public sealed class Hub : IHub
 
         var key = typeof(TEvent);
         var sub = new MessageIntercept<TEvent>(onintercept, order);
-        lock (Sync)
+        using (Sync.EnterScope())
             Intercepts.Add(key, sub);
 
         token.Register(() => {
-            lock (Sync)
+            using (Sync.EnterScope())
             {
                 if (Intercepts.TryGetValue(key, out var current))
                 {
@@ -110,7 +121,7 @@ public sealed class Hub : IHub
     private HubPublish<TEvent> PublishGlobal<TEvent>(TEvent message)
     {
         List<Hub>? targets = null;
-        lock (Global.Sync)
+        using (Global.Sync.EnterScope())
         {
             targets = [.. Instances];
         }
@@ -139,7 +150,7 @@ public sealed class Hub : IHub
         var msgType = message.GetType();
         HashSet<IHubSubscription> hashset = [];
         HashSet<IHubMessageIntercept> intercepts = [];
-        lock (Sync)
+        using (Sync.EnterScope())
         {
             intercepts = [.. Intercepts.Where(kp => inherits(kp.Key))
                 .SelectMany(kp => kp.Value ?? [])
@@ -187,13 +198,13 @@ public sealed class Hub : IHub
 
     private Action RegisterSubscription(IHubSubscription subscription, Type key)
     {
-        lock (Sync)
+        using (Sync.EnterScope())
         {
             Subscriptions.Add(key, subscription);
         }
 
         return (() => {
-            lock (Sync)
+            using (Sync.EnterScope())
             {
                 if (Subscriptions.TryGetValue(key, out var current))
                 {

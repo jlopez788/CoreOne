@@ -4,11 +4,11 @@ public interface IResult
 {
     string? Message { get; }
     ResultType ResultType { get; }
-    public bool Success => ResultType == ResultType.Success;
+    public bool Success { get; }// => ResultType == ResultType.Success;
 }
 
 public interface IResult<TModel> : IResult
-{ 
+{
     TModel? Model { get; }
 }
 
