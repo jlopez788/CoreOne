@@ -1,12 +1,14 @@
-﻿#if NET9_0_OR_GREATER
-
-#else
+﻿#if !NET9_0_OR_GREATER
 
 namespace System.Runtime.CompilerServices
 {
     public static class IsExternalInit
     { }
 }
+
+#endif
+
+#if NETSTANDARD2_0
 
 namespace System.Diagnostics.CodeAnalysis
 {

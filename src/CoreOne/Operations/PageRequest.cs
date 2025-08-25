@@ -99,7 +99,7 @@ public class PageRequest
                 //    };
                 //}
             }
-            filter ??= new FilterBy(value, field);
+            filter ??= new FilterBy(value!, field);
             return Set(filter);
         }
         return ClearOperations(p => p.Field == field && p.GetType() == FILTER);

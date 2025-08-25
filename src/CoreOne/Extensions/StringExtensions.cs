@@ -29,11 +29,11 @@ public static class StringExtensions
     public static bool Matches(this string? value, string? other, StringComparison comparison = StringComparison.OrdinalIgnoreCase) => string.Compare(value, other, comparison) == 0;
 
     /// <summary>
-    /// Compare if given string exists in any of the provided list of strings, case-insensitive
+    /// Compares if the given string exists in any of the provided list of strings, case-insensitive.
     /// </summary>
-    /// <param name="value">Target value to find in <param name="args"/>
-    /// <param name="args"></param>
-    /// <returns>True if word is found in list</returns>
+    /// <param name="value">Target value to find in the list.</param>
+    /// <param name="args">List of strings to compare against.</param>
+    /// <returns>True if the word is found in the list.</returns>
     public static bool MatchesAny(this string? value, params string[] args) => MatchesAny(value, StringComparison.OrdinalIgnoreCase, args);
 
     /// <summary>
