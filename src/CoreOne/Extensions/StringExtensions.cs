@@ -1,4 +1,6 @@
-﻿namespace CoreOne.Extensions;
+﻿using CoreOne.Threading.Tasks;
+
+namespace CoreOne.Extensions;
 
 public static class StringExtensions
 {

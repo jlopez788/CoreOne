@@ -1,4 +1,6 @@
-﻿namespace CoreOne.Reflection;
+﻿using CoreOne.Threading.Tasks;
+
+namespace CoreOne.Reflection;
 
 public readonly struct Metadata : IEquatable<Metadata>
 {
