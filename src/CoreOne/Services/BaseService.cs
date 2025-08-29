@@ -7,7 +7,7 @@ namespace CoreOne.Services;
 public class BaseService : IDisposable, IAsyncDisposable
 {
     private volatile bool IsDisposed;
-    [Service(Optional = true)] protected ILogger<BaseService>? Logger { get; init; } = default!;
+    [Service(Optional = true)] protected ILogger<BaseService>? Logger { get; init; }
     protected IServiceProvider? ServiceProvider { get; init; }
     protected AToken Token { get; init; } = default!;
 
