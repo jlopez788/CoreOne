@@ -269,6 +269,16 @@ public static class EnumerableExtensions
     public static List<R> SelectList<T, R>(this IEnumerable<T>? enumerable, Func<T, R> callback) => enumerable is not null && callback is not null ? [.. enumerable.Select(callback)] : [];
 
     /// <summary>
+    /// Maps an enumerable to list of given type <typeparamref name="R"/>
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="R"></typeparam>
+    /// <param name="enumerable"></param>
+    /// <param name="callback"></param>
+    /// <returns></returns>
+    public static List<R> SelectList<T, R>(this IEnumerable<T>? enumerable, Func<T, int, R> callback) => enumerable is not null && callback is not null ? [.. enumerable.Select(callback)] : [];
+
+    /// <summary>
     /// Creates data dictionary from given items
     /// </summary>
     /// <typeparam name="T"></typeparam>
@@ -379,6 +389,18 @@ public static class EnumerableExtensions
         return [];
     }
 
+    public static Data<TKey, TItem> ToDataDictionary<TItem, TKey>(this IEnumerable<TItem>? items, Func<TItem, TKey> getKey, IEqualityComparer<TKey>? comparer = null) where TKey : notnull
+    {
+        return items.ToDataDictionary(getKey, kp => kp, comparer);
+    }
+
+    public static Data<TKey, TValue> ToDataDictionary<TItem, TKey, TValue>(this IEnumerable<TItem>? items, Func<TItem, TKey> getKey, Func<TItem, TValue> getValue, IEqualityComparer<TKey>? comparer = null) where TKey : notnull
+    {
+        var data = comparer is null ? [] : new Data<TKey, TValue>(comparer);
+        items.Each(kp => data.Set(getKey(kp), getValue(kp)));
+        return data;
+    }
+
     /// <summary>
     /// Maps and filters an enumerable into a list
     /// </summary>
@@ -387,4 +409,22 @@ public static class EnumerableExtensions
     /// <param name="predicate"></param>
     /// <returns></returns>
     public static List<T> ToList<T>(this IEnumerable<T>? items, Func<T, bool> predicate) => items?.Where(predicate).ToList() ?? [];
+
+#if NETSTANDARD2_0
+    public static HashSet<T> ToHashSet<T>(this IEnumerable<T>? items, IEqualityComparer<T>? comparer = null)
+    {
+        var set = comparer is null ? new HashSet<T>() : new HashSet<T>(comparer);
+        items.Each(p => set.Add(p));
+        return set;
+    }
+#endif
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="items"></param>
+    /// <param name="predicate"></param>
+    /// <returns></returns>
+    public static IEnumerable<T> Where<T>(this IEnumerable<T>? items, Func<T, bool?> predicate) => items is not null ? Enumerable.Where(items, p => predicate(p).GetValueOrDefault()) : [];
 }

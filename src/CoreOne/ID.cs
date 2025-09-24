@@ -19,7 +19,7 @@ public class ID : IEquatable<ID>
         return new ID(new Guid(uid));
     }
 
-    public static ID Guidv7() =>
+    public static ID CreateV7() =>
 #if NET9_0_OR_GREATER
         new(Guid.CreateVersion7());
 #else

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using CoreOne.ODataBuilders;
+using System.Diagnostics;
 using System.Text;
 
 namespace CoreOne.Operations;
@@ -6,7 +7,7 @@ namespace CoreOne.Operations;
 [DebuggerDisplay("FilterBy: {Field} {Value}")]
 public class FilterBy : IOperation
 {
-    //public AdvancedFilterContext? AdvancedSearch { get; set; }
+    public AdvancedFilterContext? AdvancedSearch { get; set; }
     public string Field { get; }
     public string Id { get; }
     public string? Value { get; }
@@ -17,13 +18,13 @@ public class FilterBy : IOperation
         Field = string.Empty;
     }
 
-    //public FilterBy(AdvancedFilterContext? search, string? field, string? value = null)
-    //{
-    //    Id = ID.Create().ToShortId();
-    //    Field = field ?? string.Empty;
-    //    AdvancedSearch = search;
-    //    Value = value;
-    //}
+    public FilterBy(AdvancedFilterContext? search, string? field, string? value = null)
+    {
+        Id = ID.Create().ToShortId();
+        Field = field ?? string.Empty;
+        AdvancedSearch = search;
+        Value = value;
+    }
 
     public FilterBy(string value, string? field = null)
     {

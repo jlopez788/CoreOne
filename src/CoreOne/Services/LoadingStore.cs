@@ -1,4 +1,5 @@
 ﻿using CoreOne.Reactive;
+using CoreOne.Threading.Tasks;
 
 namespace CoreOne.Services;
 
@@ -76,8 +77,8 @@ public class LoadingStore : IDisposable
         return token;
     }
 
-    public Task InvokeAsync(InvokeTask? callback, CancellationToken cancellationToken = default) => GetResultAsync(async p => {
-        await Utility.SafeAwait(callback?.Invoke(p));
+    public Task InvokeAsync(InvokeCallback? callback, CancellationToken cancellationToken = default) => GetResultAsync(async p => {
+        await Utility.SafeAwait(callback?.InvokeAsync(p));
         return 1;
     }, cancellationToken: cancellationToken);
 

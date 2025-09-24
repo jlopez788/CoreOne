@@ -38,12 +38,14 @@ public sealed class Hub : IHub
     }
 
 #if NET9_0_OR_GREATER
+
     public TState GetState<TState>(string? name = null) where TState : IHubState<TState>
     {
         var key = StateKey.Create<TState>(name);
         return States.TryGetValue(key, out var value) && value is StateMessage<TState> current ?
             current.Model ?? TState.Default : TState.Default;
     }
+
 #else
 
     public TState? GetState<TState>(string? name = null) where TState : IHubState<TState>
@@ -88,7 +90,7 @@ public sealed class Hub : IHub
             }));
     }
 
-    public void Subscribe<TEvent>(Func<TEvent, Task> onmessage, CancellationToken token, Predicate<TEvent>? filter = null)
+    public void Subscribe<TEvent>(Func<TEvent, Task> onmessage, Predicate<TEvent>? filter, CancellationToken cancellationToken)
     {
         if (onmessage is null)
             return;
@@ -98,20 +100,20 @@ public sealed class Hub : IHub
             var method = typeof(Hub).GetMethod(nameof(SubscribeState), BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             method = method?.MakeGenericMethod(typeof(TEvent));
             var callback = MetaType.GetInvokeMethod(method);
-            callback.Invoke(this, [null, onmessage, token, filter]);
+            callback.Invoke(this, [null, onmessage, cancellationToken, filter]);
             return;
         }
 
         var key = typeof(TEvent);
         var subscription = new MessageSubscription<TEvent>(onmessage, filter);
-        token.Register(RegisterSubscription(subscription, typeof(TEvent)));
+        cancellationToken.Register(RegisterSubscription(subscription, typeof(TEvent)));
     }
 
-    public void SubscribeState<TEvent>(string? name, Func<TEvent, Task> onstate, CancellationToken token, Predicate<TEvent>? filter = null) where TEvent : IHubState<TEvent>
+    public void SubscribeState<TEvent>(string? name, Func<TEvent, Task> onstate, Predicate<TEvent>? filter, CancellationToken cancellationToken) where TEvent : IHubState<TEvent>
     {
         var key = StateKey.Create<TEvent>(name);
         var subscription = new StateMessageSubscription<TEvent>(name, onstate, filter);
-        token.Register(RegisterSubscription(subscription, typeof(TEvent)));
+        cancellationToken.Register(RegisterSubscription(subscription, typeof(TEvent)));
         if (TryGetState<TEvent>(name, out var state))
             _ = subscription.Deliver(state);
     }

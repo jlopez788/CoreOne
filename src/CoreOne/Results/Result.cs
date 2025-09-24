@@ -99,6 +99,13 @@ public class Result<T> : Result, IResult<T>
         ResultType = resultType;
     }
 
+    public Result(T? model, string? message, ResultType result = ResultType.Success)
+    {
+        Model = model;
+        ResultType = result;
+        Message = message;
+    }
+
     public static implicit operator Result<T>(T model) => new(model);
 
     public static implicit operator T?(Result<T> response) => (response is not null) ? response.Model : default;

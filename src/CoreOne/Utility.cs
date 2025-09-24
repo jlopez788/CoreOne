@@ -1,10 +1,21 @@
-﻿using System.Text.RegularExpressions;
+﻿using CoreOne.ODataBuilders;
+using CoreOne.Threading.Tasks;
+using System.Text.RegularExpressions;
 using System.Web;
 
 namespace CoreOne;
 
 public static partial class Utility
 {
+    public static string AsODataUrlValue<T>(this T value)
+    {
+        var type = typeof(T);
+        if (type == Types.Object)
+            type = value?.GetType();
+        var tostring = ODataOperator.GetToString(type);
+        return tostring?.Invoke(value) ?? string.Empty;
+    }
+
     /// <summary>
     /// Format phone number
     /// </summary>
@@ -59,6 +70,17 @@ public static partial class Utility
     /// <returns></returns>
     public static Task SafeAwait(Task? callback) => callback is not null ? callback : Task.CompletedTask;
 
+#if NET9_0_OR_GREATER
+
+    /// <summary>
+    /// Safe await a nullable task
+    /// </summary>
+    /// <param name="callback"></param>
+    /// <returns></returns>
+    public static ValueTask SafeAwait(ValueTask? callback) => callback.HasValue ? callback.Value : ValueTask.CompletedTask;
+
+#endif
+
     /// <summary>
     /// Safe await a nullable task
     /// </summary>
@@ -66,6 +88,17 @@ public static partial class Utility
     /// <param name="callback"></param>
     /// <returns></returns>
     public static async Task<T?> SafeAwait<T>(Task<T>? callback) => callback is not null ? await callback : default;
+
+    /// <summary>
+    /// Safe await a nullable task
+    /// </summary>
+    /// <param name="task"></param>
+    /// <returns></returns>
+    public static async ValueTask SafeAwait(SafeTask? task)
+    {
+        if (task is not null)
+            await task;
+    }
 
     /// <summary>
     ///
@@ -125,9 +158,37 @@ public static partial class Utility
         catch (Exception ex) { return Result.FromException<T>(ex); }
     }
 
+    public static bool TryChangeType<TValue>(object? value, [NotNullWhen(true)] out TValue? result, CultureInfo? cultureInfo = null)
+    {
+        try
+        {
+            var svalue = value?.ToString() ?? "";
+            Type conversionType = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
+            result =
+#if NET9_0_OR_GREATER
+                  conversionType.IsEnum && Types.TryParseEnum<TValue>(value?.ToString(), conversionType, out var theEnum)
+                  ? theEnum! :
+#endif
+                 conversionType == typeof(Guid)
+                ? (TValue)Convert.ChangeType(Guid.Parse(svalue), conversionType)
+                : conversionType == typeof(DateTimeOffset)
+                ? (TValue)Convert.ChangeType(DateTimeOffset.Parse(svalue), conversionType)
+                : Convert.ChangeType(value, conversionType, cultureInfo ?? CultureInfo.InvariantCulture) is TValue t ? t :
+                Types.Parse<TValue>(value).Model;
+
+            return result is not null;
+        }
+        catch
+        {
+            result = default;
+            return false;
+        }
+    }
+
     public static string EncodeForUrl(string value) => HttpUtility.UrlEncode(value);
 
 #if NET9_0_OR_GREATER
+
     [GeneratedRegex(@"(\d{1,3})(\d{3})(\d{3})(\d{4})")]
     private static partial Regex PhonePlusReg();
 
@@ -139,6 +200,7 @@ public static partial class Utility
 
     [GeneratedRegex(@"(\d{3})(\d{3})(\d{4})")]
     private static partial Regex PhoneTenReg();
+
 #else
 
     private static Regex PhonePlusReg() => new Regex(@"(\d{1,3})(\d{3})(\d{3})(\d{4})", RegexOptions.Compiled);

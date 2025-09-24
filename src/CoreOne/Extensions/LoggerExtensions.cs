@@ -4,9 +4,9 @@ namespace CoreOne.Extensions;
 
 public static class LoggerExtensions
 {
-    public static void LogEntry(this ILogger? logger, string message, params object?[] args) => LogEntry(logger, null, message, args);
+    public static void LogEntryX(this ILogger? logger, string message, params object?[] args) => LogEntryX(logger, null, message, args);
 
-    public static void LogEntry(this ILogger? logger, Exception? ex, string message, params object?[] args)
+    public static void LogEntryX(this ILogger? logger, Exception? ex, string message, params object?[] args)
     {
         if (logger is null)
             return;

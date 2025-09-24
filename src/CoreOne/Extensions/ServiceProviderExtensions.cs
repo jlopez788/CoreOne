@@ -10,7 +10,7 @@ public static class ServiceProviderExtensions
         try
         {
             instance = services.GetService(type);
-            if (instance is null)
+            if (instance is null && !type.IsInterface)
             {
                 var creator = services.GetService<TargetCreator>() ?? new TargetCreator(services);
                 instance = creator.CreateInstance(type);

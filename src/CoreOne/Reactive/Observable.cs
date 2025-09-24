@@ -156,6 +156,13 @@ public static class Observable
             token.Register(sub.Dispose);
     }
 
+    public static void Subscribe<T>(this IObservable<T> source, IObserver<T> observer, CancellationToken token)
+    {
+        var sub = source.Subscribe(observer);
+        if (token != CancellationToken.None)
+            token.Register(sub.Dispose);
+    }
+
     public static IObservable<TSource> Throttle<TSource>(this IObservable<TSource> source, int durationMs) => new ThrottleObserver<TSource>(source, TimeSpan.FromMilliseconds(durationMs));
 
     public static IObservable<TSource> Throttle<TSource>(this IObservable<TSource> source, TimeSpan duration) => new ThrottleObserver<TSource>(source, duration);

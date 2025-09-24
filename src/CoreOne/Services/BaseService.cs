@@ -75,7 +75,7 @@ public class BaseService : IDisposable, IAsyncDisposable
             if (!meta.Equals(Metadata.Empty))
                 template = $"{name}::StatusCode: ({meta.GetValue(result)}) {msg}.{result.Message}";
             if (result.ResultType == ResultType.Exception)
-                Logger.LogEntry("Unknown Error: {0}", template);
+                Logger.LogEntryX("Unknown Error: {0}", template);
             else if (result.ResultType == ResultType.Fail)
                 Logger?.LogWarning(template);
         }

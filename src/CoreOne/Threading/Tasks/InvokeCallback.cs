@@ -7,7 +7,7 @@ public class InvokeCallback(MulticastDelegate? method)
 {
     public static readonly InvokeCallback Empty = new(Guid.Empty, null, "Empty");
     public static readonly InvokeCallback Identity = new(new Guid("11111111-1111-1111-1111-111111111111"), new InvokeReturn((target, args) => target), "Identity");
-    private readonly Guid Id = method is null ? Guid.Empty : (Guid)ID.Guidv7();
+    private readonly Guid Id = method is null ? Guid.Empty : (Guid)ID.CreateV7();
     private readonly MulticastDelegate? Method = method;
     private readonly string Name = method is null ? "Empty" : method.GetType().Name;
     public bool IsEmpty { get; } = method is null;

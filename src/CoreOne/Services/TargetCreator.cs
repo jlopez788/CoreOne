@@ -31,8 +31,11 @@ public class TargetCreator(IServiceProvider? oservices)
         return new Result<object?>(ResultType.Fail, "Invalid constructor");
     }
 
-    public object CreateInstance(Type type)
+    public object? CreateInstance(Type type)
     {
+        if (type.IsInterface)
+            return null;
+
         var args = type.GetConstructors()
                .Select(p => new { ctor = p, parameters = p.GetParameters().SelectArray(a => a.ParameterType) })
                .OrderByDescending(p => p.parameters.Length)

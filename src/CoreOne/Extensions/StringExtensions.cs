@@ -1,4 +1,5 @@
 ﻿using CoreOne.Threading.Tasks;
+using System.Text;
 
 namespace CoreOne.Extensions;
 
@@ -20,6 +21,8 @@ public static class StringExtensions
             value!.ToLower().Contains(other!.ToLower());
 #endif
     }
+
+    public static string EndWith(this string? value, string endwith) => !string.IsNullOrEmpty(value) ? (value.EndsWith(endwith) ? value : $"{value}{endwith}") : endwith;
 
     /// <summary>
     /// Compare if one string equals another string, case-insensitive by default
@@ -104,4 +107,48 @@ public static class StringExtensions
             formatted = value?.ToString() ?? string.Empty;
         return formatted;
     }
+
+    public static IEnumerable<string> SplitBy(this string? value, char[] separator)
+    {
+        return value?.Split(separator)
+            .Select(p => p.Trim())
+            .ExcludeNullOrEmpty() ?? [];
+    }
+
+    public static string Separate(this string input, string separator)
+    {
+        var builder = new StringBuilder();
+        if (!string.IsNullOrEmpty(input))
+        {
+            bool islastupper = false;
+            char[] chars = input.ToCharArray();
+            for (int i = 0; i < chars.Length; i++)
+            {
+                if (char.IsUpper(chars[i]))
+                {
+                    if (!islastupper)
+                    {
+                        if (i > 0)
+                            builder.Append(separator);
+                        builder.Append(chars[i]);
+                    }
+                    else
+                    {
+                        int idx = i + 1;
+                        if ((idx < chars.Length) && !char.IsUpper(chars[idx]) && char.IsLetterOrDigit(chars[idx]))
+                            builder.Append(separator);
+                        builder.Append(chars[i]);
+                    }
+                    islastupper = true;
+                }
+                else
+                {
+                    islastupper = false;
+                    builder.Append(chars[i]);
+                }
+            }
+        }
+        return builder.ToString().ToLowerInvariant().Trim();
+    }
+
 }

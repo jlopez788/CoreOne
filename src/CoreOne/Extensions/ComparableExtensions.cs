@@ -1,4 +1,6 @@
-﻿namespace CoreOne.Extensions;
+﻿using Microsoft.Extensions.Logging;
+
+namespace CoreOne.Extensions;
 
 public static class ComparableExtensions
 {

@@ -114,7 +114,10 @@ public static class Types
         return result.Success && parsedValue is not null;
     }
 
-    public static bool TryParseEnum<TValue>(string? input, Type conversionType, [NotNullWhen(true)] out TValue? theEnum) where TValue : struct
+    public static bool TryParseEnum<TValue>(string? input, Type conversionType, [NotNullWhen(true)] out TValue? theEnum)
+#if !NET9_0_OR_GREATER
+        where TValue : struct
+#endif
     {
         theEnum = default;
         if (!string.IsNullOrEmpty(input) &&
@@ -132,7 +135,10 @@ public static class Types
         return false;
     }
 
-    public static bool TryParseEnum<TValue>(string? input, [NotNullWhen(true)] out TValue? theEnum) where TValue : struct
+    public static bool TryParseEnum<TValue>(string? input, [NotNullWhen(true)] out TValue? theEnum)
+#if !NET9_0_OR_GREATER
+        where TValue : struct
+#endif
     {
         var parsed = TryParseEnum<TValue>(input, typeof(TValue), out var entry);
         theEnum = parsed ? entry : default;
