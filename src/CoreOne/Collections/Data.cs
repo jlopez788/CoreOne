@@ -7,15 +7,13 @@
 /// <typeparam name="V">Value</typeparam>
 public class Data<K, V> : Dictionary<K, V> where K : notnull
 {
-    private K? BakDefaultKey;
-
     /// <summary>
     /// Default Key
     /// </summary>
     public K? DefaultKey {
-        get => BakDefaultKey;
+        get;
         set {
-            BakDefaultKey = value;
+            field = value;
             IsDefaultKeySet = true;
         }
     }

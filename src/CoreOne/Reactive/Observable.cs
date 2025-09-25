@@ -26,7 +26,7 @@ public static class Observable
         private readonly Action<T> Callback = onNext;
         private readonly Action? Completed = onComplete;
 
-        public override string ToString() => $"{nameof(AnonymousObserver<T>)}:: ({Observers.Count})";
+        public override string ToString() => $"{nameof(AnonymousObserver<>)}:: ({Observers.Count})";
 
         protected override void OnCompletedCore() => Completed?.Invoke();
 
@@ -38,7 +38,7 @@ public static class Observable
         private readonly Func<T, Task> Callback = callback;
         private readonly Action? Completed = onComplete;
 
-        public override string ToString() => $"{nameof(AsyncObserver<T>)}:: ({Observers.Count})";
+        public override string ToString() => $"{nameof(AsyncObserver<>)}:: ({Observers.Count})";
 
         protected override void OnCompletedCore() => Completed?.Invoke();
 
@@ -63,7 +63,7 @@ public static class Observable
             }, token.Dispose, token);
         }
 
-        public override string ToString() => $"{nameof(DistinctObserver<T, TKey>)}:: ({Observers.Count})";
+        public override string ToString() => $"{nameof(DistinctObserver<,>)}:: ({Observers.Count})";
     }
 
     private class FilterObserver<T> : Subject<T>
@@ -78,7 +78,7 @@ public static class Observable
             }, token.Dispose, token);
         }
 
-        public override string ToString() => $"{nameof(FilterObserver<T>)}:: ({Observers.Count})";
+        public override string ToString() => $"{nameof(FilterObserver<>)}:: ({Observers.Count})";
     }
 
     private class SelectAsyncObserver<TSource, TResult> : Subject<TResult>
@@ -100,7 +100,7 @@ public static class Observable
                 }), token.Dispose, token);
         }
 
-        public override string ToString() => $"{nameof(SelectObserver<TSource, TResult>)}:: ({Observers.Count})";
+        public override string ToString() => $"{nameof(SelectObserver<,>)}:: ({Observers.Count})";
     }
 
     private class SelectObserver<TSource, TResult> : Subject<TResult>
@@ -112,7 +112,7 @@ public static class Observable
             source.Subscribe(next => OnNext(selector(next)), token.Dispose, token);
         }
 
-        public override string ToString() => $"{nameof(SelectObserver<TSource, TResult>)}:: ({Observers.Count})";
+        public override string ToString() => $"{nameof(SelectObserver<,>)}:: ({Observers.Count})";
     }
 
     private class ThrottleObserver<T> : Subject<T>
@@ -127,7 +127,7 @@ public static class Observable
             observer.Subscribe(next => Debounce.Invoke(next), token.Dispose, token);
         }
 
-        public override string ToString() => $"{nameof(ThrottleObserver<T>)}:: ({Observers.Count})";
+        public override string ToString() => $"{nameof(ThrottleObserver<>)}:: ({Observers.Count})";
     }
 
     public static IObservable<TSource> Distinct<TSource>(this IObservable<TSource> source, IEqualityComparer<TSource>? comparer = null) => Distinct(source, p => p, comparer);

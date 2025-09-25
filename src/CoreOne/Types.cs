@@ -95,8 +95,8 @@ public static class Types
             if (result is not null)
             {
                 var meta = MetaType.GetMetadatas(result.GetType()).ToDictionary();
-                var ovalue = meta.Get(nameof(IResult<object>.Model)).GetValue(result);
-                var rtype = meta.Get(nameof(IResult<object>.ResultType)).GetValue(result) is ResultType t ? t : ResultType.Fail;
+                var ovalue = meta.Get(nameof(IResult<>.Model)).GetValue(result);
+                var rtype = meta.Get(nameof(IResult<>.ResultType)).GetValue(result) is ResultType t ? t : ResultType.Fail;
                 return new Result<object?>(ovalue, rtype);
             }
         }

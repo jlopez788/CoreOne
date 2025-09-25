@@ -22,7 +22,7 @@ public class InvokeCallback(MulticastDelegate? method)
 
     public static bool operator !=(InvokeCallback left, InvokeCallback right) => !(left == right);
 
-    public static bool operator ==(InvokeCallback left, InvokeCallback right) => left is null && right is null || left?.Equals(right) == true;
+    public static bool operator ==(InvokeCallback left, InvokeCallback right) => (left is null && right is null) || left?.Equals(right) == true;
 
     public override bool Equals([NotNullWhen(true)] object? obj) => obj is InvokeCallback invoke && Equals(invoke);
 
@@ -97,7 +97,7 @@ public class InvokeCallback(MulticastDelegate? method)
                     {
                         array[i] = null;
 #if NET9_0_OR_GREATER
-                    if (info.ReadState == NullabilityState.NotNull)
+                        if (info.ReadState == NullabilityState.NotNull)
                             return null;
 #endif
                     }
@@ -142,6 +142,5 @@ public class InvokeCallback(MulticastDelegate? method)
 
             return method?.Invoke(null, [input]);
         }
-
     }
 }
