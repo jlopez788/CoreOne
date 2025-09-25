@@ -19,8 +19,8 @@ public class FilterTypeHandlerFactory : Data<Type, IFilterTypeHandler>
         set(Types.String, value => new FilterTypeResult(!string.IsNullOrEmpty(value), !string.IsNullOrEmpty(value), value, value));
         set(Types.DateTime, parse<DateTime>());
 
-        void set(Type type, Func<string, FilterTypeResult> parse) => SetHandler(new FilterTypeHandler(type, parse, c => c.GetODataFilter()));
-        Func<string, FilterTypeResult> parse<T>() => value => {
+        void set(Type type, Func<string?, FilterTypeResult> parse) => SetHandler(new FilterTypeHandler(type, parse, c => c.GetODataFilter()));
+        Func<string?, FilterTypeResult> parse<T>() => value => {
             var flag = Types.TryParse<T>(value, out var parsed);
             return new FilterTypeResult(flag, !string.IsNullOrEmpty(value), parsed, value);
         };
