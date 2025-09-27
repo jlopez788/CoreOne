@@ -1,4 +1,4 @@
-name: Publish NuGet Package
+name: Publish NuGet Packages
 
 on:
   push:
@@ -11,6 +11,13 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project:
+          - name: coreone
+            path: src/CoreOne/CoreOne.csproj
+          - name: coreone.identity
+            path: src/CoreOne.Identity/CoreOne.Identity.csproj
 
     steps:
       - name: Checkout code
@@ -19,12 +26,12 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-            dotnet-version: '9.0.*'
+          dotnet-version: '9.0.*'
 
       - name: Get project version
         id: get_version
         run: |
-          VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" src/CoreOne/CoreOne.csproj)
+          VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" ${{ matrix.project.path }})
           echo "Package version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
@@ -32,9 +39,9 @@ jobs:
         id: check_nuget
         run: |
           VERSION="${{ steps.get_version.outputs.version }}"
-          PACKAGE_NAME="coreone"  # lowercase required for NuGet API path
+          PACKAGE_NAME="${{ matrix.project.name }}"
           STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://api.nuget.org/v3-flatcontainer/$PACKAGE_NAME/$VERSION/$PACKAGE_NAME.$VERSION.nupkg)
-          
+
           if [ "$STATUS_CODE" -eq 200 ]; then
             echo "Package version $VERSION already exists on NuGet."
             echo "exists=true" >> $GITHUB_OUTPUT
@@ -44,14 +51,12 @@ jobs:
           fi
 
       - name: Build project
-        run: dotnet build src/CoreOne/CoreOne.csproj --configuration Release
+        run: dotnet build ${{ matrix.project.path }} --configuration Release
 
       - name: Pack Nuget
         if: steps.check_nuget.outputs.exists == 'false'
-        run: dotnet pack src/CoreOne/CoreOne.csproj --configuration Release 
+        run: dotnet pack ${{ matrix.project.path }} --configuration Release
 
       - name: Publish to NuGet
         if: steps.check_nuget.outputs.exists == 'false'
-        run: dotnet nuget push src/CoreOne/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_KEY }} --source https://api.nuget.org/v3/index.json
-
-
+        run: dotnet nuget push $(dirname ${{ matrix.project.path }})/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_KEY }} --source https://api.nuget.org/v3/index.json

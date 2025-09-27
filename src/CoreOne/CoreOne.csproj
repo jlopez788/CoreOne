@@ -6,7 +6,6 @@
         <Nullable>enable</Nullable>
         <LangVersion>preview</LangVersion>
         <Version>1.1.1</Version>
-        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <Title>CoreOne</Title>
         <Authors>Juan Lopez</Authors>
         <Company>Juan Lopez</Company>
@@ -14,14 +13,19 @@
         <PackageProjectUrl>https://github.com/jlopez788/CoreOne</PackageProjectUrl>
         <PackageId>CoreOne</PackageId>
         <Product>CoreOne</Product>
-        <GenerateDocumentationFile>True</GenerateDocumentationFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
     </PropertyGroup>
    
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+	</PropertyGroup>
+
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
         <DebugType>none</DebugType>
         <DebugSymbols>false</DebugSymbols>
     </PropertyGroup>
