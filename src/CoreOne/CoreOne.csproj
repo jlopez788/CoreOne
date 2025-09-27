@@ -4,8 +4,8 @@
         <TargetFrameworks>net9.0;netstandard2.0;netstandard2.1</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <LangVersion>latest</LangVersion>
-        <Version>1.1.0.1</Version>
+        <LangVersion>preview</LangVersion>
+        <Version>1.1.1</Version>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <Title>CoreOne</Title>
         <Authors>Juan Lopez</Authors>

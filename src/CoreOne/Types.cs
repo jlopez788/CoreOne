@@ -82,13 +82,25 @@ public static class Types
         return result;
     }
 
+    public static IResult<T> ParseEnum<T>(object? value) where T : struct
+    {
+        return value is T t ?
+            new Result<T>(t) :
+            TryParseEnum<T>(value?.ToString(), typeof(T), out var parsed) ?
+            new Result<T>((T)parsed, true, ResultType.Success) :
+            new Result<T>(ResultType.Fail, $"Invalid value: {value}");
+    }
+
     public static IResult<object?> Parse(Type? type, object? value)
     {
         if (type is null || value is null)
             return new Result<object?>(ResultType.Fail, "Invalid type");
 
-        var method = typeof(Types).GetMethod(nameof(Parse), [Object]);
+        var method = type.IsEnum == true ?
+            typeof(Types).GetMethod(nameof(ParseEnum), [Object]) :
+            typeof(Types).GetMethod(nameof(Parse), [Object]);
         method = method?.MakeGenericMethod(type);
+
         try
         {
             var result = method?.Invoke(null, [value]);
@@ -162,7 +174,7 @@ public static class Types
             [typeof(decimal)] = new TryParseDelegate<decimal>(decimal.TryParse),
             [typeof(DateTime)] = new TryParseDelegate<DateTime>(TryParseDateTime),
             [typeof(TimeSpan)] = new TryParseDelegate<TimeSpan>(TimeSpan.TryParse),
-            [typeof(Guid)] = new TryParseDelegate<Guid>(System.Guid.TryParse)
+            [typeof(Guid)] = new TryParseDelegate<Guid>(System.Guid.TryParse),
         };
         var keys = data.Keys.ToArray();
         var nullable = typeof(Nullable<>);

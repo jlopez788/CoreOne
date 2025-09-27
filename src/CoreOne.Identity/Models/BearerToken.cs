@@ -1,7 +1,7 @@
 ﻿using CoreOne.Extensions;
 using System.Diagnostics.CodeAnalysis;
 
-namespace CoreOne.Identity;
+namespace CoreOne.Identity.Models;
 
 public readonly struct BearerToken : IEqualityComparer<BearerToken>, IEquatable<BearerToken>
 {
