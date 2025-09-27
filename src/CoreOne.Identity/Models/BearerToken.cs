@@ -25,7 +25,11 @@ public readonly struct BearerToken : IEqualityComparer<BearerToken>, IEquatable<
         if (!string.IsNullOrEmpty(Token))
         {
             IsEmpty = false;
+#if NET9_0_OR_GREATER
             Token = Token.Replace("Bearer", string.Empty, StringComparison.OrdinalIgnoreCase).Trim();
+#else
+            Token = Token!.Replace("Bearer", string.Empty).Trim();
+#endif
             Length = Token.Length;
         }
         else

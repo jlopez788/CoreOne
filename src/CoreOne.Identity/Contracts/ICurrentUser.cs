@@ -6,9 +6,14 @@ namespace CoreOne.Identity.Contracts;
 public interface ICurrentUser : ICurrentUsername
 {
     BearerToken BearerToken { get; }
-    bool IsAuthenticated => User?.IsAuthenticated == true && !IsExpired;
     bool IsExpired { get; }
+#if NET9_0_OR_GREATER
+    bool IsAuthenticated => User?.IsAuthenticated == true && !IsExpired;
     bool IsImpersonating => User?.IsImpersonating == true;
+#else
+    bool IsAuthenticated { get; }
+    bool IsImpersonating { get; }
+#endif
     UserIdentity? User { get; }
 
     Task Initialize();
