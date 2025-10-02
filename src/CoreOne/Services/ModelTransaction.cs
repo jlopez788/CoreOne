@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CoreOne.Services;
-
 
 public sealed class ModelTransaction : IDisposable
 {
@@ -71,6 +72,9 @@ public sealed class ModelTransaction : IDisposable
         }
     }
 
+    private static readonly ConcurrentDictionary<Type, FieldInfo[]> Fields = new(1, 50);
+    private static readonly Type TransactionType = typeof(ModelTransaction);
+    private static readonly Type DbConnectionType = typeof(System.Data.IDbConnection);
     public object Model;
     private readonly DataContext Visited;
     private bool IsDisposed;
@@ -79,7 +83,7 @@ public sealed class ModelTransaction : IDisposable
     {
         Visited = new();
         Model = model;
-        ProcessRecursive(model.Copy(), Visited, new CreateInstanceResolver(), ObjectPath.Root);
+        ProcessRecursive(model.Copy(), Visited, new CreateInstanceResolver(), ObjectPath.Root, []);
     }
 
     public void Commit()
@@ -103,19 +107,15 @@ public sealed class ModelTransaction : IDisposable
 
         Visited.Readonly = true;
         var resolver = new DictionaryRefResolver(Visited);
-        Model = ProcessRecursive(Model, Visited, resolver, ObjectPath.Root)!;
+        Model = ProcessRecursive(Model, Visited, resolver, ObjectPath.Root, [])!;
 
         Clear();
     }
 
-    private static IEnumerable<FieldInfo> GetFields(Type? type)
+    private static FieldInfo[] GetFields(Type? type)
     {
         var fields = type?.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
-        if (fields is not null)
-        {
-            foreach (var field in fields)
-                yield return field;
-        }
+        return fields?.Where(p => p.FieldType != TransactionType).ToArray() ?? [];
     }
 
     private void Clear()
@@ -123,20 +123,18 @@ public sealed class ModelTransaction : IDisposable
         IsDisposed = true;
     }
 
-    private static object? ProcessRecursive(object? source, DataContext visited, ITargetObjectResolver resolver, ObjectPath path)
+    private static object? ProcessRecursive(object? source, DataContext visited, ITargetObjectResolver resolver, ObjectPath path, HashSet<object> seen)
     {
         if (source is null)
             return null;
 
+        if (!seen.Add(source))
+            return visited.Get(path); // Already seen this instance
+
         var type = source.GetType();
         if (path.Path is not null && visited.TryGetValue(path, out var value))
             return value!;
-        if (type.IsPrimitive())
-        {
-            visited.Set(path, source);
-            return source;
-        }
-        if (typeof(System.Data.IDbConnection).IsAssignableFrom(type))
+        if (type.IsPrimitive() || DbConnectionType.IsAssignableFrom(type))
         {
             visited.Set(path, source);
             return source;
@@ -152,20 +150,17 @@ public sealed class ModelTransaction : IDisposable
             var targetArray = (Array?)target;
             for (int i = 0; i < sourceArray.Length; ++i)
             {
-                var targetValue = ProcessRecursive(sourceArray.GetValue(i), visited, resolver, path.Next($"{path}[{i}]"));
+                var targetValue = ProcessRecursive(sourceArray.GetValue(i), visited, resolver, path.Next($"{path}[{i}]"), seen);
                 targetArray?.SetValue(targetValue, i);
             }
         }
         else if (target is not null)
         {
-            var fields = GetFields(type);
+            var fields = Fields.GetOrAdd(type, GetFields);
             foreach (var field in fields)
             {
-                if (field.FieldType == typeof(ModelTransaction))
-                    continue;
-
                 var objSourceField = field.GetValue(source);
-                var targetValue = ProcessRecursive(objSourceField, visited, resolver, path.Next($"{path}.{field.Name}"));
+                var targetValue = ProcessRecursive(objSourceField, visited, resolver, path.Next($"{path}.{field.Name}"), seen);
                 try
                 {
                     field.SetValue(target, targetValue);
