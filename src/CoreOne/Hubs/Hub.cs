@@ -1,15 +1,31 @@
 ﻿namespace CoreOne.Hubs;
 
-public sealed class Hub : IHub
+public class Hub : Disposable, IHub
 {
-    public static readonly Hub Global = new(Guid.Empty);
+    private sealed class GlobalHub() : Hub(Guid.Empty)
+    {
+        protected override void OnDispose()
+        {
+            using (Sync.EnterScope())
+            {
+                Instances.Each(p => p.Dispose());
+                Instances.Clear();
+            }
+
+            base.OnDispose();
+        }
+
+        public override string ToString() => $"Global - {Subscriptions.Count}";
+    }
+
+    public static readonly Hub Global = new GlobalHub();
     private static readonly List<Hub> Instances = [];
     private readonly Guid Id;
     private readonly DataList<Type, IHubMessageIntercept> Intercepts = [];
     private readonly AsyncTaskQueue Queue = new();
     private readonly Data<StateKey, IStateMessage> States = [];
     private readonly DataList<Type, IHubSubscription> Subscriptions = [];
-    private readonly SafeLock Sync = new();
+    protected readonly SafeLock Sync = new();
 
     public Hub()
     {
@@ -17,15 +33,11 @@ public sealed class Hub : IHub
         Instances.Add(this);
     }
 
-    private Hub(Guid id) => Id = id;
+    protected Hub(Guid id) => Id = id;
 
-    public void Dispose()
+    protected override void OnDispose()
     {
-        if (Id == Guid.Empty)
-        {
-            Instances.Each(p => p.Dispose());
-            Instances.Clear();
-        }
+        base.OnDispose();
 
         using (Sync.EnterScope())
         {
@@ -33,8 +45,6 @@ public sealed class Hub : IHub
             Subscriptions.Clear();
             Instances.Remove(this);
         }
-
-        GC.SuppressFinalize(this);
     }
 
 #if NET9_0_OR_GREATER
@@ -226,4 +236,6 @@ public sealed class Hub : IHub
 
         return state is not null;
     }
+
+    public override string ToString() => $"{Id.ToShortId()} - {Subscriptions.Count}";
 }
