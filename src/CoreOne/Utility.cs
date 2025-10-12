@@ -54,7 +54,7 @@ public static partial class Utility
             11 or 12 or 13 => (reg: PhonePlusReg(), format: "+$1 ($2) $3-$4"),
             _ => (reg: null, format: null)
         };
-        return reg?.Replace(phoneNumber, format!) ?? phoneNumber;
+        return reg?.Replace(phoneNumber, format!)?.Replace("++", "+") ?? phoneNumber;
 
 #if NET9_0_OR_GREATER
         string code() => "+" + phoneNumber![..^10];
