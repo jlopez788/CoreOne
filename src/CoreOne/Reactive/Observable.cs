@@ -192,6 +192,13 @@ public static class Observable
             token.Register(sub.Dispose);
     }
 
+    public static void Subscribe(this IObservable<EventArgs> source, Action onNext, CancellationToken cancellationToken)
+    {
+        source.Subscribe(callback, cancellationToken);
+
+        void callback(EventArgs _) => onNext.Invoke();
+    }
+
     public static IObservable<TSource> Throttle<TSource>(this IObservable<TSource> source, int durationMs) => new ThrottleObserver<TSource>(source, TimeSpan.FromMilliseconds(durationMs));
 
     public static IObservable<TSource> Throttle<TSource>(this IObservable<TSource> source, TimeSpan duration) => new ThrottleObserver<TSource>(source, duration);
