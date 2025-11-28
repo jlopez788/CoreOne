@@ -130,6 +130,35 @@ public static class Observable
         public override string ToString() => $"{nameof(ThrottleObserver<>)}:: ({Observers.Count})";
     }
 
+    private class EventObserver<TEventArgs> : Subject<TEventArgs>
+    {
+        private readonly SToken Token = SToken.Create();
+
+        public EventObserver(object target, string eventName)
+        {
+            var type = target.GetType();
+            var eventInfo = type.GetEvent(eventName) ?? throw new ArgumentException($"Event '{eventName}' not found on type '{type.FullName}'.");
+            var handlerType = eventInfo.EventHandlerType ?? throw new ArgumentException($"Event '{eventName}' does not have a valid event handler type.");
+            var methodInfo = handlerType.GetMethod("Invoke") ?? throw new ArgumentException($"Event handler type '{handlerType.FullName}' does not have an Invoke method.");
+            var parameters = methodInfo.GetParameters();
+            if (parameters.Length != 2 || parameters[1].ParameterType != typeof(TEventArgs))
+                throw new ArgumentException($"Event handler for event '{eventName}' does not match the expected signature.");
+            var handler = Delegate.CreateDelegate(handlerType, this, nameof(OnEventRaised));
+            eventInfo.AddEventHandler(target, handler);
+            Token.Register(() => eventInfo.RemoveEventHandler(target, handler));
+        }
+
+        private void OnEventRaised(object? _, TEventArgs args) => OnNext(args);
+
+        protected override void OnDispose()
+        {
+            Token.Dispose();
+            base.OnDispose();
+        }
+    }
+
+    public static IObservable<TEventArgs> FromEvent<TEventArgs>(object target, string eventName) => new EventObserver<TEventArgs>(target, eventName);
+
     public static IObservable<TSource> Distinct<TSource>(this IObservable<TSource> source, IEqualityComparer<TSource>? comparer = null) => Distinct(source, p => p, comparer);
 
     public static IObservable<TSource> Distinct<TSource, TKey>(this IObservable<TSource> source, Func<TSource, TKey> keySelector, IEqualityComparer<TKey>? comparer = null) => new DistinctObserver<TSource, TKey>(source, keySelector, comparer);
