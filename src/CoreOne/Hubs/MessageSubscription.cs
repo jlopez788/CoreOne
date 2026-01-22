@@ -2,7 +2,7 @@
 
 internal class MessageSubscription<TEvent>(Func<TEvent, Task> deliveryAction, Predicate<TEvent>? filter) : IHubSubscription
 {
-    public async ValueTask Deliver(IHubMessage message)
+    public async ValueTask Deliver(object message)
     {
         if (message is TEvent msg && deliveryAction is not null && CanDeliver(msg))
             await deliveryAction.Invoke(msg);

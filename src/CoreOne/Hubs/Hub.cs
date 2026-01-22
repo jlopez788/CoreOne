@@ -178,7 +178,7 @@ public class Hub : Disposable, IHub
             var fail = Result.Fail();
             var exceptions = new List<Exception>();
             var result = await intercepts.AggregateResultAsync(ok, async (next, intercept) => {
-                var t = await intercept.Intercept((IHubMessage)message);
+                var t = await intercept.Intercept(message);
                 return t == ResultType.Success ? ok : fail;
             });
             if (result.Success)
@@ -202,7 +202,7 @@ public class Hub : Disposable, IHub
         async Task<Exception?> deliverMsg(IHubSubscription sub)
         {
             try
-            { await sub.Deliver((IHubMessage)message); }
+            { await sub.Deliver(message); }
             catch (Exception ex) { return ex; }
             return null;
         }

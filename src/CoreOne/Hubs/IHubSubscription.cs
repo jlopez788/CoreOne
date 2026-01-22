@@ -2,5 +2,5 @@
 
 internal interface IHubSubscription
 {
-    ValueTask Deliver(IHubMessage message);
+    ValueTask Deliver(object message);
 }

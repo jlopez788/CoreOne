@@ -4,5 +4,5 @@ internal interface IHubMessageIntercept
 {
     int Order { get; }
 
-    Task<ResultType> Intercept(IHubMessage message);
+    Task<ResultType> Intercept(object message);
 }
