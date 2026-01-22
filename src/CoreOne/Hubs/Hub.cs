@@ -181,7 +181,7 @@ public class Hub : Disposable, IHub
                 var t = await intercept.Intercept(message);
                 return t == ResultType.Success ? ok : fail;
             });
-            if (result.Success)
+            if (result.Success && hashset.Count > 0)
             {
                 foreach (var p in hashset)
                 {
@@ -198,7 +198,11 @@ public class Hub : Disposable, IHub
             PublishExceptionMsg<TEvent>(ex);
         }
 
-        bool inherits(Type type) => msgType.IsSubclassOf(type) || key.IsSubclassOf(type) || msgType == type || type == key;
+        bool inherits(Type type) => msgType.IsSubclassOf(type) ||
+            key.IsSubclassOf(type) ||
+            msgType == type ||
+            type == key ||
+            msgType.GetInterfaces().Any(p => p == type);
         async Task<Exception?> deliverMsg(IHubSubscription sub)
         {
             try

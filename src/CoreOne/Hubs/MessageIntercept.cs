@@ -8,7 +8,7 @@ internal class MessageIntercept<TEvent>(InterceptHubMessage<TEvent>? onintercept
     {
         var result = ResultType.Success;
         var task = onintercept?.Invoke((TEvent)message);
-        if (task is not null && !task.IsCompleted)
+        if (task is not null)
             result = await task;
         return result;
     }
