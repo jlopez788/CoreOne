@@ -5,7 +5,8 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0%20%7C%209.0%20%7C%20Standard%202.0%2F2.1-512BD4)](https://dotnet.microsoft.com/)
 [![NuGet](https://img.shields.io/badge/NuGet-v1.2.01-blue)](https://www.nuget.org/packages/CoreOne)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-513%20passing-brightgreen)](Tests/)
+[![Tests](https://img.shields.io/badge/tests-779%20passing-brightgreen)](Tests/)
+[![Coverage](https://img.shields.io/badge/coverage-57%25%20lines-yellow)](COVERAGE_REPORT.md)
 
 CoreOne is a comprehensive utility library that provides battle-tested patterns, reactive extensions, and powerful helpers for building robust .NET applications. It eliminates boilerplate code and provides intuitive APIs for common programming tasks.
 
@@ -142,13 +143,22 @@ usersByRole.Add("Admin", adminUser);
 usersByRole.Add("Admin", superAdmin);
 var admins = usersByRole["Admin"]; // Returns list of admins
 
+// ConcurrentSet<T> - Thread-safe set with collection initializer
+var activeUsers = new ConcurrentSet<string> {
+    "user1",
+    "user2",
+    "user3"
+};
+activeUsers.Add("user4"); // Thread-safe add
+activeUsers.Each(user => Console.WriteLine(user)); // Safe enumeration
+
 // ImmutableList<T> - Thread-safe collections
 var observers = ImmutableList<IObserver<T>>.Empty;
 observers = observers.Add(newObserver); // Creates new instance
 ```
 
 ### 🔧 **Rich Extension Methods**
-Over **24 extension classes** covering strings, enumerables, dates, dictionaries, and more.
+Over **33 extension classes** covering strings, enumerables, dates, dictionaries, types, models, and more.
 
 ```csharp
 // String extensions
@@ -162,6 +172,28 @@ items.Each(item => Process(item)) // Iterate with action
 await items.EachAsync(async item => await Process(item))
 items.Partition(10) // Split into chunks
 items.ToData(x => x.Id) // Convert to Data<K,V>
+items.AggregateResultAsync(seed, async (acc, item) => await Process(acc, item))
+
+// Type extensions
+typeof(User).AttributeExists<RequiredAttribute>() // Check for attribute
+typeof(User).GetDefault() // Get default value
+typeof(User).Implements(typeof(IEntity<>)) // Check generic interface
+typeof(User).IsNullable() // Check if nullable
+
+// Member extensions
+property.GetAttribute<DisplayAttribute>() // Get attribute from member
+property.AttributeExists<RequiredAttribute>() // Check member attribute
+
+// Model extensions
+model.ValidateModel() // Validate with data annotations
+model.ToODictionary() // Convert to dictionary
+
+// Delegate extensions
+action.AsTask() // Convert Action to Func<Task>
+
+// Query extensions (IQueryable)
+query.OrderBy("Name", SortDirection.Ascending) // Dynamic ordering
+query.Paginate(page: 1, pageSize: 20) // Pagination helper
 
 // Result extensions
 result.OnSuccess(() => LogSuccess())
@@ -408,19 +440,60 @@ public class DashboardViewModel
 }
 ```
 
-## 🧪 Testing
+## 🧪 Testing & Quality
 
-CoreOne maintains high code quality with **513 passing tests** (47.6% coverage):
-- **Attributes & Validation:** 100% coverage on validation attributes and context
-- **Hub System:** 88.9% coverage with comprehensive pub/sub tests
-- **Reactive Extensions:** 90%+ coverage on Subject, BehaviorSubject, Observable
-- **Operations:** Complete coverage on PageResult, OrderBy, FilterBy
-- **Core Infrastructure:** ModelTransaction (91.7%), TargetCreator (80.7%)
+CoreOne maintains high code quality with **779 comprehensive tests** providing **57% line coverage**:
 
-Tests use **NUnit 4** and **Moq** for mocking. See [COVERAGE_REPORT.md](COVERAGE_REPORT.md) for detailed metrics.
+### Coverage by Component
+- **Extensions (13 classes):** 95%+ coverage
+  - DelegateExtensions: 100%
+  - MemberExtensions: 100%
+  - ModelExtensions: 97.7%
+  - ObjectExtensions: 100%
+  - QueryExtensions: 95.8%
+  - StringExtensions: 97.7%
+  - TypeExtensions: 97.8%
+  - EnumerableExtensions: 93.6%
+  
+- **Collections:** 95%+ coverage
+  - Data<T1,T2>: 100%
+  - DataList<T1,T2>: 100%
+  - ConcurrentSet<T>: 95.1%
+  - DataCollection: 95.4%
+  
+- **Core Infrastructure:** Excellent coverage
+  - Hub System: 88.9%
+  - Subject<T>: 100%
+  - BehaviorSubject<T>: 100%
+  - Observable: 90.4%
+  - Result: 100%
+  - Types: 96%
+  - MetaType: 92.6%
+  
+- **Services & DI:**
+  - ModelTransaction: 91.7%
+  - TargetCreator: 80.7%
+  - BaseService: 65.3%
+  - ServiceInitializer: 62.8%
+
+### Testing Infrastructure
+- **Framework:** NUnit 4.3.2 with modern async test patterns
+- **Mocking:** Moq for dependency injection and callbacks
+- **Coverage:** Coverlet MSBuild 6.0.4 with ReportGenerator
+- **Patterns:** Comprehensive null handling, edge cases, thread safety, and async scenarios
+
+See [COVERAGE_REPORT.md](COVERAGE_REPORT.md) for detailed metrics and coverage goals.
 
 ```bash
+# Run tests
 dotnet test
+
+# Run with coverage
+dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura
+
+# Generate coverage report
+reportgenerator -reports:Tests/TestResults/coverage.cobertura.xml \
+    -targetdir:Tests/TestResults/CoverageReport -reporttypes:Html
 ```
 
 ## 📋 Requirements
@@ -444,6 +517,17 @@ Contributions are welcome! Please follow the coding guidelines in [.github/copil
 - **Expression-bodied members** for simple implementations
 - **Async/await** throughout
 - **SOLID principles** enforced
+- **Comprehensive testing** with NUnit patterns
+
+### Testing Standards
+- **Test file structure:** No `[TestFixture]` attribute, public classes only
+- **Naming:** `MethodName_Scenario_ExpectedBehavior` pattern
+- **Assertions:** NUnit fluent syntax with `Assert.That`
+- **Async tests:** `TaskCompletionSource` for synchronization
+- **Mocking:** Moq with proper callback patterns
+- **Coverage areas:** Happy path, null handling, edge cases, thread safety
+
+See the [Testing Guidelines](.github/copilot-instructions.md#testing-guidelines) section for comprehensive test patterns and examples.
 
 ## 📄 License
 
