@@ -263,7 +263,7 @@ public class ModelValidationContextTests
         context.Store.Add("Field", "Error");
         context.Message = "Validation errors occurred";
 
-        IResult result = context;
+        var result = context;
         Assert.Multiple(() => {
             Assert.That(result.Success, Is.False);
             Assert.That(result.ResultType, Is.EqualTo(ResultType.Fail));
