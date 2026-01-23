@@ -5,6 +5,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0%20%7C%209.0%20%7C%20Standard%202.0%2F2.1-512BD4)](https://dotnet.microsoft.com/)
 [![NuGet](https://img.shields.io/badge/NuGet-v1.2.01-blue)](https://www.nuget.org/packages/CoreOne)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-513%20passing-brightgreen)](Tests/)
 
 CoreOne is a comprehensive utility library that provides battle-tested patterns, reactive extensions, and powerful helpers for building robust .NET applications. It eliminates boilerplate code and provides intuitive APIs for common programming tasks.
 
@@ -409,9 +410,14 @@ public class DashboardViewModel
 
 ## 🧪 Testing
 
-CoreOne includes comprehensive unit tests using **NUnit** and **Moq**:
-- 20 Hub tests (88.95% coverage)
-- 35 Observable/Reactive tests (90.48% coverage)
+CoreOne maintains high code quality with **513 passing tests** (47.6% coverage):
+- **Attributes & Validation:** 100% coverage on validation attributes and context
+- **Hub System:** 88.9% coverage with comprehensive pub/sub tests
+- **Reactive Extensions:** 90%+ coverage on Subject, BehaviorSubject, Observable
+- **Operations:** Complete coverage on PageResult, OrderBy, FilterBy
+- **Core Infrastructure:** ModelTransaction (91.7%), TargetCreator (80.7%)
+
+Tests use **NUnit 4** and **Moq** for mocking. See [COVERAGE_REPORT.md](COVERAGE_REPORT.md) for detailed metrics.
 
 ```bash
 dotnet test

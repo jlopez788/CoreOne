@@ -158,4 +158,167 @@ public class StringExtensionsTests
         var result = value.Separate(" ");
         Assert.That(result, Is.EqualTo("hello"));
     }
+
+    [Test]
+    public void ContainsX_WithCaseSensitiveComparison_WorksCorrectly()
+    {
+        var value = "Hello World";
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(value.ContainsX("Hello", StringComparison.Ordinal), Is.True);
+            Assert.That(value.ContainsX("hello", StringComparison.Ordinal), Is.False);
+        }
+    }
+
+    [Test]
+    public void Matches_WithCaseSensitiveComparison_WorksCorrectly()
+    {
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That("Test".Matches("test", StringComparison.Ordinal), Is.False);
+            Assert.That("Test".Matches("Test", StringComparison.Ordinal), Is.True);
+        }
+    }
+
+    [Test]
+    public void MatchesAny_WithEmptyArray_ReturnsFalse()
+    {
+        var value = "test";
+        Assert.That(value.MatchesAny(), Is.False);
+    }
+
+    [Test]
+    public void MatchesAny_WithNullValue_ReturnsFalse()
+    {
+        string? value = null;
+        Assert.That(value.MatchesAny("test", "hello"), Is.False);
+    }
+
+    [Test]
+    public void MatchesAny_WithCustomComparison_WorksCorrectly()
+    {
+        var value = "Test";
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(value.MatchesAny(StringComparison.Ordinal, "test", "TEST"), Is.False);
+            Assert.That(value.MatchesAny(StringComparison.Ordinal, "Test", "hello"), Is.True);
+        }
+    }
+
+    [Test]
+    public void Remove_WithNullValue_ReturnsEmptyString()
+    {
+        string? value = null;
+        var result = StringExtensions.Remove(value, '-');
+        Assert.That(result, Is.EqualTo(""));
+    }
+
+    [Test]
+    public void Remove_WithNoMatchingCharacters_ReturnsOriginal()
+    {
+        var value = "hello";
+        var result = StringExtensions.Remove(value, '-', '_');
+        Assert.That(result, Is.EqualTo("hello"));
+    }
+
+    [Test]
+    public void Remove_WithEmptyString_ReturnsEmptyString()
+    {
+        var value = "";
+        var result = StringExtensions.Remove(value, '-');
+        Assert.That(result, Is.EqualTo(""));
+    }
+
+    [Test]
+    public void SplitBy_TrimsWhitespace()
+    {
+        var value = "  apple  ,  banana  ";
+        var result = value.SplitBy([',']).ToList();
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result[0], Is.EqualTo("apple"));
+            Assert.That(result[1], Is.EqualTo("banana"));
+        }
+    }
+
+    [Test]
+    public void SplitBy_RemovesEmptyEntries()
+    {
+        var value = "apple,,banana";
+        var result = value.SplitBy([',']).ToList();
+        
+        Assert.That(result, Has.Count.EqualTo(2));
+    }
+
+    [Test]
+    public void Separate_WithDashSeparator_UsesCorrectFormat()
+    {
+        var value = "TestCaseValue";
+        var result = value.Separate("-");
+        Assert.That(result, Is.EqualTo("test-case-value"));
+    }
+
+    [Test]
+    public void Separate_WithEmptyString_ReturnsEmpty()
+    {
+        var value = "";
+        var result = value.Separate(" ");
+        Assert.That(result, Is.EqualTo(""));
+    }
+
+    [Test]
+    public void Separate_WithNumbersAndLetters_HandlesCorrectly()
+    {
+        var value = "Test123Value";
+        var result = value.Separate(" ");
+        Assert.That(result, Is.EqualTo("test123 value"));
+    }
+
+    [Test]
+    public void Separate_WithAllUpperCase_KeepsLettersTogether()
+    {
+        var value = "HTTP";
+        var result = value.Separate(" ");
+        Assert.That(result, Is.EqualTo("http"));
+    }
+
+    [Test]
+    public void ToXString_WithNullModel_ReturnsEmpty()
+    {
+        int? model = null;
+        var result = model.ToXString();
+        Assert.That(result, Is.EqualTo(string.Empty));
+    }
+
+    [Test]
+    public void ToXString_WithFormat_FormatsCorrectly()
+    {
+        var date = new DateTime(2026, 1, 22);
+        var result = date.ToXString("yyyy-MM-dd");
+        Assert.That(result, Is.EqualTo("2026-01-22"));
+    }
+
+    [Test]
+    public void ToXString_WithDefaultValue_UsesDefault()
+    {
+        int? nullInt = null;
+        var result = nullInt.ToXString(usedefault: true);
+        Assert.That(result, Is.Not.Null);
+    }
+
+    [Test]
+    public void EndWith_WithEmptyString_ReturnsEndwith()
+    {
+        var value = "";
+        var result = value.EndWith(".txt");
+        Assert.That(result, Is.EqualTo(".txt"));
+    }
+
+    [Test]
+    public void Matches_BothNull_ReturnsTrue()
+    {
+        string? val1 = null;
+        string? val2 = null;
+        Assert.That(val1.Matches(val2), Is.True);
+    }
 }

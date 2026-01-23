@@ -56,7 +56,7 @@ public static class StringExtensions
     /// <param name="value"></param>
     /// <param name="remove"></param>
     /// <returns></returns>
-    public static string Remove(this string value, params char[] remove)
+    public static string Remove(this string? value, params char[] remove)
     {
         value ??= "";
         if (!string.IsNullOrEmpty(value))

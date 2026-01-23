@@ -204,4 +204,179 @@ public class DataTests
         Assert.That(values, Does.Contain(1));
         Assert.That(values, Does.Contain(2));
     }
+
+    [Test]
+    public void Get_WithGetter_ReturnsGetterValue()
+    {
+        var data = new Data<string, int>();
+        
+        var value = data.Get("nonexistent", () => 999);
+        
+        Assert.That(value, Is.EqualTo(999));
+    }
+
+    [Test]
+    public void RemoveAll_WithPredicate_RemovesMatchingItems()
+    {
+        var data = new Data<string, int> { ["key1"] = 1, ["key2"] = 2, ["key3"] = 3 };
+        
+        data.RemoveAll((k, v) => v > 1);
+        
+        Assert.That(data, Has.Count.EqualTo(1));
+        Assert.That(data["key1"], Is.EqualTo(1));
+    }
+
+    [Test]
+    public void SafeAdd_AddsNewKey()
+    {
+        var data = new Data<string, int>();
+        
+        data.SafeAdd("key", 42);
+        
+        Assert.That(data["key"], Is.EqualTo(42));
+    }
+
+    [Test]
+    public void SafeAdd_IgnoresExistingKey()
+    {
+        var data = new Data<string, int> { ["key"] = 42 };
+        
+        data.SafeAdd("key", 100);
+        
+        Assert.That(data["key"], Is.EqualTo(42));
+    }
+
+    [Test]
+    public void SafeAdd_NullKey_DoesNothing()
+    {
+        var data = new Data<string, int>();
+        
+        data.SafeAdd(null, 42);
+        
+        Assert.That(data, Is.Empty);
+    }
+
+    [Test]
+    public void SafeAddRange_AddsMultipleItems()
+    {
+        var data = new Data<string, int>();
+        var items = new[] { 1, 2, 3 };
+        
+        data.SafeAddRange(items, x => $"key{x}");
+        
+        Assert.That(data, Has.Count.EqualTo(3));
+    }
+
+    [Test]
+    public void SafeAddRange_IgnoresExistingKeys()
+    {
+        var data = new Data<string, int> { ["key1"] = 100 };
+        var items = new[] { 1, 2, 3 };
+        
+        data.SafeAddRange(items, x => $"key{x}");
+        
+        Assert.That(data["key1"], Is.EqualTo(100));
+    }
+
+    [Test]
+    public void SafeAddRange_NullItems_DoesNothing()
+    {
+        var data = new Data<string, int>();
+        
+        data.SafeAddRange(null, x => "key");
+        
+        Assert.That(data, Is.Empty);
+    }
+
+    [Test]
+    public void SetDefaultKey_SetsDefaultKey()
+    {
+        var data = new Data<string, int>();
+        
+        data.SetDefaultKey("default").Set("default", 999);
+        var value = data.Get("nonexistent");
+        
+        Assert.That(value, Is.EqualTo(999));
+    }
+
+    [Test]
+    public void SetRange_AddsMultipleItems()
+    {
+        var data = new Data<string, int>();
+        var items = new[] { 1, 2, 3 };
+        
+        data.SetRange(items, x => $"key{x}");
+        
+        Assert.That(data, Has.Count.EqualTo(3));
+    }
+
+    [Test]
+    public void SetRange_OverwritesExisting()
+    {
+        var data = new Data<string, int> { ["key1"] = 100 };
+        var items = new[] { 1, 2, 3 };
+        
+        data.SetRange(items, x => $"key{x}");
+        
+        Assert.That(data["key1"], Is.EqualTo(1));
+    }
+
+    [Test]
+    public void SetRange_NullItems_DoesNothing()
+    {
+        var data = new Data<string, int>();
+        
+        data.SetRange(null, x => "key");
+        
+        Assert.That(data, Is.Empty);
+    }
+
+    [Test]
+    public void Set_NullKey_DoesNotAdd()
+    {
+        var data = new Data<string, int>();
+        
+        data.Set(null, 42);
+        
+        Assert.That(data, Is.Empty);
+    }
+
+    [Test]
+    public void Set_NullValue_DoesNotAdd()
+    {
+        var data = new Data<string, string?>();
+        
+        data.Set("key", null);
+        
+        Assert.That(data, Is.Empty);
+    }
+
+    [Test]
+    public void Indexer_NullValue_DoesNotAdd()
+    {
+        var data = new Data<string, string?> { ["key"] = null };
+        
+        Assert.That(data, Is.Empty);
+    }
+
+    [Test]
+    public void Constructor_WithDictionary_CopiesValues()
+    {
+        var source = new Dictionary<string, int> { ["key1"] = 1, ["key2"] = 2 };
+        
+        var data = new Data<string, int>(source);
+        
+        Assert.That(data, Has.Count.EqualTo(2));
+        Assert.That(data["key1"], Is.EqualTo(1));
+    }
+
+    [Test]
+    public void Constructor_WithDictionaryAndComparer_CopiesValuesAndUsesComparer()
+    {
+        var source = new Dictionary<string, int> { ["key1"] = 1, ["key2"] = 2 };
+        
+        var data = new Data<string, int>(source, StringComparer.OrdinalIgnoreCase);
+        
+        Assert.That(data["KEY1"], Is.EqualTo(1));
+    }
 }
