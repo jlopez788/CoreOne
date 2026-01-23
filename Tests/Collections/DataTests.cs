@@ -10,7 +10,7 @@ public class DataTests
     {
         var data = new Data<string, int>();
         
-        Assert.That(data.Count, Is.EqualTo(0));
+        Assert.That(data, Is.Empty);
     }
 
     [Test]
@@ -18,14 +18,15 @@ public class DataTests
     {
         var data = new Data<string, int>(10);
         
-        Assert.That(data.Count, Is.EqualTo(0));
+        Assert.That(data, Is.Empty);
     }
 
     [Test]
     public void Constructor_WithComparer_UsesComparer()
     {
-        var data = new Data<string, int>(StringComparer.OrdinalIgnoreCase);
-        data["Key"] = 1;
+        var data = new Data<string, int>(StringComparer.OrdinalIgnoreCase) {
+            ["Key"] = 1
+        };
         
         Assert.That(data["KEY"], Is.EqualTo(1));
     }
@@ -125,7 +126,7 @@ public class DataTests
         
         data.Clear();
         
-        Assert.That(data.Count, Is.EqualTo(0));
+        Assert.That(data, Is.Empty);
     }
 
     [Test]
@@ -160,9 +161,11 @@ public class DataTests
         var data = new Data<string, int> { ["key"] = 42 };
         
         var success = data.TryGetValue("key", out var value);
-        
-        Assert.That(success, Is.True);
-        Assert.That(value, Is.EqualTo(42));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(success, Is.True);
+            Assert.That(value, Is.EqualTo(42));
+        }
     }
 
     [Test]
@@ -171,9 +174,11 @@ public class DataTests
         var data = new Data<string, int>();
         
         var success = data.TryGetValue("key", out var value);
-        
-        Assert.That(success, Is.False);
-        Assert.That(value, Is.EqualTo(0));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(success, Is.False);
+            Assert.That(value, Is.EqualTo(0));
+        }
     }
 
     [Test]
@@ -183,7 +188,7 @@ public class DataTests
         
         var keys = data.Keys.ToList();
         
-        Assert.That(keys.Count, Is.EqualTo(2));
+        Assert.That(keys, Has.Count.EqualTo(2));
         Assert.That(keys, Does.Contain("key1"));
         Assert.That(keys, Does.Contain("key2"));
     }
@@ -195,7 +200,7 @@ public class DataTests
         
         var values = data.Values.ToList();
         
-        Assert.That(values.Count, Is.EqualTo(2));
+        Assert.That(values, Has.Count.EqualTo(2));
         Assert.That(values, Does.Contain(1));
         Assert.That(values, Does.Contain(2));
     }

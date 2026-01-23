@@ -11,9 +11,11 @@ public class ResultExtensionsTests
     {
         var result = new Result<int>(42);
         var transformed = result.Select(x => x.ToString());
-        
-        Assert.That(transformed.Success, Is.True);
-        Assert.That(transformed.Model, Is.EqualTo("42"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(transformed.Success, Is.True);
+            Assert.That(transformed.Model, Is.EqualTo("42"));
+        }
     }
 
     [Test]
@@ -21,9 +23,11 @@ public class ResultExtensionsTests
     {
         var result = Result.Fail<int>("Error occurred");
         var transformed = result.Select(x => x.ToString());
-        
-        Assert.That(transformed.Success, Is.False);
-        Assert.That(transformed.Message, Is.EqualTo("Error occurred"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(transformed.Success, Is.False);
+            Assert.That(transformed.Message, Is.EqualTo("Error occurred"));
+        }
     }
 
     [Test]
@@ -32,9 +36,11 @@ public class ResultExtensionsTests
         var exception = new InvalidOperationException("Test exception");
         var result = Result.FromException<int>(exception);
         var transformed = result.Select(x => x.ToString());
-        
-        Assert.That(transformed.Success, Is.False);
-        Assert.That(transformed.ResultType, Is.EqualTo(ResultType.Exception));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(transformed.Success, Is.False);
+            Assert.That(transformed.ResultType, Is.EqualTo(ResultType.Exception));
+        }
     }
 
     [Test]
@@ -45,9 +51,11 @@ public class ResultExtensionsTests
             await Task.Delay(1);
             return x.ToString();
         });
-        
-        Assert.That(transformed.Success, Is.True);
-        Assert.That(transformed.Model, Is.EqualTo("42"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(transformed.Success, Is.True);
+            Assert.That(transformed.Model, Is.EqualTo("42"));
+        }
     }
 
     [Test]
@@ -60,9 +68,11 @@ public class ResultExtensionsTests
             await Task.Delay(1);
             return x.ToString();
         });
-        
-        Assert.That(transformed.Success, Is.False);
-        Assert.That(callbackInvoked, Is.False);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(transformed.Success, Is.False);
+            Assert.That(callbackInvoked, Is.False);
+        }
     }
 
 

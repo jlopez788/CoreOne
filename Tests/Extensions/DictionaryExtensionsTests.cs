@@ -10,8 +10,11 @@ public class DictionaryExtensionsTests
     {
         var dict = new Dictionary<string, int>();
         var result = dict.GetSet("key", () => 42);
-        Assert.That(result, Is.EqualTo(42));
-        Assert.That(dict["key"], Is.EqualTo(42));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.EqualTo(42));
+            Assert.That(dict["key"], Is.EqualTo(42));
+        }
     }
 
     [Test]
@@ -23,8 +26,11 @@ public class DictionaryExtensionsTests
             getterInvoked = true;
             return 42;
         });
-        Assert.That(result, Is.EqualTo(100));
-        Assert.That(getterInvoked, Is.False);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.EqualTo(100));
+            Assert.That(getterInvoked, Is.False);
+        }
     }
 
     [Test]

@@ -139,15 +139,21 @@ public class ComparableExtensionsTests
     public void IsBetween_WorksWithDoubles()
     {
         var value = 5.5;
-        Assert.That(value.IsBetween(1.0, 10.0), Is.True);
-        Assert.That(value.IsBetween(6.0, 10.0), Is.False);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(value.IsBetween(1.0, 10.0), Is.True);
+            Assert.That(value.IsBetween(6.0, 10.0), Is.False);
+        }
     }
 
     [Test]
     public void IsBetween_WorksWithStrings()
     {
         var value = "m";
-        Assert.That(value.IsBetween("a", "z"), Is.True);
-        Assert.That(value.IsBetween("n", "z"), Is.False);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(value.IsBetween("a", "z"), Is.True);
+            Assert.That(value.IsBetween("n", "z"), Is.False);
+        }
     }
 }

@@ -91,7 +91,7 @@ public class OrderByTests
         var order1 = new OrderBy("Name", SortDirection.Ascending);
         var order2 = new OrderBy("Name", SortDirection.Ascending);
 
-        Assert.That(order1.Equals(order2), Is.True);
+        Assert.That(order1, Is.EqualTo(order2));
     }
 
     [Test]
@@ -100,7 +100,7 @@ public class OrderByTests
         var order1 = new OrderBy("Name", SortDirection.Ascending);
         var order2 = new OrderBy("Age", SortDirection.Ascending);
 
-        Assert.That(order1.Equals(order2), Is.False);
+        Assert.That(order1, Is.Not.EqualTo(order2));
     }
 
     [Test]
@@ -109,7 +109,7 @@ public class OrderByTests
         var order1 = new OrderBy("Name", SortDirection.Ascending);
         var order2 = new OrderBy("Name", SortDirection.Descending);
 
-        Assert.That(order1.Equals(order2), Is.False);
+        Assert.That(order1, Is.Not.EqualTo(order2));
     }
 
     [Test]
@@ -118,7 +118,7 @@ public class OrderByTests
         var order1 = new OrderBy("NAME", SortDirection.Ascending);
         var order2 = new OrderBy("name", SortDirection.Ascending);
 
-        Assert.That(order1.Equals(order2), Is.True);
+        Assert.That(order1, Is.EqualTo(order2));
     }
 
     [Test]

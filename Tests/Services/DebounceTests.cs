@@ -98,7 +98,7 @@ public class DebounceTests
         await Task.Delay(150);
         
         // Should only execute once with the last value
-        Assert.That(values.Count, Is.EqualTo(1));
+        Assert.That(values, Has.Count.EqualTo(1));
         Assert.That(values[0], Is.EqualTo(9));
     }
 

@@ -9,9 +9,11 @@ public class UtilityHashTests
     public void Crc32_String_GeneratesHash()
     {
         var result = Utility.Crc32("test data");
-        
-        Assert.That(result.Success, Is.True);
-        Assert.That(result.Model, Is.Not.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.True);
+            Assert.That(result.Model, Is.Not.Null);
+        }
         Assert.That(result.Model, Is.Not.Empty);
     }
 
@@ -54,10 +56,12 @@ public class UtilityHashTests
     public void HashMD5_String_GeneratesHash()
     {
         var result = Utility.HashMD5("test data");
-        
-        Assert.That(result.Success, Is.True);
-        Assert.That(result.Model, Is.Not.Null);
-        Assert.That(result.Model!.Length, Is.EqualTo(32)); // MD5 hash is 32 hex chars
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.True);
+            Assert.That(result.Model, Is.Not.Null);
+        }
+        Assert.That(result.Model!, Has.Length.EqualTo(32)); // MD5 hash is 32 hex chars
     }
 
     [Test]
@@ -73,10 +77,12 @@ public class UtilityHashTests
     public void HashSHA1_String_GeneratesHash()
     {
         var result = Utility.HashSHA1("test data");
-        
-        Assert.That(result.Success, Is.True);
-        Assert.That(result.Model, Is.Not.Null);
-        Assert.That(result.Model!.Length, Is.EqualTo(40)); // SHA1 hash is 40 hex chars
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.True);
+            Assert.That(result.Model, Is.Not.Null);
+        }
+        Assert.That(result.Model!, Has.Length.EqualTo(40)); // SHA1 hash is 40 hex chars
     }
 
     [Test]
@@ -92,10 +98,12 @@ public class UtilityHashTests
     public void HashSHA256_String_GeneratesHash()
     {
         var result = Utility.HashSHA256("test data");
-        
-        Assert.That(result.Success, Is.True);
-        Assert.That(result.Model, Is.Not.Null);
-        Assert.That(result.Model!.Length, Is.EqualTo(64)); // SHA256 hash is 64 hex chars
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.True);
+            Assert.That(result.Model, Is.Not.Null);
+        }
+        Assert.That(result.Model!, Has.Length.EqualTo(64)); // SHA256 hash is 64 hex chars
     }
 
     [Test]
@@ -120,9 +128,11 @@ public class UtilityHashTests
     public void ToBase64_String_EncodesCorrectly()
     {
         var result = Utility.ToBase64("test data");
-        
-        Assert.That(result.Success, Is.True);
-        Assert.That(result.Model, Is.Not.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.True);
+            Assert.That(result.Model, Is.Not.Null);
+        }
         Assert.That(result.Model, Is.Not.Empty);
     }
 
@@ -142,9 +152,11 @@ public class UtilityHashTests
     {
         var base64 = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes("test data"));
         var result = Utility.FromBase64(base64);
-        
-        Assert.That(result.Success, Is.True);
-        Assert.That(result.Model, Is.Not.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.True);
+            Assert.That(result.Model, Is.Not.Null);
+        }
         var decoded = System.Text.Encoding.ASCII.GetString(result.Model!);
         Assert.That(decoded, Is.EqualTo("test data"));
     }
@@ -153,9 +165,11 @@ public class UtilityHashTests
     public void FromBase64_NullInput_ReturnsEmpty()
     {
         var result = Utility.FromBase64(null);
-        
-        Assert.That(result.Success, Is.True);
-        Assert.That(result.Model, Is.Empty);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.True);
+            Assert.That(result.Model, Is.Empty);
+        }
     }
 
     [Test]
@@ -171,9 +185,11 @@ public class UtilityHashTests
     {
         var key = System.Text.Encoding.ASCII.GetBytes("custom-key-12345");
         var result = Utility.HashMD5("test data", key);
-        
-        Assert.That(result.Success, Is.True);
-        Assert.That(result.Model, Is.Not.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.True);
+            Assert.That(result.Model, Is.Not.Null);
+        }
     }
 
     [Test]

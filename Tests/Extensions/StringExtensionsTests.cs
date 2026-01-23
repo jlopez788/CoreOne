@@ -9,9 +9,12 @@ public class StringExtensionsTests
     public void ContainsX_WithMatchingStrings_ReturnsTrue()
     {
         var value = "Hello World";
-        Assert.That(value.ContainsX("world"), Is.True);
-        Assert.That(value.ContainsX("HELLO"), Is.True);
-        Assert.That(value.ContainsX("Hello"), Is.True);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(value.ContainsX("world"), Is.True);
+            Assert.That(value.ContainsX("HELLO"), Is.True);
+            Assert.That(value.ContainsX("Hello"), Is.True);
+        }
     }
 
     [Test]
@@ -25,9 +28,12 @@ public class StringExtensionsTests
     public void ContainsX_WithNullOrEmpty_ReturnsFalse()
     {
         string? nullValue = null;
-        Assert.That(nullValue.ContainsX("test"), Is.False);
-        Assert.That("".ContainsX("test"), Is.False);
-        Assert.That("test".ContainsX(null), Is.False);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(nullValue.ContainsX("test"), Is.False);
+            Assert.That("".ContainsX("test"), Is.False);
+            Assert.That("test".ContainsX(null), Is.False);
+        }
     }
 
     [Test]
@@ -57,26 +63,35 @@ public class StringExtensionsTests
     [Test]
     public void Matches_ComparesStrings_CaseInsensitive()
     {
-        Assert.That("Hello".Matches("hello"), Is.True);
-        Assert.That("WORLD".Matches("world"), Is.True);
-        Assert.That("Test".Matches("Different"), Is.False);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That("Hello".Matches("hello"), Is.True);
+            Assert.That("WORLD".Matches("world"), Is.True);
+            Assert.That("Test".Matches("Different"), Is.False);
+        }
     }
 
     [Test]
     public void Matches_HandlesNullValues()
     {
         string? nullValue = null;
-        Assert.That(nullValue.Matches(null), Is.True);
-        Assert.That(nullValue.Matches("test"), Is.False);
-        Assert.That("test".Matches(null), Is.False);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(nullValue.Matches(null), Is.True);
+            Assert.That(nullValue.Matches("test"), Is.False);
+            Assert.That("test".Matches(null), Is.False);
+        }
     }
 
     [Test]
     public void MatchesAny_FindsMatchInList()
     {
         var value = "apple";
-        Assert.That(value.MatchesAny("banana", "APPLE", "orange"), Is.True);
-        Assert.That(value.MatchesAny("banana", "orange"), Is.False);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(value.MatchesAny("banana", "APPLE", "orange"), Is.True);
+            Assert.That(value.MatchesAny("banana", "orange"), Is.False);
+        }
     }
 
     [Test]
@@ -103,10 +118,13 @@ public class StringExtensionsTests
     {
         var value = "apple,banana;orange";
         var result = value.SplitBy([',', ';']).ToList();
-        Assert.That(result.Count, Is.EqualTo(3));
-        Assert.That(result[0], Is.EqualTo("apple"));
-        Assert.That(result[1], Is.EqualTo("banana"));
-        Assert.That(result[2], Is.EqualTo("orange"));
+        Assert.That(result, Has.Count.EqualTo(3));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result[0], Is.EqualTo("apple"));
+            Assert.That(result[1], Is.EqualTo("banana"));
+            Assert.That(result[2], Is.EqualTo("orange"));
+        }
     }
 
     [Test]

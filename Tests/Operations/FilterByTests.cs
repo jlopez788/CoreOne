@@ -46,7 +46,7 @@ public class FilterByTests
         var filter1 = new FilterBy("test", "Name");
         var filter2 = new FilterBy("test", "Name");
 
-        Assert.That(filter1.Equals(filter2), Is.True);
+        Assert.That(filter1, Is.EqualTo(filter2));
     }
 
     [Test]
@@ -58,8 +58,8 @@ public class FilterByTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(filter1.Equals(filter2), Is.False);
-            Assert.That(filter1.Equals(filter3), Is.False);
+            Assert.That(filter1, Is.Not.EqualTo(filter2));
+            Assert.That(filter1, Is.Not.EqualTo(filter3));
         });
     }
 
@@ -68,7 +68,7 @@ public class FilterByTests
     {
         var filter = new FilterBy("test", "Name");
 
-        Assert.That(filter.Equals(null), Is.False);
+        Assert.That(filter, Is.Not.Null);
     }
 
     [Test]
@@ -77,7 +77,7 @@ public class FilterByTests
         var filter1 = new FilterBy("Test", "NAME");
         var filter2 = new FilterBy("test", "name");
 
-        Assert.That(filter1.Equals(filter2), Is.True);
+        Assert.That(filter1, Is.EqualTo(filter2));
     }
 
     [Test]

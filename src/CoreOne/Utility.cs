@@ -77,7 +77,7 @@ public static partial class Utility
     /// </summary>
     /// <param name="callback"></param>
     /// <returns></returns>
-    public static ValueTask SafeAwait(ValueTask? callback) => callback.HasValue ? callback.Value : ValueTask.CompletedTask;
+    public static ValueTask SafeAwait(ValueTask? callback) => callback ?? ValueTask.CompletedTask;
 
 #endif
 

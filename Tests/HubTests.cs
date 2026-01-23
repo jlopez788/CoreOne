@@ -58,7 +58,7 @@ public class HubTests
         hub.Publish(msg);
 
         var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(2)));
-        Assert.That(completed == tcs.Task, Is.True);
+        Assert.That(completed, Is.EqualTo(tcs.Task));
         mock.Verify(m => m(It.IsAny<IMessage>()), Times.Once);
         Assert.That(tcs.Task.Result, Is.SameAs(msg));
     }
@@ -77,7 +77,7 @@ public class HubTests
         hub.Publish(derived);
 
         var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(2)));
-        Assert.That(completed == tcs.Task, Is.True);
+        Assert.That(completed, Is.EqualTo(tcs.Task));
         mock.Verify(m => m(It.IsAny<BaseMessage>()), Times.Once);
         Assert.That(tcs.Task.Result, Is.SameAs(derived));
     }
@@ -97,7 +97,7 @@ public class HubTests
         hub.Publish(impl);
 
         var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(2)));
-        Assert.That(completed == tcs.Task, Is.True);
+        Assert.That(completed, Is.EqualTo(tcs.Task));
         mock.Verify(m => m(It.IsAny<IParent>()), Times.Once);
         Assert.That(tcs.Task.Result, Is.SameAs(impl));
     }
@@ -116,7 +116,7 @@ public class HubTests
         hub.Publish(multi);
 
         var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(2)));
-        Assert.That(completed == tcs.Task, Is.True);
+        Assert.That(completed, Is.EqualTo(tcs.Task));
         mock.Verify(m => m(It.IsAny<IBar>()), Times.Once);
         Assert.That(tcs.Task.Result, Is.SameAs(multi));
     }
@@ -135,7 +135,7 @@ public class HubTests
         hub.Publish(d);
 
         var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(2)));
-        Assert.That(completed == tcs.Task, Is.True);
+        Assert.That(completed, Is.EqualTo(tcs.Task));
         mock.Verify(m => m(It.IsAny<IAlpha>()), Times.Once);
         Assert.That(tcs.Task.Result, Is.SameAs(d));
     }
@@ -161,11 +161,14 @@ public class HubTests
         hub1.Publish(gm);
 
         var completed = await Task.WhenAny(Task.WhenAll(tcs1.Task, tcs2.Task), Task.Delay(TimeSpan.FromSeconds(2)));
-        Assert.That(completed != Task.Delay(TimeSpan.FromSeconds(2)), Is.True);
+        Assert.That(completed, Is.Not.EqualTo(Task.Delay(TimeSpan.FromSeconds(2))));
         mock1.Verify(m => m(It.IsAny<GlobalMsg>()), Times.Once);
         mock2.Verify(m => m(It.IsAny<GlobalMsg>()), Times.Once);
-        Assert.That(tcs1.Task.Result, Is.SameAs(gm));
-        Assert.That(tcs2.Task.Result, Is.SameAs(gm));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(tcs1.Task.Result, Is.SameAs(gm));
+            Assert.That(tcs2.Task.Result, Is.SameAs(gm));
+        }
     }
 
     [Test]
@@ -187,7 +190,7 @@ public class HubTests
         hub.Publish(new MessageImpl { Value = 1 });
 
         var blockedCompleted = await Task.WhenAny(blockedTcs.Task, Task.Delay(1000));
-        Assert.That(blockedCompleted != blockedTcs.Task, Is.True, "Subscriber should have been blocked by intercept.");
+        Assert.That(blockedCompleted, Is.Not.EqualTo(blockedTcs.Task), "Subscriber should have been blocked by intercept.");
         subMock.Verify(m => m(It.IsAny<MessageImpl>()), Times.Never);
 
         // now register an intercept that sets calledTcs then remove it via token before publish
@@ -203,7 +206,7 @@ public class HubTests
         hub.Publish(new MessageImpl { Value = 2 });
 
         var calledCompleted = await Task.WhenAny(calledTcs.Task, Task.Delay(1000));
-        Assert.That(calledCompleted != calledTcs.Task, Is.True, "Intercept removed via token should not be called.");
+        Assert.That(calledCompleted, Is.Not.EqualTo(calledTcs.Task), "Intercept removed via token should not be called.");
     }
 
     [Test]
@@ -220,7 +223,7 @@ public class HubTests
         hub.SubscribeState<StateMsg>(state.Name, mock.Object, null, CancellationToken.None);
 
         var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(2)));
-        Assert.That(completed == tcs.Task, Is.True);
+        Assert.That(completed, Is.EqualTo(tcs.Task));
         mock.Verify(m => m(It.IsAny<StateMsg>()), Times.Once);
         Assert.That(tcs.Task.Result, Is.Not.Null);
         Assert.That(tcs.Task.Result!.Value, Is.EqualTo("v1"));
@@ -242,7 +245,7 @@ public class HubTests
         hub.Publish(new MessageImpl { Value = 99 });
 
         var completed = await Task.WhenAny(exceptionTcs.Task, Task.Delay(TimeSpan.FromSeconds(2)));
-        Assert.That(completed == exceptionTcs.Task, Is.True);
+        Assert.That(completed, Is.EqualTo(exceptionTcs.Task));
         exMock.Verify(m => m(It.IsAny<ExceptionMessage>()), Times.Once);
         Assert.That(exceptionTcs.Task.Result, Is.Not.Null);
         Assert.That(exceptionTcs.Task.Result!.Message, Does.Contain("Unable to deliver message"));
@@ -264,7 +267,7 @@ public class HubTests
         hub.Publish(new MessageImpl { Value = 5 });
 
         var completed = await Task.WhenAny(tcs.Task, Task.Delay(300));
-        Assert.That(completed != tcs.Task, Is.True, "Subscription cancelled should not receive message.");
+        Assert.That(completed, Is.Not.EqualTo(tcs.Task), "Subscription cancelled should not receive message.");
         mock.Verify(m => m(It.IsAny<MessageImpl>()), Times.Never);
     }
 
@@ -282,7 +285,7 @@ public class HubTests
         hub.Publish<string?>(null);
 
         var completed = await Task.WhenAny(tcs.Task, Task.Delay(300));
-        Assert.That(completed != tcs.Task, Is.True, "Null publish should not invoke subscribers.");
+        Assert.That(completed, Is.Not.EqualTo(tcs.Task), "Null publish should not invoke subscribers.");
         mock.Verify(m => m(It.IsAny<string?>()), Times.Never);
     }
 
@@ -346,14 +349,14 @@ public class HubTests
         hub.Publish(new MessageImpl { Value = 100 });
 
         var completed = await Task.WhenAny(exceptionTcs.Task, Task.Delay(TimeSpan.FromSeconds(2)));
-        Assert.That(completed == exceptionTcs.Task, Is.True);
+        Assert.That(completed, Is.EqualTo(exceptionTcs.Task));
         exMock.Verify(m => m(It.IsAny<ExceptionMessage>()), Times.Once);
         
         var result = exceptionTcs.Task.Result;
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Exception, Is.InstanceOf<AggregateException>());
         var aggEx = (AggregateException)result.Exception;
-        Assert.That(aggEx.InnerExceptions.Count, Is.EqualTo(2));
+        Assert.That(aggEx.InnerExceptions, Has.Count.EqualTo(2));
     }
 
     [Test]
@@ -375,7 +378,7 @@ public class HubTests
         // Publish message that matches filter
         hub.Publish(new MessageImpl { Value = 100 });
         var completed = await Task.WhenAny(tcs.Task, Task.Delay(500));
-        Assert.That(completed == tcs.Task, Is.True);
+        Assert.That(completed, Is.EqualTo(tcs.Task));
         mock.Verify(m => m(It.IsAny<MessageImpl>()), Times.Once);
     }
 
@@ -405,7 +408,9 @@ public class HubTests
         hub.Publish(new MessageImpl { Value = 1 });
 
         await Task.WhenAny(tcs.Task, Task.Delay(1000));
-        Assert.That(executionOrder, Is.EqualTo(new[] { 1, 2, 3 }));
+
+        var data = new[] { 1, 2, 3 };
+        Assert.That(executionOrder, Is.EqualTo(data));
     }
 
     [Test]
@@ -427,7 +432,7 @@ public class HubTests
         // Publish matching state
         hub.Publish(new StateMsg { Name = "filtered", Value = "match" });
         var completed = await Task.WhenAny(tcs.Task, Task.Delay(500));
-        Assert.That(completed == tcs.Task, Is.True);
+        Assert.That(completed, Is.EqualTo(tcs.Task));
         mock.Verify(m => m(It.IsAny<StateMsg>()), Times.Once);
     }
 

@@ -12,7 +12,7 @@ public class IDExtensionsTests
         var shortId = guid.ToShortId();
         
         Assert.That(shortId, Is.Not.Null);
-        Assert.That(shortId.Length, Is.LessThan(36)); // Shorter than full GUID
+        Assert.That(shortId, Has.Length.LessThan(36)); // Shorter than full GUID
         Assert.That(shortId, Does.Not.Contain("+"));
         Assert.That(shortId, Does.Not.Contain("/"));
         Assert.That(shortId, Does.Not.Contain("="));
@@ -46,7 +46,7 @@ public class IDExtensionsTests
         var slug = guid.ToSlugUrl();
         
         Assert.That(slug, Is.Not.Null);
-        Assert.That(slug.Length, Is.EqualTo(22));
+        Assert.That(slug, Has.Length.EqualTo(22));
         Assert.That(slug, Does.Not.Contain("/"));
         Assert.That(slug, Does.Not.Contain("+"));
         Assert.That(slug, Does.Not.Contain("="));
@@ -62,7 +62,7 @@ public class IDExtensionsTests
         var validChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
         foreach (var c in slug)
         {
-            Assert.That(validChars.Contains(c), Is.True, $"Character '{c}' is not URL safe");
+            Assert.That(validChars, Does.Contain(c), $"Character '{c}' is not URL safe");
         }
     }
 

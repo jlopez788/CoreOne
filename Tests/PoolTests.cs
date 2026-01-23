@@ -11,17 +11,22 @@ public class PoolTests
         using var buffer = Pool.Rent<int>(10);
         
         Assert.That(buffer, Is.Not.Null);
-        Assert.That(buffer.Size, Is.EqualTo(10));
-        Assert.That(buffer.Array, Is.Not.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(buffer.Size, Is.EqualTo(10));
+            Assert.That(buffer.Array, Is.Not.Null);
+        }
     }
 
     [Test]
     public void Rent_BufferHasCorrectSize()
     {
         using var buffer = Pool.Rent<int>(100);
-        
-        Assert.That(buffer.Array.Length, Is.GreaterThanOrEqualTo(100));
-        Assert.That(buffer.Size, Is.EqualTo(100));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(buffer.Array, Has.Length.GreaterThanOrEqualTo(100));
+            Assert.That(buffer.Size, Is.EqualTo(100));
+        }
     }
 
     [Test]
@@ -30,9 +35,11 @@ public class PoolTests
         using var buffer = Pool.Rent<int>(5);
         buffer.Array[0] = 10;
         buffer.Array[1] = 20;
-        
-        Assert.That(buffer[0], Is.EqualTo(10));
-        Assert.That(buffer[1], Is.EqualTo(20));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(buffer[0], Is.EqualTo(10));
+            Assert.That(buffer[1], Is.EqualTo(20));
+        }
     }
 
     [Test]
@@ -42,10 +49,12 @@ public class PoolTests
         buffer.Array[0] = "first";
         buffer.Array[1] = "second";
         buffer.Array[2] = "third";
-        
-        Assert.That(buffer[0], Is.EqualTo("first"));
-        Assert.That(buffer[1], Is.EqualTo("second"));
-        Assert.That(buffer[2], Is.EqualTo("third"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(buffer[0], Is.EqualTo("first"));
+            Assert.That(buffer[1], Is.EqualTo("second"));
+            Assert.That(buffer[2], Is.EqualTo("third"));
+        }
     }
 
     [Test]
@@ -55,7 +64,7 @@ public class PoolTests
         int[] array = buffer;
         
         Assert.That(array, Is.Not.Null);
-        Assert.That(array.Length, Is.GreaterThanOrEqualTo(5));
+        Assert.That(array, Has.Length.GreaterThanOrEqualTo(5));
     }
 
     [Test]
@@ -75,9 +84,11 @@ public class PoolTests
         
         buffer1.Array[0] = 10;
         buffer2.Array[0] = 20;
-        
-        Assert.That(buffer1[0], Is.EqualTo(10));
-        Assert.That(buffer2[0], Is.EqualTo(20));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(buffer1[0], Is.EqualTo(10));
+            Assert.That(buffer2[0], Is.EqualTo(20));
+        }
     }
 
     [Test]
@@ -86,19 +97,23 @@ public class PoolTests
         using var intBuffer = Pool.Rent<int>(10);
         using var stringBuffer = Pool.Rent<string>(10);
         using var doubleBuffer = Pool.Rent<double>(10);
-        
-        Assert.That(intBuffer.Size, Is.EqualTo(10));
-        Assert.That(stringBuffer.Size, Is.EqualTo(10));
-        Assert.That(doubleBuffer.Size, Is.EqualTo(10));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(intBuffer.Size, Is.EqualTo(10));
+            Assert.That(stringBuffer.Size, Is.EqualTo(10));
+            Assert.That(doubleBuffer.Size, Is.EqualTo(10));
+        }
     }
 
     [Test]
     public void Rent_LargeBuffer_Works()
     {
         using var buffer = Pool.Rent<byte>(1024 * 1024); // 1MB
-        
-        Assert.That(buffer.Size, Is.EqualTo(1024 * 1024));
-        Assert.That(buffer.Array.Length, Is.GreaterThanOrEqualTo(1024 * 1024));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(buffer.Size, Is.EqualTo(1024 * 1024));
+            Assert.That(buffer.Array, Has.Length.GreaterThanOrEqualTo(1024 * 1024));
+        }
     }
 
     [Test]

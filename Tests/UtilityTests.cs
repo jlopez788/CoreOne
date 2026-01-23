@@ -66,10 +66,12 @@ public class UtilityTests
     public void Try_Action_CatchesException()
     {
         var result = Utility.Try((Action)(() => throw new InvalidOperationException("Test error")));
-        
-        Assert.That(result.Success, Is.False);
-        Assert.That(result.ResultType, Is.EqualTo(ResultType.Exception));
-        Assert.That(result.Message, Does.Contain("Test error"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.False);
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Exception));
+            Assert.That(result.Message, Does.Contain("Test error"));
+        }
     }
 
     [Test]
@@ -77,9 +79,11 @@ public class UtilityTests
     {
         var executed = false;
         var result = Utility.Try(() => executed = true);
-        
-        Assert.That(result.Success, Is.True);
-        Assert.That(executed, Is.True);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.True);
+            Assert.That(executed, Is.True);
+        }
     }
 
     [Test]
@@ -89,10 +93,12 @@ public class UtilityTests
             await Task.Delay(1);
             throw new InvalidOperationException("Async error");
         });
-        
-        Assert.That(result.Success, Is.False);
-        Assert.That(result.ResultType, Is.EqualTo(ResultType.Exception));
-        Assert.That(result.Message, Does.Contain("Async error"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.False);
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Exception));
+            Assert.That(result.Message, Does.Contain("Async error"));
+        }
     }
 
     [Test]
@@ -103,27 +109,33 @@ public class UtilityTests
             await Task.Delay(1);
             executed = true;
         });
-        
-        Assert.That(result.Success, Is.True);
-        Assert.That(executed, Is.True);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.True);
+            Assert.That(executed, Is.True);
+        }
     }
 
     [Test]
     public void Try_Func_ReturnsValue_WhenNoException()
     {
         var result = Utility.Try(() => 42);
-        
-        Assert.That(result.Success, Is.True);
-        Assert.That(result.Model, Is.EqualTo(42));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.True);
+            Assert.That(result.Model, Is.EqualTo(42));
+        }
     }
 
     [Test]
     public void Try_Func_CatchesException()
     {
         var result = Utility.Try((Func<int>)(() => throw new InvalidOperationException("Error")));
-        
-        Assert.That(result.Success, Is.False);
-        Assert.That(result.ResultType, Is.EqualTo(ResultType.Exception));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.False);
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Exception));
+        }
     }
 
     [Test]
@@ -133,9 +145,11 @@ public class UtilityTests
             await Task.Delay(1);
             return 42;
         });
-        
-        Assert.That(result.Success, Is.True);
-        Assert.That(result.Model, Is.EqualTo(42));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.True);
+            Assert.That(result.Model, Is.EqualTo(42));
+        }
     }
 
     [Test]
@@ -145,27 +159,33 @@ public class UtilityTests
             await Task.Delay(1);
             throw new InvalidOperationException("Async error");
         });
-        
-        Assert.That(result.Success, Is.False);
-        Assert.That(result.ResultType, Is.EqualTo(ResultType.Exception));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.False);
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Exception));
+        }
     }
 
     [Test]
     public void TryChangeType_ConvertsInt_ToDouble()
     {
         var success = Utility.TryChangeType<double>(42, out var result);
-        
-        Assert.That(success, Is.True);
-        Assert.That(result, Is.EqualTo(42.0));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(success, Is.True);
+            Assert.That(result, Is.EqualTo(42.0));
+        }
     }
 
     [Test]
     public void TryChangeType_ConvertsString_ToInt()
     {
         var success = Utility.TryChangeType<int>("123", out var result);
-        
-        Assert.That(success, Is.True);
-        Assert.That(result, Is.EqualTo(123));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(success, Is.True);
+            Assert.That(result, Is.EqualTo(123));
+        }
     }
 
     [Test]
@@ -173,27 +193,33 @@ public class UtilityTests
     {
         var guid = Guid.NewGuid();
         var success = Utility.TryChangeType<Guid>(guid.ToString(), out var result);
-        
-        Assert.That(success, Is.True);
-        Assert.That(result, Is.EqualTo(guid));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(success, Is.True);
+            Assert.That(result, Is.EqualTo(guid));
+        }
     }
 
     [Test]
     public void TryChangeType_ReturnsFalse_ForInvalidConversion()
     {
         var success = Utility.TryChangeType<int>("not a number", out var result);
-        
-        Assert.That(success, Is.False);
-        Assert.That(result, Is.EqualTo(0));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(success, Is.False);
+            Assert.That(result, Is.EqualTo(0));
+        }
     }
 
     [Test]
     public void TryChangeType_HandlesNullableTypes()
     {
         var success = Utility.TryChangeType<int?>("42", out var result);
-        
-        Assert.That(success, Is.True);
-        Assert.That(result, Is.EqualTo(42));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(success, Is.True);
+            Assert.That(result, Is.EqualTo(42));
+        }
     }
 
     [Test]

@@ -14,10 +14,13 @@ public class MetaTypeTests
         public static string? StaticProperty { get; set; }
 
         public string GetPrivate() => PrivateProperty ?? "";
+
         public void SetPrivate(string value) => PrivateProperty = value;
-        
+
         public string PublicMethod(string input) => input.ToUpper();
+
         public static string StaticMethod(string input) => input.ToLower();
+
         private string PrivateMethod(string input) => input + "_modified";
     }
 
@@ -26,8 +29,7 @@ public class MetaTypeTests
     {
         var metadata = MetaType.GetMetadata(typeof(TestClass), nameof(TestClass.PublicProperty));
 
-        Assert.Multiple(() =>
-        {
+        Assert.Multiple(() => {
             Assert.That(metadata, Is.Not.EqualTo(Metadata.Empty));
             Assert.That(metadata.Name, Is.EqualTo(nameof(TestClass.PublicProperty)));
             Assert.That(metadata.FPType, Is.EqualTo(typeof(string)));
@@ -72,8 +74,7 @@ public class MetaTypeTests
     {
         var metadatas = MetaType.GetMetadatas(typeof(TestClass));
 
-        Assert.Multiple(() =>
-        {
+        Assert.Multiple(() => {
             Assert.That(metadatas, Is.Not.Empty);
             Assert.That(metadatas.Any(m => m.Name == nameof(TestClass.PublicProperty)), Is.True);
             Assert.That(metadatas.Any(m => m.Name == nameof(TestClass.IntProperty)), Is.True);
@@ -213,8 +214,7 @@ public class MetaTypeTests
 
         var propertyInfo = MetaType.GetPropertyInfo(expr);
 
-        Assert.Multiple(() =>
-        {
+        Assert.Multiple(() => {
             Assert.That(propertyInfo, Is.Not.Null);
             Assert.That(propertyInfo?.Name, Is.EqualTo(nameof(TestClass.PublicProperty)));
         });
@@ -287,8 +287,7 @@ public class MetaTypeTests
 
         var metadata = MetaType.CreateFromMemberInfo(typeof(TestClass), property);
 
-        Assert.Multiple(() =>
-        {
+        Assert.Multiple(() => {
             Assert.That(metadata, Is.Not.EqualTo(Metadata.Empty));
             Assert.That(metadata.Name, Is.EqualTo(nameof(TestClass.PublicProperty)));
         });

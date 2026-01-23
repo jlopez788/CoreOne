@@ -19,7 +19,7 @@ public readonly struct TypeKey : IEquatable<TypeKey>
     {
         Type = type ?? Types.Void;
         Name = Type.Name;
-        Parameters = (arguments ?? []).ToList();
+        Parameters = [.. (arguments ?? [])];
         Code = Parameters.Count == 0 && Type == Types.Void ? 0 :
             Type != Types.Void && Parameters.Count == 0 ?
             Type.GetHashCode() : (Type, Parameters).GetHashCode();

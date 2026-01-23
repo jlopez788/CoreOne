@@ -1,6 +1,5 @@
 using CoreOne.Extensions;
 using CoreOne.Results;
-using NUnit.Framework;
 
 namespace Tests.Extensions;
 
@@ -11,8 +10,8 @@ public class EnumerableExtensionsTests
     {
         var list = new List<int> { 1, 2, 3 };
         var result = list.AddOrUpdate(4);
-        Assert.That(result.Count, Is.EqualTo(4));
-        Assert.That(result.Contains(4), Is.True);
+        Assert.That(result, Has.Count.EqualTo(4));
+        Assert.That(result, Does.Contain(4));
     }
 
     [Test]
@@ -20,7 +19,7 @@ public class EnumerableExtensionsTests
     {
         var list = new List<string> { "apple", "banana", "cherry" };
         var result = list.AddOrUpdate("BANANA", p => p.Equals("banana", StringComparison.OrdinalIgnoreCase));
-        Assert.That(result.Count, Is.EqualTo(3));
+        Assert.That(result, Has.Count.EqualTo(3));
         Assert.That(result[1], Is.EqualTo("BANANA"));
     }
 
@@ -30,7 +29,7 @@ public class EnumerableExtensionsTests
         List<int>? list = null;
         var result = list.AddOrUpdate(5);
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Count, Is.EqualTo(1));
+        Assert.That(result, Has.Count.EqualTo(1));
         Assert.That(result[0], Is.EqualTo(5));
     }
 
@@ -39,7 +38,7 @@ public class EnumerableExtensionsTests
     {
         var list = new List<string?> { "apple", null, "banana", null, "cherry" };
         var result = list.ExcludeNulls().ToList();
-        Assert.That(result.Count, Is.EqualTo(3));
+        Assert.That(result, Has.Count.EqualTo(3));
         Assert.That(result, Does.Not.Contain(null));
     }
 
@@ -56,9 +55,12 @@ public class EnumerableExtensionsTests
     {
         var list = new List<string?> { "apple", null, "", "  ", "banana" };
         var result = list.ExcludeNullOrEmpty().ToList();
-        Assert.That(result.Count, Is.EqualTo(2));
-        Assert.That(result[0], Is.EqualTo("apple"));
-        Assert.That(result[1], Is.EqualTo("banana"));
+        Assert.That(result, Has.Count.EqualTo(2));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result[0], Is.EqualTo("apple"));
+            Assert.That(result[1], Is.EqualTo("banana"));
+        }
     }
 
     [Test]
@@ -70,17 +72,17 @@ public class EnumerableExtensionsTests
         Assert.That(sum, Is.EqualTo(6));
     }
 
-    [Test]
-    public void Each_WithIndex_ProvidesIndexToAction()
+    [TestCase(new[] { 0, 1, 2 })]
+    public void Each_WithIndex_ProvidesIndexToAction(int[] data)
     {
         var list = new List<string> { "a", "b", "c" };
         var indices = new List<int>();
         list.Each((item, index) => indices.Add(index));
-        Assert.That(indices, Is.EqualTo(new[] { 0, 1, 2 }));
+        Assert.That(indices, Is.EqualTo(data));
     }
 
-    [Test]
-    public async Task EachAsync_ProcessesItemsSequentially()
+    [TestCase(new[] { 1, 2, 3 })]
+    public async Task EachAsync_ProcessesItemsSequentially(int[] data)
     {
         var list = new List<int> { 1, 2, 3 };
         var results = new List<int>();
@@ -88,7 +90,7 @@ public class EnumerableExtensionsTests
             await Task.Delay(10);
             results.Add(x);
         });
-        Assert.That(results, Is.EqualTo(new[] { 1, 2, 3 }));
+        Assert.That(results, Is.EqualTo(data));
     }
 
     [Test]
@@ -96,27 +98,33 @@ public class EnumerableExtensionsTests
     {
         var list = new List<int> { 1, 2, 3, 4, 5, 6, 7 };
         var partitions = list.Partition(3).ToList();
-        Assert.That(partitions.Count, Is.EqualTo(3));
-        Assert.That(partitions[0].Count(), Is.EqualTo(3));
-        Assert.That(partitions[1].Count(), Is.EqualTo(3));
-        Assert.That(partitions[2].Count(), Is.EqualTo(1));
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(partitions, Has.Count.EqualTo(3));
+            Assert.That(partitions[0].Count(), Is.EqualTo(3));
+            Assert.That(partitions[1].Count(), Is.EqualTo(3));
+            Assert.That(partitions[2].Count(), Is.EqualTo(1));
+        }
     }
 
     [Test]
     public void SelectList_MapsToNewType()
     {
         var list = new List<int> { 1, 2, 3 };
+        var data = new[] { "1", "2", "3" };
         var result = list.SelectList(x => x.ToString());
-        Assert.That(result, Is.EqualTo(new[] { "1", "2", "3" }));
+        Assert.That(result, Is.EqualTo(data));
     }
 
     [Test]
     public void SelectArray_MapsToArray()
     {
         var list = new List<int> { 1, 2, 3 };
+        var data = new[] { 2, 4, 6 };
         var result = list.SelectArray(x => x * 2);
         Assert.That(result, Is.InstanceOf<int[]>());
-        Assert.That(result, Is.EqualTo(new[] { 2, 4, 6 }));
+        Assert.That(result, Is.EqualTo(data));
     }
 
     [Test]
@@ -128,9 +136,12 @@ public class EnumerableExtensionsTests
             new("three", 3)
         };
         var data = list.ToData(kv => kv.Key, kv => kv.Value);
-        Assert.That(data["one"], Is.EqualTo(1));
-        Assert.That(data["two"], Is.EqualTo(2));
-        Assert.That(data["three"], Is.EqualTo(3));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(data["one"], Is.EqualTo(1));
+            Assert.That(data["two"], Is.EqualTo(2));
+            Assert.That(data["three"], Is.EqualTo(3));
+        }
     }
 
     [Test]
@@ -153,8 +164,11 @@ public class EnumerableExtensionsTests
             processedCount++;
             return x == 3 ? Result.Fail() : Result.Ok;
         });
-        Assert.That(result.Success, Is.False);
-        Assert.That(processedCount, Is.EqualTo(3));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.False);
+            Assert.That(processedCount, Is.EqualTo(3));
+        }
     }
 
     [Test]
@@ -167,7 +181,10 @@ public class EnumerableExtensionsTests
             await Task.Delay(1);
             return x == 2 ? Result.Fail() : Result.Ok;
         });
-        Assert.That(result.Success, Is.False);
-        Assert.That(processedCount, Is.EqualTo(2));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.False);
+            Assert.That(processedCount, Is.EqualTo(2));
+        }
     }
 }

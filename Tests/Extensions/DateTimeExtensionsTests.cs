@@ -37,8 +37,11 @@ public class DateTimeExtensionsTests
     {
         var date = new DateTime(2026, 1, 22); // Thursday
         var startOfWeek = date.StartOfWeek(DayOfWeek.Sunday);
-        Assert.That(startOfWeek.DayOfWeek, Is.EqualTo(DayOfWeek.Sunday));
-        Assert.That(startOfWeek, Is.EqualTo(new DateTime(2026, 1, 18)));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(startOfWeek.DayOfWeek, Is.EqualTo(DayOfWeek.Sunday));
+            Assert.That(startOfWeek, Is.EqualTo(new DateTime(2026, 1, 18)));
+        }
     }
 
     [Test]
@@ -46,8 +49,11 @@ public class DateTimeExtensionsTests
     {
         var date = new DateTime(2026, 1, 22); // Thursday
         var startOfWeek = date.StartOfWeek(DayOfWeek.Monday);
-        Assert.That(startOfWeek.DayOfWeek, Is.EqualTo(DayOfWeek.Monday));
-        Assert.That(startOfWeek, Is.EqualTo(new DateTime(2026, 1, 19)));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(startOfWeek.DayOfWeek, Is.EqualTo(DayOfWeek.Monday));
+            Assert.That(startOfWeek, Is.EqualTo(new DateTime(2026, 1, 19)));
+        }
     }
 
     [Test]

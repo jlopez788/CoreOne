@@ -2,18 +2,11 @@ namespace CoreOne.Reactive;
 
 public static class Observer
 {
-    private class AnonymousObserver<T> : IObserver<T>
+    private class AnonymousObserver<T>(Action<T>? onNext, Action<Exception>? onError = null, Action? onCompleted = null) : IObserver<T>
     {
-        private readonly Action<T>? OnNextAction;
-        private readonly Action<Exception>? OnErrorAction;
-        private readonly Action? OnCompletedAction;
-
-        public AnonymousObserver(Action<T>? onNext, Action<Exception>? onError = null, Action? onCompleted = null)
-        {
-            OnNextAction = onNext;
-            OnErrorAction = onError;
-            OnCompletedAction = onCompleted;
-        }
+        private readonly Action<T>? OnNextAction = onNext;
+        private readonly Action<Exception>? OnErrorAction = onError;
+        private readonly Action? OnCompletedAction = onCompleted;
 
         public void OnCompleted() => OnCompletedAction?.Invoke();
 

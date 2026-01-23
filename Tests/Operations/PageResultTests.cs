@@ -96,7 +96,7 @@ public class PageResultTests
     [Test]
     public void Success_ReturnsTrueWhenResultTypeSuccess()
     {
-        var result = new PageResult<int>(new[] { 1 }, 1, 10, 1);
+        var result = new PageResult<int>([1], 1, 10, 1);
 
         Assert.That(result.Success, Is.True);
     }

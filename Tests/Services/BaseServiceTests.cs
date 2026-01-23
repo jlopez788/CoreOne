@@ -6,14 +6,10 @@ namespace Tests.Services;
 
 public class BaseServiceTests
 {
-    private class TestService : BaseService
+    private class TestService(IServiceProvider? services) : BaseService(services)
     {
         public bool DisposeCalled { get; private set; }
         public bool DisposeAsyncCalled { get; private set; }
-
-        public TestService(IServiceProvider? services) : base(services)
-        {
-        }
 
         protected override void Dispose(bool disposing)
         {
