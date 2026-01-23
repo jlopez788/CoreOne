@@ -3,7 +3,7 @@
 **A modern, high-performance C# utility library designed to make your life easier.**
 
 [![.NET](https://img.shields.io/badge/.NET-10.0%20%7C%209.0%20%7C%20Standard%202.0%2F2.1-512BD4)](https://dotnet.microsoft.com/)
-[![NuGet](https://img.shields.io/badge/NuGet-v1.3-blue)](https://www.nuget.org/packages/CoreOne)
+[![NuGet](https://img.shields.io/nuget/v/CoreOne.svg)](https://www.nuget.org/packages/CoreOne)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-779%20passing-brightgreen)](Tests/)
 [![Coverage](https://img.shields.io/badge/coverage-57%25%20lines-yellow)](COVERAGE_REPORT.md)
