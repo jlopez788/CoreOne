@@ -157,7 +157,7 @@ public static class Observable
         }
     }
 
-    public static IObservable<TEventArgs> FromEvent<TEventArgs>(object target, string eventName) => new EventObserver<TEventArgs>(target, eventName);
+    public static IObservable<TEventArgs> FromEvent<TEventArgs>(object target, string eventName) where TEventArgs : EventArgs => new EventObserver<TEventArgs>(target, eventName);
 
     public static IObservable<TSource> Distinct<TSource>(this IObservable<TSource> source, IEqualityComparer<TSource>? comparer = null) => Distinct(source, p => p, comparer);
 

@@ -43,6 +43,7 @@ public static class Types
         EnumerableT = typeof(IEnumerable<>),
         CollectionT = typeof(ICollection<>),
         IDisposable = typeof(IDisposable),
+        IComparable = typeof(IComparable),
         IAsyncDisposable = typeof(IAsyncDisposable);
 
     private static readonly Lazy<HashSet<Type>> CoreDotNetTypes = new(InitiallizeTypes);

@@ -39,13 +39,3 @@ public sealed class ComparisonAttribute(string comparisonProperty, ComparisonTyp
         return isValid ? ValidationResult.Success : new ValidationResult(ErrorMessage);
     }
 }
-
-public enum ComparisonType
-{
-    LessThan,
-    LessThanOrEqualTo,
-    EqualTo,
-    NotEqualTo,
-    GreaterThan,
-    GreaterThanOrEqualTo
-}

@@ -1,4 +1,5 @@
 using CoreOne.Attributes;
+using CoreOne.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace Tests.Attributes;
@@ -9,18 +10,18 @@ public class RequiredIfAttributeTests
     private class TestModel
     {
         public string? Status { get; set; }
-        
+
         [RequiredIf(nameof(Status), "Active")]
         public string? RequiredField { get; set; }
-        
-        [RequiredIf(nameof(Status), "Inactive", IsInverted = true)]
+
+        [RequiredIf(nameof(Status), "Inactive", ComparisonType.NotEqualTo)]
         public string? RequiredWhenNotInactive { get; set; }
     }
 
     private class TestModelWithNull
     {
         public string? NullableProperty { get; set; }
-        
+
         [RequiredIf(nameof(NullableProperty), null)]
         public string? RequiredWhenNull { get; set; }
     }
@@ -30,11 +31,10 @@ public class RequiredIfAttributeTests
     {
         var attribute = new RequiredIfAttribute("Status", "Active");
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(attribute.OtherProperty, Is.EqualTo("Status"));
-            Assert.That(attribute.OtherPropertyValue, Is.EqualTo("Active"));
-            Assert.That(attribute.IsInverted, Is.False);
+        Assert.Multiple(() => {
+            Assert.That(attribute.PropertyName, Is.EqualTo("Status"));
+            Assert.That(attribute.TargetValue, Is.EqualTo("Active"));
+            Assert.That(attribute.ComparisonType, Is.EqualTo(ComparisonType.EqualTo));
             Assert.That(attribute.RequiresValidationContext, Is.True);
         });
     }
@@ -55,7 +55,7 @@ public class RequiredIfAttributeTests
     public void IsValid_WhenOtherPropertyMatches_AndValueMissing_ReturnsError()
     {
         var model = new TestModel { Status = "Active", RequiredField = null };
-        var context = new ValidationContext(model) { 
+        var context = new ValidationContext(model) {
             MemberName = nameof(TestModel.RequiredField),
             DisplayName = "Required Field"
         };
@@ -63,10 +63,9 @@ public class RequiredIfAttributeTests
 
         var result = attribute.GetValidationResult(model.RequiredField, context);
 
-        Assert.Multiple(() =>
-        {
+        Assert.Multiple(() => {
             Assert.That(result, Is.Not.EqualTo(ValidationResult.Success));
-            Assert.That(result?.ErrorMessage, Does.Contain("Required Field"));
+            Assert.That(result?.ErrorMessage, Does.Contain("RequiredField"));
             Assert.That(result?.ErrorMessage, Does.Contain("Status"));
         });
     }
@@ -104,7 +103,7 @@ public class RequiredIfAttributeTests
 
         var result = attribute.GetValidationResult(model.RequiredField, context);
 
-        Assert.That(result, Is.Not.EqualTo(ValidationResult.Success));
+        Assert.That(result, Is.EqualTo(ValidationResult.Success));
     }
 
     [Test]
@@ -112,7 +111,7 @@ public class RequiredIfAttributeTests
     {
         var model = new TestModel { Status = "Active", RequiredWhenNotInactive = null };
         var context = new ValidationContext(model) { MemberName = nameof(TestModel.RequiredWhenNotInactive) };
-        var attribute = new RequiredIfAttribute(nameof(TestModel.Status), "Inactive") { IsInverted = true };
+        var attribute = new RequiredIfAttribute(nameof(TestModel.Status), "Inactive", ComparisonType.NotEqualTo);
 
         var result = attribute.GetValidationResult(model.RequiredWhenNotInactive, context);
 
@@ -124,7 +123,7 @@ public class RequiredIfAttributeTests
     {
         var model = new TestModel { Status = "Inactive", RequiredWhenNotInactive = null };
         var context = new ValidationContext(model) { MemberName = nameof(TestModel.RequiredWhenNotInactive) };
-        var attribute = new RequiredIfAttribute(nameof(TestModel.Status), "Inactive") { IsInverted = true };
+        var attribute = new RequiredIfAttribute(nameof(TestModel.Status), "Inactive", ComparisonType.NotEqualTo);
 
         var result = attribute.GetValidationResult(model.RequiredWhenNotInactive, context);
 
@@ -138,17 +137,11 @@ public class RequiredIfAttributeTests
         var context = new ValidationContext(model) { MemberName = nameof(TestModel.RequiredField) };
         var attribute = new RequiredIfAttribute("NonExistentProperty", "Value");
 
-        var result = attribute.GetValidationResult(model.RequiredField, context);
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(result, Is.Not.EqualTo(ValidationResult.Success));
-            Assert.That(result?.ErrorMessage, Does.Contain("NonExistentProperty"));
-        });
+        Assert.Throws<NotSupportedException>(() => attribute.GetValidationResult(model.RequiredField, context));
     }
 
     [Test]
-    public void IsValid_WhenBothPropertiesNull_ReturnsSuccess()
+    public void IsValid_WhenBothPropertiesNull_ReturnsRequired()
     {
         var model = new TestModelWithNull { NullableProperty = null, RequiredWhenNull = null };
         var context = new ValidationContext(model) { MemberName = nameof(TestModelWithNull.RequiredWhenNull) };
@@ -156,7 +149,7 @@ public class RequiredIfAttributeTests
 
         var result = attribute.GetValidationResult(model.RequiredWhenNull, context);
 
-        Assert.That(result, Is.EqualTo(ValidationResult.Success));
+        Assert.That(result, Is.Not.EqualTo(ValidationResult.Success));
     }
 
     [Test]
@@ -168,7 +161,8 @@ public class RequiredIfAttributeTests
 
         var result = attribute.GetValidationResult(model.RequiredWhenNull, context);
 
-        Assert.That(result, Is.EqualTo(ValidationResult.Success));
+        Assert.That(result, Is.Not.EqualTo(ValidationResult.Success));
+        Assert.That(result.ErrorMessage?.Contains("is required"), Is.True);
     }
 
     [Test]
@@ -206,28 +200,22 @@ public class RequiredIfAttributeTests
     }
 
     [Test]
-    public void IsRequired_WithNullTarget_ReturnsFalse()
+    public void IsRequired_WithNullTarget_Throws()
     {
         var attribute = new RequiredIfAttribute("Status", "Active");
-
-        var result = attribute.IsRequired(null);
-
-        Assert.That(result, Is.False);
+        Assert.Throws<NotSupportedException>(() => attribute.IsRequired(null));
     }
 
     [Test]
     public void FormatErrorMessage_IncludesPropertyNames()
     {
-        var attribute = new RequiredIfAttribute("Status", "Active") {
-            OtherPropertyDisplayName = "Status Field"
-        };
+        var attribute = new RequiredIfAttribute("Status", "Active");
 
         var message = attribute.FormatErrorMessage("RequiredField");
 
-        Assert.Multiple(() =>
-        {
+        Assert.Multiple(() => {
             Assert.That(message, Does.Contain("RequiredField"));
-            Assert.That(message, Does.Contain("Status Field"));
+            Assert.That(message, Does.Contain("Status"));
             Assert.That(message, Does.Contain("Active"));
         });
     }
@@ -235,10 +223,10 @@ public class RequiredIfAttributeTests
     [Test]
     public void FormatErrorMessage_WithInverted_IncludesOtherThanText()
     {
-        var attribute = new RequiredIfAttribute("Status", "Inactive") { IsInverted = true };
+        var attribute = new RequiredIfAttribute("Status", "Inactive", ComparisonType.NotEqualTo);
 
         var message = attribute.FormatErrorMessage("Field");
 
-        Assert.That(message, Does.Contain("other than"));
+        Assert.That(message, Does.Contain(nameof(ComparisonType.NotEqualTo)));
     }
 }
