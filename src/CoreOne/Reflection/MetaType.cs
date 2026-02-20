@@ -1,69 +1,26 @@
 ﻿using CoreOne.Threading.Tasks;
-using System.Collections.Concurrent; 
+using System.Collections.Concurrent;
 
 namespace CoreOne.Reflection;
 
 public static class MetaType
 {
-    private readonly struct Key : IEquatable<Key>
-    {
-        private readonly string Value;
-        public IReadOnlyList<Type> Arguments { get; }
-        public string Name { get; }
-        public Type Type { get; }
-
-        public Key(Type type, string name)
-        {
-            Type = type;
-            Name = name;
-            Arguments = [];
-            Value = $"{type?.FullName}::{name}";
-        }
-
-        public Key(Type type, Type[]? arguments, string name)
-        {
-            Type = type;
-            Name = name;
-            Arguments = (arguments ?? []);
-            var args = string.Join(", ", Arguments.Select(p => p.FullName));
-            Value = $"{type?.FullName}::{name}({args})";
-        }
-
-        public override bool Equals(object? obj) => obj is Key key && Equals(key);
-
-        public bool Equals([AllowNull] Key other)
-        {
-            var equals = Type == other.Type && Name.Matches(other.Name);
-            if (equals && Arguments.Count > 0)
-            {
-                equals = false;
-                if (Arguments.Count == other.Arguments.Count)
-                    equals = Arguments.SequenceEqual(other.Arguments);
-            }
-            return equals;
-        }
-
-        public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(Value);
-
-        public override string ToString() => Value;
-    }
-
     [Flags]
     private enum ActionType
     { Read = 0x01, Write = 0x10 }
 
     public const BindingFlags FLAGS = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.IgnoreCase;
     public const BindingFlags INSTANCE_FLAGS = BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
-    private static readonly ConcurrentDictionary<Key, Metadata> Cache = new();
-    private static readonly ConcurrentDictionary<Key, List<Metadata>> ClassCache = new();
-    private static readonly ConcurrentDictionary<Key, InvokeCallback> Method = new();
+    private static readonly ConcurrentDictionary<TypeKey, Metadata> Cache = new();
+    private static readonly ConcurrentDictionary<TypeKey, List<Metadata>> ClassCache = new();
+    private static readonly ConcurrentDictionary<TypeKey, InvokeCallback> Method = new();
 
     public static Metadata CreateFromMemberInfo(Type? type, MemberInfo? member)
     {
         if (type is null || member is null)
             return Metadata.Empty;
 
-        var key = new Key(type, member.Name);
+        var key = new TypeKey(type, member.Name);
         return Create(key, member);
     }
 
@@ -118,7 +75,7 @@ public static class MetaType
         if (type is null)
             return InvokeCallback.Empty;
 
-        var key = new Key(type, args, name);
+        var key = new TypeKey(type, args, name);
         if (Method.TryGetValue(key, out var invoke))
             return invoke;
 
@@ -132,7 +89,7 @@ public static class MetaType
 
     public static InvokeCallback GetInvokestaticMethod(Type type, string name, params Type[] args)
     {
-        var key = new Key(type, args, name);
+        var key = new TypeKey(type, args, name);
         if (Method.TryGetValue(key, out var invoke))
             return invoke;
 
@@ -153,14 +110,14 @@ public static class MetaType
             return Metadata.Empty;
 
         var meta = Metadata.Empty;
-        var key = new Key(type, "");
+        var key = new TypeKey(type);
         if (ClassCache.TryGetValue(key, out var props) && props?.Count > 0)
         { // See if we have ran it from the class previously
             meta = props.FirstOrDefault(p => p.Name.Matches(propertyName));
             return meta;
         }
 
-        key = new(type, propertyName ?? "");
+        key = new(type, propertyName);
         if (Cache.TryGetValue(key, out meta))
             return meta;
 
@@ -175,20 +132,20 @@ public static class MetaType
         var entries = new List<Metadata>(15);
         if (type is not null)
         {
-            var key = new Key(type, "");
+            var key = new TypeKey(type);
             if (ClassCache.TryGetValue(key, out entries))
                 return entries;
 
             var properties = type.GetProperties(flags);
             entries ??= new List<Metadata>(15);
-            entries.AddRange(properties.Select(p => new Key(type, p.Name))
+            entries.AddRange(properties.Select(p => new TypeKey(type, p.Name))
                    .Select(p => Create(p, flags)));
 
             var fields = type.GetFields(flags);
-            entries.AddRange(fields.Select(p => new Key(type, p.Name))
+            entries.AddRange(fields.Select(p => new TypeKey(type, p.Name))
                 .Select(p => Create(p, flags)));
 
-            entries.RemoveAll(p => Metadata.Empty.Equals(p));
+            entries.RemoveAll(Metadata.Empty.Equals);
             if (entries.Count > 0)
                 ClassCache.TryAdd(key, entries);
         }
@@ -251,7 +208,7 @@ public static class MetaType
         return meta.Setter;
     }
 
-    private static Metadata Create(Key key, BindingFlags flags)
+    private static Metadata Create(TypeKey key, BindingFlags flags)
     {
         var property = key.Type?.GetProperty(key.Name, flags);
         if (property is not null)
@@ -261,7 +218,7 @@ public static class MetaType
         return field is not null ? Create(key, field) : Metadata.Empty;
     }
 
-    private static Metadata Create(Key key, MemberInfo member)
+    private static Metadata Create(TypeKey key, MemberInfo member)
     {
         ActionType actions;
         var tobject = typeof(object);

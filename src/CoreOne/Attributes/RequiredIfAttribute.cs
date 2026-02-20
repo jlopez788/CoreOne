@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace CoreOne.Attributes;
+﻿namespace CoreOne.Attributes;
 
 /// <summary>
 /// Provides conditional validation based on related property value.

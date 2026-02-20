@@ -22,7 +22,11 @@ public static class StringExtensions
 #endif
     }
 
-    public static string EndWith(this string? value, string endwith) => !string.IsNullOrEmpty(value) ? (value.EndsWith(endwith) ? value : $"{value}{endwith}") : endwith;
+    public static bool IsNullOrEmpty([NotNullWhen(false)] this string? value) => string.IsNullOrWhiteSpace(value);
+
+    public static bool IsNotNullOrEmpty(this string? value) => !string.IsNullOrWhiteSpace(value);
+
+    public static string EndWith(this string? value, string endwith) => !string.IsNullOrEmpty(value) ? (value!.EndsWith(endwith) ? value : $"{value}{endwith}") : endwith;
 
     /// <summary>
     /// Compare if one string equals another string, case-insensitive by default
@@ -150,5 +154,4 @@ public static class StringExtensions
         }
         return builder.ToString().ToLowerInvariant().Trim();
     }
-
 }

@@ -27,15 +27,7 @@ public sealed class ComparisonAttribute(string comparisonProperty, ComparisonTyp
             throw new ArgumentException("The properties types must be the same");
         }
 
-        var isValid = ComparisonType switch {
-            ComparisonType.LessThan => !isSVNull && !isTVNull && sourceValue?.CompareTo((IComparable?)targetValue) < 0,
-            ComparisonType.LessThanOrEqualTo => !isSVNull && !isTVNull && sourceValue?.CompareTo((IComparable?)targetValue) <= 0,
-            ComparisonType.NotEqualTo => (!isSVNull && isTVNull) || (isSVNull && !isTVNull) || (!isSVNull && !isTVNull && sourceValue?.CompareTo((IComparable?)targetValue) != 0),
-            ComparisonType.EqualTo => (isSVNull && isTVNull) || (!isSVNull && !isTVNull && sourceValue?.CompareTo((IComparable?)targetValue) == 0),
-            ComparisonType.GreaterThan => !isSVNull && !isTVNull && sourceValue?.CompareTo((IComparable?)targetValue) > 0,
-            ComparisonType.GreaterThanOrEqualTo => !isSVNull && !isTVNull && sourceValue?.CompareTo((IComparable?)targetValue) >= 0,
-            _ => throw new InvalidOperationException(),
-        };
+        var isValid = sourceValue.CompareToObject(targetValue, ComparisonType);
         return isValid ? ValidationResult.Success : new ValidationResult(ErrorMessage);
     }
 }

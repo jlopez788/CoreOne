@@ -1,6 +1,6 @@
 ﻿using CoreOne.Converters;
 
-namespace CoreOne.Models;
+namespace CoreOne.IO.Models;
 
 [NJsonConverter(typeof(FileSizeConverter.NewtonsoftConverter))]
 [SJsonConverter(typeof(FileSizeConverter.SystemJsonConverter))]

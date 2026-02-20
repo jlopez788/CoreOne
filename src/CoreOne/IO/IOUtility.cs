@@ -98,7 +98,7 @@ public static partial class IOUtility
             try
             {
                 using (var stream = new FileStream(path, mode, access, share))
-                    result = await stream.ReadFully();
+                    result = await stream.ReadFullyAsync();
 
                 File.SetLastAccessTime(path, DateTime.Now);
             }

@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CoreOne.Collections;
-
+﻿namespace CoreOne.Collections;
 
 public sealed class ImmutableList<T> : IReadOnlyCollection<T>, IReadOnlyList<T>
 {

@@ -2,8 +2,6 @@
 
 public abstract class DataCollection<K, V, C> : Data<K, C> where C : ICollection<V> where K : notnull
 {
-   
-
     public DataCollection() : this(50) { }
 
     public DataCollection(int capacity) : base(capacity) { }

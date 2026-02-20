@@ -5,7 +5,7 @@ public static class TypeUtility
     private class Empty
     { }
 
-    private static readonly Data<TypedKey, Delegate> CachedActivators = [];
+    private static readonly Data<TypeKey, Delegate> CachedActivators = [];
     private static readonly Type TypeEmpty = typeof(Empty);
 
     public static BindingFlags Flags { get; set; } = BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy;
@@ -59,7 +59,7 @@ public static class TypeUtility
     {
         var all = new[] { typeof(T1), typeof(T2), typeof(T3) };
         var args = new object?[] { t1, t2, t3 };
-        var key = new TypedKey(type, all, Flags, "ctor");
+        var key = new TypeKey(type, all,  "ctor");
         var invoke = CachedActivators.GetSet(key, () => CreateDelegate<T1, T2, T3>(type));
         return invoke!.DynamicInvoke(t1, t2, t3)!;
     }

@@ -81,11 +81,11 @@ public class TargetCreator(IServiceProvider? oservices)
         var context = key.Type.GetConstructors()
              .Select(p => new { info = p, parameters = p.GetParameters() })
              .OrderByDescending(p => p.parameters.Length)
-             .FirstOrDefault(p => (useSP && ServiceProvider is not null) || p.parameters.Select(n => n.ParameterType).SequenceEqual(key.Parameters));
+             .FirstOrDefault(p => (useSP && ServiceProvider is not null) || p.parameters.Select(n => n.ParameterType).SequenceEqual(key.Arguments));
         if (context is not null)
         {
             var argumentsParameter = Expression.Parameter(typeof(object[]), "arguments");
-            var parammeterExpressions = CreateParameterExpressions([.. key.Parameters], argumentsParameter);
+            var parammeterExpressions = CreateParameterExpressions([.. key.Arguments], argumentsParameter);
             var ctor = Expression.New(context.info, parammeterExpressions);
             var lambda = Expression.Lambda<Create>(ctor, argumentsParameter);
             var func = lambda.Compile();

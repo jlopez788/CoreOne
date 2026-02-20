@@ -1,6 +1,6 @@
 ﻿namespace CoreOne;
 
-public struct Subscription(Action callback) : IDisposable
+public class Subscription(Action callback) : IDisposable
 {
     private Action? Callback = callback;
 

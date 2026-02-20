@@ -17,9 +17,32 @@ public class FileStore<T> : Disposable where T : class
         Serializer = serializer;
     }
 
-    public Task<IResult<T>> Load(CancellationToken cancellationToken = default) => Load(Path, cancellationToken);
+    public IResult<T> Load(string? path = null)
+    {
+        path ??= Path;
+        try
+        {
+            if (File.Exists(path))
+            {
+                using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                return stream.ReadFully()
+                    .SelectResult(p => Serializer.Deserialize(p, typeof(T)))
+                    .Select(p => (T)p);
+            }
+            else
+            {
+                return Result.Fail<T>("File does not exist");
+            }
+        }
+        catch (Exception ex)
+        {
+            return Result.FromException<T>(ex);
+        }
+    }
 
-    public async Task<IResult<T>> Load(string path, CancellationToken cancellationToken = default)
+    public Task<IResult<T>> LoadAsync(CancellationToken cancellationToken = default) => Loadsync(Path, cancellationToken);
+
+    public async Task<IResult<T>> Loadsync(string path, CancellationToken cancellationToken = default)
     {
         var result = Result.Fail<T>("File does not exist");
         if (File.Exists(path))
