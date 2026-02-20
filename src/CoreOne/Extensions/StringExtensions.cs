@@ -24,7 +24,7 @@ public static class StringExtensions
 
     public static bool IsNullOrEmpty([NotNullWhen(false)] this string? value) => string.IsNullOrWhiteSpace(value);
 
-    public static bool IsNotNullOrEmpty(this string? value) => !string.IsNullOrWhiteSpace(value);
+    public static bool IsNotNullOrEmpty([NotNullWhen(true)] this string? value) => !string.IsNullOrWhiteSpace(value);
 
     public static string EndWith(this string? value, string endwith) => !string.IsNullOrEmpty(value) ? (value!.EndsWith(endwith) ? value : $"{value}{endwith}") : endwith;
 
