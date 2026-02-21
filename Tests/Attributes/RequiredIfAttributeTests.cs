@@ -1,5 +1,5 @@
 using CoreOne.Attributes;
-using CoreOne.Models;
+using CoreOne.Operations;
 using System.ComponentModel.DataAnnotations;
 
 namespace Tests.Attributes;

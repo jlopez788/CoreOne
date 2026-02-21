@@ -1,4 +1,4 @@
-﻿namespace CoreOne.Models;
+﻿namespace CoreOne.Operations;
 
 public enum ComparisonType
 {

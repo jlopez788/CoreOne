@@ -1,5 +1,5 @@
 using CoreOne.Extensions;
-using CoreOne.Models;
+using CoreOne.Operations;
 
 namespace Tests.Extensions;
 

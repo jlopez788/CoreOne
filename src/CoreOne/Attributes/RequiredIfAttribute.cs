@@ -1,4 +1,6 @@
-﻿namespace CoreOne.Attributes;
+﻿using CoreOne.Operations;
+
+namespace CoreOne.Attributes;
 
 /// <summary>
 /// Provides conditional validation based on related property value.
