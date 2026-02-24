@@ -1,21 +1,18 @@
-﻿namespace CoreOne.Services;
+﻿using CoreOne.Cryptography;
 
-public class FileStore<T> : Disposable where T : class
+namespace CoreOne.Services;
+
+public class FileStore<T>(ICypher? cypher, ISerializer? serializer, string? path = null) : Disposable where T : class
 {
-    public string Path { get; protected set; }
-    protected ISerializer Serializer { get; set; }
+    public string Path { get; protected set; } = path ?? string.Empty;
+    protected ICypher? Cypher { get; } = cypher;
+    protected ISerializer Serializer { get; } = serializer ?? NJsonService.Instance;
 
-    public FileStore(string? path = null, bool encrypt = false)
-    {
-        Path = path ?? string.Empty;
-        Serializer = NJsonService.Instance;
-    }
+    public FileStore(string? path = null) : this(null, null, path) { }
 
-    public FileStore(ISerializer serializer, string? path = null, bool encrypt = false)
-    {
-        Path = path ?? string.Empty;
-        Serializer = serializer;
-    }
+    public FileStore(ISerializer serializer, string? path = null) : this(null, serializer, path) { }
+
+    public FileStore(ICypher cypher, string? path = null) : this(cypher, null, path) { }
 
     public IResult<T> Load(string? path = null)
     {
@@ -26,6 +23,7 @@ public class FileStore<T> : Disposable where T : class
             {
                 using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
                 return stream.ReadFully()
+                    .SelectResult(p => Cypher?.Decrypt(p) ?? new Result<byte[]>(p))
                     .SelectResult(p => Serializer.Deserialize(p, typeof(T)))
                     .Select(p => (T)p);
             }
@@ -50,8 +48,10 @@ public class FileStore<T> : Disposable where T : class
             try
             {
                 using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-                var next = await Serializer.DeserializeAsync(stream, typeof(T), cancellationToken);
-                return next.Select(p => (T?)p);
+                var next = await stream.ReadFullyAsync(cancellationToken);
+                return next.SelectResult(p => Cypher?.Decrypt(p) ?? new Result<byte[]>(p))
+                           .SelectResult(p => Serializer.Deserialize(p, typeof(T)))
+                           .Select(p => (T)p);
             }
             catch (Exception ex)
             {
@@ -71,6 +71,7 @@ public class FileStore<T> : Disposable where T : class
             using (var fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
             {
                 var buffer = Serializer.Serialize(model, typeof(T));
+                buffer = Cypher?.Encrypt(buffer, null) ?? buffer;
                 await fs.WriteAsync(buffer, 0, buffer.Length, cancellationToken);
                 await fs.FlushAsync(cancellationToken);
             }
