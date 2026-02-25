@@ -57,9 +57,10 @@ public sealed class TypeKeyConverter
         });
     }
 
-    public static TypeKey Register<T>(string? name = null)
+    public static TypeKey Register<T>(string? name = null) => Register(typeof(T), name);
+
+    public static TypeKey Register(Type type, string? name = null)
     {
-        var type = typeof(T);
         var key = new TypeKey(type, name);
         Data.TryAdd(key.Name, key);
         return key;

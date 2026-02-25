@@ -18,7 +18,12 @@ public class NewtonSettings : JsonSerializerSettings
         ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
         DateTimeZoneHandling = DateTimeZoneHandling.Utc;
         ContractResolver = new CamelCasePropertyNamesContractResolver();
-        Converters = [new VersionConverter(), new StringEnumConverter(), new FileSizeConverter.NewtonsoftConverter()];
+        Converters = [
+            new VersionConverter(),
+            new StringEnumConverter(),
+            new FileSizeConverter.NewtonsoftConverter(),
+            new TypeKeyConverter.NewtonsoftConverter()
+        ];
     }
 
     public NewtonSettings AddConverter(JsonConverter? converter)
