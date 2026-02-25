@@ -14,8 +14,13 @@ public static class TypeKeyStore
             var key = kp.Key.Name;
             Data.TryAdd(key, new TypeKey(kp.Key));
 
-            key = $"{key}?";
-            Data.TryAdd(key, new TypeKey(nullable.MakeGenericType(kp.Key), key));
+            // Only create Nullable<T> for value types
+            if (kp.Key.IsValueType && !kp.Key.IsGenericType)
+            {
+                var nullableType = nullable.MakeGenericType(kp.Key);
+                var nullableKey = $"{key}?";
+                Data.TryAdd(nullableKey, new TypeKey(nullableType, nullableKey));
+            }
         });
     }
 
