@@ -15,9 +15,5 @@ public static class Observer
         public void OnNext(T value) => OnNextAction?.Invoke(value);
     }
 
-    public static IObserver<T> Create<T>(Action<T> onNext) => new AnonymousObserver<T>(onNext);
-
-    public static IObserver<T> Create<T>(Action<T> onNext, Action<Exception> onError) => new AnonymousObserver<T>(onNext, onError);
-
-    public static IObserver<T> Create<T>(Action<T> onNext, Action<Exception> onError, Action onCompleted) => new AnonymousObserver<T>(onNext, onError, onCompleted);
+    public static IObserver<T> Create<T>(Action<T> onNext, Action<Exception>? onError = null, Action? onCompleted = null) => new AnonymousObserver<T>(onNext, onError, onCompleted);
 }

@@ -1,6 +1,6 @@
 ﻿namespace CoreOne.Collections;
 
-public sealed class CircularArray<T>(int capacity) : IEnumerable<T>
+public sealed class CircularArray<T>(int capacity) : IEnumerable<T>, IReadOnlyCollection<T>, IReadOnlyList<T>
 {
     private struct CircularEnumerator : IEnumerator<T>
     {

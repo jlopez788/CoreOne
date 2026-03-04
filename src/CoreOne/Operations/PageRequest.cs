@@ -45,7 +45,7 @@ public class PageRequest
         else if (operation is FilterBy filter)
         {
             var target = Operations.OfType<FilterBy>().FirstOrDefault(p => p.Field.Matches(filter.Field)) ?? filter;
-            //target.AdvancedSearch = filter.AdvancedSearch;
+            target.AdvancedSearch = filter.AdvancedSearch;
             ApplyFilter(target);
 
             CurrentPage = 1;

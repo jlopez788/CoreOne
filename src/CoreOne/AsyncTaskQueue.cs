@@ -72,6 +72,6 @@ public class AsyncTaskQueue(int concurrency = 1)
             while (Workers.TryDequeue(out var worker))
                 await worker.Execute();
             _isProcessing = false;
-        });
+        }, () => _isProcessing = false);
     }
 }
