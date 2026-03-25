@@ -14,7 +14,7 @@ public class AToken : IAsyncDisposable
     {
         TokenSource = tokenSource;
         Tasks = [];
-        Id = id.GetValueOrDefault(ID.Create()).ToShortId();
+        Id = ID.CreateFromGuid(id).ToShortId();
         SToken = new SToken(this);
     }
 

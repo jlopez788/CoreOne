@@ -1,36 +1,51 @@
-﻿namespace CoreOne;
+﻿using CoreOne.Converters;
 
-public class ID : IEquatable<ID>
+namespace CoreOne;
+
+[NJsonConverter(typeof(IDConverter.NewtonsoftConverter))]
+[SJsonConverter(typeof(IDConverter.SystemJsonConverter))]
+public class ID : ICoreId<ID>, IEquatable<ID>
 {
-    public static readonly ID Empty = new(Guid.Empty);
-    internal readonly Guid Id;
+    public static ID Empty { get; } = new(Guid.Empty);
 
-    public ID(Guid id) => Id = id;
+    public Guid Value { get; }
 
-    public ID() => Id = Create();
+    public ID(Guid id) => Value = id;
 
-    public static ID Create()
+    public ID() => Value = GetSequentialGuid();
+
+    private static Guid GetSequentialGuid()
     {
+#if NET9_0_OR_GREATER
+        return Guid.CreateVersion7();
+#else
         byte[] uid = Guid.NewGuid().ToByteArray();
         byte[] seq = BitConverter.GetBytes(DateTime.UtcNow.Ticks);
         Array.Reverse(seq);
         // The first 8 bytes are sequential, it minimizes index fragmentation
         Array.Copy(seq, uid, seq.Length);
-        return new ID(new Guid(uid));
+        return new Guid(uid);
+#endif
     }
 
-    public static ID CreateV7() =>
-#if NET9_0_OR_GREATER
-        new(Guid.CreateVersion7());
-#else
-        Create();
-#endif
+    /// <summary>
+    /// Creates sequential ID
+    /// </summary>
+    /// <returns></returns>
+    public static ID Create() => new(GetSequentialGuid());
 
-    public static implicit operator Guid(ID id) => id.Id;
+    /// <summary>
+    /// Creates sequential ID
+    /// </summary>
+    /// <param name="id">Optional guid id</param>
+    /// <returns></returns>
+    public static ID CreateFromGuid(Guid? id) => id.HasValue ? new ID(id.Value) : Create();
 
-    public static bool operator !=(ID? left, ID? right) => left?.Id != right?.Id;
+    public static bool operator !=(ID? left, ID? right) => left?.Value != right?.Value;
 
-    public static bool operator ==(ID? left, ID? right) => left?.Id == right?.Id;
+    public static bool operator ==(ID? left, ID? right) => left?.Value == right?.Value;
+
+    public static implicit operator ID(Guid key) => new(key);
 
     public static bool TryParse(string? value, [NotNullWhen(true)] out ID? id)
     {
@@ -55,17 +70,13 @@ public class ID : IEquatable<ID>
         return id is not null;
     }
 
-    public Guid AsGuid() => Id;
+    public Guid AsGuid() => Value;
 
-    public bool Equals(ID? other) => Id == other?.Id;
+    public bool Equals(ID? other) => Value == other?.Value;
 
-    public override bool Equals(object? obj) => obj is ID id && Id == id.Id;
+    public override bool Equals(object? obj) => obj is ID id && Value == id.Value;
 
-    public override int GetHashCode() => Id.GetHashCode();
+    public override int GetHashCode() => Value.GetHashCode();
 
-    public string ToShortId() => Id.ToShortId();
-
-    public string ToSlugUrl() => Id.ToSlugUrl();
-
-    public override string ToString() => Id.ToString();
+    public override string ToString() => Value.ToString();
 }

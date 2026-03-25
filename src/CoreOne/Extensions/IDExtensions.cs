@@ -10,7 +10,11 @@ public static class IDExtensions
     private const byte PlusByte = (byte)'+';
     private const char Underscore = '_';
 
+    public static string ToShortId<TId>(this TId id) where TId : ICoreId<TId> => id.Value.ToShortId();
+
     public static string ToShortId(this Guid guid) => Convert.ToBase64String(guid.ToByteArray()).Replace("+", "").Replace("/", "").Replace("=", "");
+ 
+    public static string ToSlugUrl<TId>(this TId id) where TId : ICoreId<TId> => id.Value.ToSlugUrl();
 
     public static string ToSlugUrl(this Guid guid)
     {
@@ -40,6 +44,5 @@ public static class IDExtensions
 #else
         return new string(chars.ToArray());
 #endif
-
     }
 }

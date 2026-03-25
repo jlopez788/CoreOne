@@ -20,7 +20,7 @@ public class Hub : Disposable, IHub
 
     public static readonly Hub Global = new GlobalHub();
     private static readonly List<Hub> Instances = [];
-    private readonly Guid Id;
+    private readonly ID Id;
     private readonly DataList<Type, IHubMessageIntercept> Intercepts = [];
     private readonly AsyncTaskQueue Queue = new();
     private readonly Data<StateKey, IStateMessage> States = [];
