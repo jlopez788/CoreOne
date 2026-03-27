@@ -18,6 +18,8 @@ jobs:
             path: src/CoreOne/CoreOne.csproj
           - name: coreone.identity
             path: src/CoreOne.Identity/CoreOne.Identity.csproj
+          - name: coreone.generators
+            path: src/CoreOne.Identity/CoreOne.Generators.csproj
 
     steps:
       - name: Checkout code
@@ -26,7 +28,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.*'
+          dotnet-version: '10.0.*'
 
       - name: Get project version
         id: get_version
