@@ -19,7 +19,7 @@ jobs:
           - name: coreone.identity
             path: src/CoreOne.Identity/CoreOne.Identity.csproj
           - name: coreone.generators
-            path: src/CoreOne.Identity/CoreOne.Generators.csproj
+            path: src/CoreOne.Generators/CoreOne.Generators.csproj
 
     steps:
       - name: Checkout code
