@@ -12,6 +12,7 @@ public class NewtonSettings : JsonSerializerSettings
     public NewtonSettings()
     {
         Formatting = Formatting.None;
+        TypeNameHandling = TypeNameHandling.Auto;
         NullValueHandling = NullValueHandling.Ignore;
         DateParseHandling = DateParseHandling.DateTime;
         DateFormatHandling = DateFormatHandling.IsoDateFormat;

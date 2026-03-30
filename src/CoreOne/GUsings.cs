@@ -17,3 +17,5 @@ global using System.Reflection;
 global using NJsonConverter = Newtonsoft.Json.JsonConverterAttribute;
 global using ReferenceEqualityComparer = CoreOne.Comparers.ReferenceEqualityComparer;
 global using SJsonConverter = System.Text.Json.Serialization.JsonConverterAttribute;
+global using NJsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
+global using SJsonIgnore = System.Text.Json.Serialization.JsonIgnoreAttribute;

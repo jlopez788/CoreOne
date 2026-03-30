@@ -7,6 +7,9 @@ public abstract class BaseOperationRequest<T> where T : BaseOperationRequest<T>
     public static readonly Type ORDER = typeof(OrderBy);
 
     public List<IOperation> Operations { get; protected set; } = [];
+
+    [NJsonIgnore]
+    [SJsonIgnore]
     public SToken Token { get; protected set; }
 
     protected BaseOperationRequest()
