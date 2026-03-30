@@ -1,12 +1,11 @@
 ﻿namespace CoreOne.Operations;
 
-public class PageResult<T> : PageRequest, IResult<ICollection<T>>
+public class PageResult<T> : PageRequest, ICollectionResult<T>
 {
     public ICollection<T>? Items { get; set; }
     public int PageCount { get; set; }
     public int TotalCount { get; set; }
     public ResultType ResultType { get; set; }
-    public ICollection<T>? Model => Items;
     public string? Message { get; }
     public bool Success => ResultType == ResultType.Success;
 
@@ -26,4 +25,4 @@ public class PageResult<T> : PageRequest, IResult<ICollection<T>>
         TotalCount = total;
         PageCount = total < pageSize || pageSize == 0 ? 1 : (int)Math.Ceiling(total / (double)pageSize);
     }
-} 
+}

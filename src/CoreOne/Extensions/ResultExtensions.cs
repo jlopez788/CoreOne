@@ -2,6 +2,11 @@
 
 public static class ResultExtensions
 {
+    extension<T>(IResult<T> result)
+    {
+        public bool SuccessWithModel => result.Success && result.Model is not null;
+    }
+
     public static IResult OnSuccess(this IResult result, Action? callback) => result.Success ? Utility.Try(callback) : result;
 
     public static IResult<T> OnSuccess<T>(this IResult<T> result, Action<T>? callback)

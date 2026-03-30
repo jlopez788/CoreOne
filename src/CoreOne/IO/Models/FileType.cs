@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace CoreOne.IO.Models;
+﻿namespace CoreOne.IO.Models;
 
 public class FileType(string? ext, string? mimeType) : IEquatable<FileType>
 {

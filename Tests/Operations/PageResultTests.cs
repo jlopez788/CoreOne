@@ -11,8 +11,7 @@ public class PageResultTests
     {
         var result = new PageResult<string>(10);
 
-        Assert.Multiple(() =>
-        {
+        Assert.Multiple(() => {
             Assert.That(result.PageSize, Is.EqualTo(10));
             Assert.That(result.CurrentPage, Is.EqualTo(1));
             Assert.That(result.Items, Is.Not.Null);
@@ -29,8 +28,7 @@ public class PageResultTests
 
         var result = new PageResult<string>(data, 1, 2, 5);
 
-        Assert.Multiple(() =>
-        {
+        Assert.Multiple(() => {
             Assert.That(result.Items, Has.Count.EqualTo(5));
             Assert.That(result.CurrentPage, Is.EqualTo(1));
             Assert.That(result.PageSize, Is.EqualTo(2));
@@ -76,21 +74,11 @@ public class PageResultTests
     {
         var result = new PageResult<string>(null, 1, 10, 0);
 
-        Assert.Multiple(() =>
-        {
+        Assert.Multiple(() => {
             Assert.That(result.Items, Is.Not.Null);
             Assert.That(result.Items, Is.Empty);
-            Assert.That(result.Model, Is.Empty);
         });
-    }
 
-    [Test]
-    public void Model_ReturnsSameAsResults()
-    {
-        var data = new[] { 1, 2, 3 };
-        var result = new PageResult<int>(data, 1, 10, 3);
-
-        Assert.That(result.Model, Is.SameAs(result.Items));
     }
 
     [Test]

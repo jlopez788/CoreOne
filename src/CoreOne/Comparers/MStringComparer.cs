@@ -25,7 +25,7 @@ public sealed class MStringComparer : IEqualityComparer<string?>, IComparer<stri
     public int GetHashCode(string? value)
     {
         var comparer = IgnoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
-        return comparer.GetHashCode(value ?? string.Empty);
+        return string.IsNullOrWhiteSpace(value) ? 0 : comparer.GetHashCode(value);
     }
     
     public int GetHashCode(object obj) => GetHashCode(obj.ToString());
