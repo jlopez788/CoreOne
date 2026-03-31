@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <Version>1.0</Version>
+        <Version>1.0.1</Version>
         <LangVersion>latest</LangVersion>
         <OutputItemType>Analyzer</OutputItemType>
         <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
@@ -12,6 +12,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
         <Title>CoreOne.Generators</Title>
         <Authors>Juan Lopez</Authors>
         <Company>Juan Lopez</Company>
@@ -25,6 +26,10 @@
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>
         </None>
+        <!-- Pack the generator assembly into the analyzers folder so it runs in consuming projects -->
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <!-- Include private dependencies used by the generator at runtime -->
+        <None Include="$(OutputPath)\CoreOne.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
 
     <ItemGroup>
