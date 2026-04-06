@@ -3,7 +3,7 @@ using System.Text;
 
 namespace CoreOne.Cryptography;
 
-public class CypherService(CryptKey key) : ICypher
+public class CypherService(CryptKey key) : PlainService, ICypher
 {
     private enum ProcessType
     {
@@ -15,28 +15,46 @@ public class CypherService(CryptKey key) : ICypher
     private const byte NO_EXPIRE = 0;
     private static readonly byte[] HEADER = Encoding.ASCII.GetBytes("JLZ");
 
-    public IResult<string> Decrypt(string? data, Encoding? encoding = null)
+    public IResult<string, DecryptionStatus> Decrypt(string? data, Encoding? encoding = null)
     {
-        IResult<string> result = new Result<string>(ResultType.Fail, "Invalid data");
         if (string.IsNullOrEmpty(data))
-            return result;
+            return Invalid<string>("Invalid data", DecryptionStatus.InvalidData);
+
         try
         {
             var buffer = Convert.FromBase64String(data);
             encoding ??= Encoding.UTF8;
-            return Decrypt(buffer)
-                .Select(p => p?.Length > 0 ? encoding.GetString(p) : null);
+            var result = Decrypt(buffer);
+            if (result.IsSuccessStatusCode)
+            {
+                if (result?.Model?.Length > 0)
+                {
+                    var content = encoding.GetString(result.Model);
+                    return DecryptedOk(content);
+                }
+                return DecryptedOk(string.Empty);
+            }
+
+            return Invalid<string>(result.Message ?? "Invalid data", result.StatusCode, result.ResultType);
         }
         catch (Exception ex)
         {
-            result = Result.FromException<string>(ex);
+            return Invalid<string>(ex.Message, DecryptionStatus.Error, ResultType.Exception);
         }
-        return result;
     }
 
-    public IResult<byte[]> Decrypt(byte[]? data)
+    public string Encrypt(string data, Encoding? encoding = null)
     {
-        IResult<byte[]> result = new Result<byte[]>(ResultType.Fail, "Invalid data");
+        if (string.IsNullOrWhiteSpace(data))
+            data = string.Empty;
+
+        encoding ??= Encoding.UTF8;
+        var response = Utility.Try(() => Convert.ToBase64String(Encrypt(encoding.GetBytes(data))));
+        return response.ResultType == ResultType.Success && response.Model != null ? response.Model : string.Empty;
+    }
+
+    protected override IResult<byte[], DecryptionStatus> OnDecryptData(byte[]? data)
+    {
         if ((data != null) && (data.Length > 4))
         {
             using var mem = new MemoryStream(data);
@@ -55,7 +73,7 @@ public class CypherService(CryptKey key) : ICypher
                     var ticks = BitConverter.ToInt64(expireData.Array, 0);
                     var expires = DateTime.FromBinary(ticks);
                     if (DateTime.UtcNow > expires)
-                        return new Result<byte[]>(ResultType.Fail, "Expired data");
+                        return Invalid<byte[]>("Expired data", DecryptionStatus.Expired);
                 }
                 n = BitConverter.ToInt32(header, HEADER.Length + 1);
                 using var contents = Pool.Rent<byte>(n);
@@ -70,27 +88,17 @@ public class CypherService(CryptKey key) : ICypher
                 tdes.IV = tdesiv;
                 using (var cs = new CryptoStream(ms, tdes.CreateDecryptor(), CryptoStreamMode.Write))
                     cs.Write(contents, 0, n);
-                result = new Result<byte[]>(ms.ToArray());
+                return DecryptedOk(ms.ToArray());
             }
             catch (Exception ex)
             {
-                result = Result.FromException<byte[]>(ex);
+                return Invalid<byte[]>(ex.Message, DecryptionStatus.Error, ResultType.Exception);
             }
         }
-        return result;
+        return Invalid<byte[]>("Invalid data", DecryptionStatus.InvalidData);
     }
 
-    public string Encrypt(string data, Encoding? encoding = null)
-    {
-        if (string.IsNullOrWhiteSpace(data))
-            data = string.Empty;
-
-        encoding ??= Encoding.UTF8;
-        var response = Utility.Try(() => Convert.ToBase64String(Encrypt(encoding.GetBytes(data))));
-        return response.ResultType == ResultType.Success && response.Model != null ? response.Model : string.Empty;
-    }
-
-    public byte[] Encrypt(byte[]? data, DateTime? expiresOnUtc = null)
+    protected override byte[] OnEncryptData(byte[]? data, DateTime? expiresOnUtc = null)
     {
         byte[]? buffer = null;
         if ((data != null) && (data.Length > 0))

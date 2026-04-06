@@ -5,7 +5,7 @@ namespace CoreOne.Services;
 public class FileStore<T>(ICypher? cypher, ISerializer? serializer, string? path = null) : Disposable where T : class
 {
     public string Path { get; protected set; } = path ?? string.Empty;
-    protected ICypher? Cypher { get; } = cypher;
+    protected ICypher Cypher { get; } = cypher ?? PlainService.Default;
     protected ISerializer Serializer { get; } = serializer ?? NJsonService.Instance;
 
     public FileStore(string? path = null) : this(null, null, path) { }
@@ -23,7 +23,7 @@ public class FileStore<T>(ICypher? cypher, ISerializer? serializer, string? path
             {
                 using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
                 return stream.ReadFully()
-                    .SelectResult(p => Cypher?.Decrypt(p) ?? new Result<byte[]>(p))
+                    .SelectResult(p => Cypher.Decrypt(p))
                     .SelectResult(p => Serializer.Deserialize(p, typeof(T)))
                     .Select(p => (T)p);
             }
@@ -49,7 +49,7 @@ public class FileStore<T>(ICypher? cypher, ISerializer? serializer, string? path
             {
                 using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
                 var next = await stream.ReadFullyAsync(cancellationToken);
-                return next.SelectResult(p => Cypher?.Decrypt(p) ?? new Result<byte[]>(p))
+                return next.SelectResult(p => Cypher.Decrypt(p))
                            .SelectResult(p => Serializer.Deserialize(p, typeof(T)))
                            .Select(p => (T)p);
             }
