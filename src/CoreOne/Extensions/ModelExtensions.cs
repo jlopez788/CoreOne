@@ -56,7 +56,7 @@ public static class ModelExtensions
 
         object? value = metadata.GetValue(instance);
         var attributes = metadata.GetCustomAttributes<ValidationAttribute>();
-        validation.MemberName = metadata.Name;
+        validation.MemberName = metadata.GetDisplayLabel();
         var errors = attributes.Select(p => p.GetValidationResult(value, validation))
             .Select(p => p?.ErrorMessage)
             .ExcludeNullOrEmpty()
