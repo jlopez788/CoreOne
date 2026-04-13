@@ -75,6 +75,7 @@ public class HttpResult : IResult, IStatusResult<int>
     public ResultType ResultType { get; protected set; }
     public int StatusCode { get; protected set; }
     public bool Success => ResultType == ResultType.Success && IsSuccessStatusCode;
+    public string? Uri { get; init; }
 
     public HttpResult()
     { }
@@ -112,9 +113,10 @@ public class HttpResult<T> : HttpResult, IResult<T>, IResult<T, int>
 
     public T? Model { get; protected set; }
 
-    public HttpResult(T? model, int statusCode = 200) : base(statusCode)
+    public HttpResult(T? model, int statusCode = 200, string? uri = null) : base(statusCode)
     {
         Model = model;
+        Uri = uri;
     }
 
     public HttpResult(int statusCode, string? msg) : base(statusCode, msg)

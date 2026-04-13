@@ -350,3 +350,9 @@ dotnet_diagnostic.SYSLIB1054.severity = none
 
 # CA1806: Do not ignore method results
 dotnet_diagnostic.CA1806.severity = none
+
+# SYSLIB1045: Convert to 'GeneratedRegexAttribute'.
+dotnet_diagnostic.SYSLIB1045.severity = none
+
+# CA1848: Use the LoggerMessage delegates
+dotnet_diagnostic.CA1848.severity = none
