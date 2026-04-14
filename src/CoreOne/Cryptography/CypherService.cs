@@ -37,19 +37,23 @@ public class CypherService(CryptKey key) : PlainService, ICypher
 
             return Invalid<string>(result.Message ?? "Invalid data", result.StatusCode, result.ResultType);
         }
+        catch (FormatException fex)
+        {
+            return Invalid<string>(fex.Message, DecryptionStatus.InvalidData, ResultType.Fail);
+        }
         catch (Exception ex)
         {
             return Invalid<string>(ex.Message, DecryptionStatus.Error, ResultType.Exception);
         }
     }
 
-    public string Encrypt(string data, Encoding? encoding = null)
+    public string Encrypt(string data, DateTime? expiresOnUtc = null, Encoding? encoding = null)
     {
         if (string.IsNullOrWhiteSpace(data))
             data = string.Empty;
 
         encoding ??= Encoding.UTF8;
-        var response = Utility.Try(() => Convert.ToBase64String(Encrypt(encoding.GetBytes(data))));
+        var response = Utility.Try(() => Convert.ToBase64String(Encrypt(encoding.GetBytes(data), expiresOnUtc)));
         return response.ResultType == ResultType.Success && response.Model != null ? response.Model : string.Empty;
     }
 
