@@ -17,7 +17,7 @@ public readonly struct BearerToken : IEqualityComparer<BearerToken>, IEquatable<
         Length = 0;
     }
 
-    public BearerToken(string? token)
+    public BearerToken(string? token, string scheme = "Bearer")
     {
         IsEmpty = true;
         Token = token;
@@ -26,9 +26,9 @@ public readonly struct BearerToken : IEqualityComparer<BearerToken>, IEquatable<
         {
             IsEmpty = false;
 #if NET9_0_OR_GREATER
-            Token = Token.Replace("Bearer", string.Empty, StringComparison.OrdinalIgnoreCase).Trim();
+            Token = Token.Replace(scheme, string.Empty, StringComparison.OrdinalIgnoreCase).Trim();
 #else
-            Token = Token!.Replace("Bearer", string.Empty).Trim();
+            Token = Token!.Replace(scheme, string.Empty).Trim();
 #endif
             Length = Token.Length;
         }

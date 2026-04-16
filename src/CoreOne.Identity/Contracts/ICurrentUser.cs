@@ -3,7 +3,7 @@ using CoreOne.Identity.Models;
 
 namespace CoreOne.Identity.Contracts;
 
-public interface ICurrentUser : ICurrentUsername
+public interface ICurrentUser<TUser> : ICurrentUsername where TUser : UserIdentity
 {
     BearerToken BearerToken { get; }
     bool IsExpired { get; }
@@ -14,7 +14,7 @@ public interface ICurrentUser : ICurrentUsername
     bool IsAuthenticated { get; }
     bool IsImpersonating { get; }
 #endif
-    UserIdentity? User { get; }
+    TUser? User { get; }
 
     Task Initialize();
 
@@ -25,4 +25,8 @@ public interface ICurrentUser : ICurrentUsername
     void Subscribe(Func<UserChangedEventArgs, Task> onNext, CancellationToken cancellationToken);
 
     void Subscribe(Func<UserChangingEventArgs, Task> onNext, CancellationToken cancellationToken);
+}
+
+public interface ICurrentUser : ICurrentUser<UserIdentity>, ICurrentUsername
+{
 }

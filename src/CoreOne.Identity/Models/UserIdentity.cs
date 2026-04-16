@@ -5,6 +5,8 @@ namespace CoreOne.Identity.Models;
 
 public class UserIdentity : ClaimsIdentity, IEquatable<UserIdentity>
 {
+    public static readonly UserIdentity Empty = new(Guid.Empty);
+    public static readonly ClaimsPrincipal Unauthorized = new(Empty);
     private static readonly string[] EmailFields = [
         "email",
         "email_address",
@@ -15,16 +17,19 @@ public class UserIdentity : ClaimsIdentity, IEquatable<UserIdentity>
         "sub",
          ClaimTypes.Upn,
     ];
-    public static readonly UserIdentity Empty = new(Guid.Empty);
-    public static readonly ClaimsPrincipal Unauthorized = new(Empty);
     private readonly string RefKey;
     public string? EmailAddress { get; init; }
     public DateTime? ExpiresAt { get; init; }
+    public override bool IsAuthenticated => base.IsAuthenticated && Claims.Any();
     public bool IsImpersonating { get; init; }
     public int[]? Permissions { get; init; }
     public string? Username { get; init; }
 
-    public UserIdentity(IEnumerable<Claim> claims) : base(claims, "Cookies", "sub", ClaimTypes.Role)
+    public UserIdentity(IEnumerable<Claim> claims) : this(claims, "Cookies", "sub", ClaimTypes.Role)
+    {
+    }
+
+    public UserIdentity(IEnumerable<Claim> claims, string authenticationScheme, string nameType, string roleType) : base(claims, "Cookies", "sub", ClaimTypes.Role)
     {
         RefKey = ID.Create().ToShortId();
         Permissions = FindFirst("permissions")?.Value
