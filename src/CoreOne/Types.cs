@@ -80,6 +80,33 @@ public static class Types
             if (isparsed is bool flag && flag)
                 result = new Result<T>((T?)args[1]);
         }
+        else
+        {
+            var targetType = ntype ?? type;
+            var tryParse = targetType.GetMethods(BindingFlags.Static | BindingFlags.Public)
+                    .FirstOrDefault(p => {
+                        var args = p.GetParameters();
+                        return p.Name.Matches(nameof(TryParse)) &&
+                        p.ReturnParameter.ParameterType == Bool &&
+                        args.Length == 2 &&
+                        args[0].ParameterType == String &&
+                        args[1].ParameterType == targetType.MakeByRefType();
+                    });
+
+            if (tryParse is not null)
+            {
+                var delegateType = typeof(TryParseDelegate<>).MakeGenericType(targetType);
+                if (System.Delegate.CreateDelegate(delegateType, tryParse) is MulticastDelegate del)
+                {
+                    LookupTryParse.Value.Set(targetType, del);
+
+                    object?[] args = [value?.ToString(), null];
+                    var isparsed = del?.DynamicInvoke(args);
+                    if (isparsed is bool flag && flag)
+                        result = new Result<T>((T?)args[1]);
+                }
+            }
+        }
 
         return result;
     }
