@@ -125,6 +125,8 @@ public static class Types
         if (type is null || value is null)
             return new Result<object?>(ResultType.Fail, "Invalid type");
 
+        type = Nullable.GetUnderlyingType(type) ?? type;
+
         var method = type.IsEnum == true ?
             typeof(Types).GetMethod(nameof(ParseEnum), [Object]) :
             typeof(Types).GetMethod(nameof(Parse), [Object]);

@@ -5,6 +5,7 @@ namespace CoreOne.Models;
 [DebuggerDisplay("{State}")]
 public class ValidationState
 {
+    public static ValidationState Idle { get; } = new(ValidationStateType.Idle);
     public static ValidationState Checking { get; } = new(ValidationStateType.Checking);
     public static ValidationState Valid { get; } = new(ValidationStateType.Valid);
     public string? ErrorMessage { get; }

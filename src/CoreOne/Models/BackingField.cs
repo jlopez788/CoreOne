@@ -2,16 +2,15 @@
 
 namespace CoreOne.Models;
 
-
 public class BackingField<T> : Disposable
 {
+    public readonly Subject<BackingFieldChangedEventArgs<T>> ValueChanged = new();
+    public readonly Subject<BackingFieldChangingEventArgs<T>> ValueChanging = new();
     private static readonly Lazy<Comparison<T>> Method = new(InitializeMethod);
     private readonly IComparer<T>? Comparer;
     private readonly Comparison<T>? Comparison;
     private readonly SemaphoreSlim Semaphore = new(1, 1);
     private readonly Type TComparable = typeof(IComparable<T>);
-    public readonly Subject<BackingFieldChangedEventArgs<T>> ValueChanged = new();
-    public readonly Subject<BackingFieldChangingEventArgs<T>> ValueChanging = new();
     private bool IsValueSet;
     public bool IgnoreNullValues { get; set; }
     public bool IsChanged { get; protected set; }
