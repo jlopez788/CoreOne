@@ -24,7 +24,7 @@ public class AsyncTaskQueue(int concurrency = 1)
                 }
                 else
                 {
-                    promise.TrySetResult(await workerTask); // ensures exception is observed if faulted
+                    promise.TrySetResult(await workerTask);
                 }
             }
             catch (OperationCanceledException)
@@ -33,7 +33,7 @@ public class AsyncTaskQueue(int concurrency = 1)
             }
             catch (Exception ex)
             {
-                promise.SetException(ex);
+                promise.TrySetException(ex);
             }
         }
     }
@@ -41,6 +41,8 @@ public class AsyncTaskQueue(int concurrency = 1)
     private readonly SemaphoreSlim Lock = new(concurrency);
     private readonly ConcurrentQueue<IAsyncWorker> Workers = new();
     private volatile bool _isProcessing;
+    private int Count = 0;
+    private TaskCompletionSource<int>? IdleSignal;
 
     public Task Enqueue(Action callback, CancellationToken cancellationToken = default) => Enqueue(() => {
         callback?.Invoke();
@@ -54,11 +56,23 @@ public class AsyncTaskQueue(int concurrency = 1)
 
     public Task<T> Enqueue<T>(Func<Task<T>> callback, CancellationToken cancellationToken = default)
     {
+        Interlocked.Increment(ref Count);
+
+        if (IdleSignal is null || IdleSignal.Task.IsCompleted)
+        {
+            Interlocked.Exchange(ref IdleSignal, new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously));
+        }
+
         var promise = new TaskCompletionSource<T>();
         Workers.Enqueue(new AsyncWorker<T>(callback, promise, cancellationToken));
         _ = ProcessQueueAsync(); // Fire-and-forget
 
         return promise.Task;
+    }
+
+    public Task WhenAll()
+    { // If no work is pending, return immediately
+        return IdleSignal is null || Interlocked.CompareExchange(ref Count, 0, 0) == 0 ? Task.CompletedTask : IdleSignal.Task;
     }
 
     private async ValueTask ProcessQueueAsync()
@@ -72,6 +86,12 @@ public class AsyncTaskQueue(int concurrency = 1)
             while (Workers.TryDequeue(out var worker))
                 await worker.Execute();
             _isProcessing = false;
-        }, () => _isProcessing = false);
+        }, () => {
+            _isProcessing = false;
+            if (Interlocked.Decrement(ref Count) == 0)
+            {
+                IdleSignal?.TrySetResult(0);
+            }
+        });
     }
 }
