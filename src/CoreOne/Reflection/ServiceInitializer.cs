@@ -17,7 +17,7 @@ public static class ServiceInitializer
         metas.Select(p => new {
             key = p.Key,
             meta = p.Value,
-            attr = p.Value.GetCustomAttribute<ServiceAttribute>()
+            attr = p.Value.GetCustomAttribute<OInjectAttribute>()
         }).Where(p => p.attr is not null)
             .Each(p => {
                 var isnull = p.attr.DefaultServiceType is null;

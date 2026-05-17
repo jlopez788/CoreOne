@@ -104,10 +104,10 @@ The Proxy Generator enables **compile-time Aspect-Oriented Programming (AOP)**. 
 
 ## How It Works
 
-1. Decorate a class with `[InterceptedBy]` to register one or more interceptors.
+1. Decorate a class with `[Service]` to opt it in to auto-registration, and `[InterceptedBy]` to register one or more interceptors.
 2. The generator detects the attribute at compile time and emits a `{ClassName}Proxy` class.
 3. The proxy overrides every `virtual` or `override` method, routing each call through the interceptor chain before (optionally) calling the base implementation.
-4. Register your services using `RegisterTypesfromAssembly<T>()` — it automatically substitutes the proxy where the original type is expected.
+4. Register your services using `RegisterTypesfromAssembly<T>()` — it automatically substitutes the proxy where the original type is expected. **A `[Service]` attribute on the class is required for auto-discovery.**
 
 ## Usage
 
@@ -134,6 +134,8 @@ public class LoggingInterceptor : IAsyncInterceptor
 using CoreOne.Attributes;
 
 // Generic form (preferred)
+// [Service] is required for RegisterTypesfromAssembly<T>() to discover this class
+[Service(ServiceLifetime.Scoped)]
 [InterceptedBy<LoggingInterceptor>]
 public class OrderService
 {
@@ -149,6 +151,7 @@ public class OrderService
 }
 
 // Non-generic form (works with older C# targets)
+[Service(ServiceLifetime.Scoped)]
 [InterceptedBy(typeof(LoggingInterceptor))]
 public class PaymentService
 {
@@ -159,7 +162,8 @@ public class PaymentService
 ### 3. Register with DI
 
 ```csharp
-// Automatically discovers OrderServiceProxy and registers it as OrderService
+// [Service] on the class is required — only decorated classes are discovered
+// Automatically substitutes OrderServiceProxy as the implementation for OrderService
 services.RegisterTypesfromAssembly<OrderService>();
 
 // Manual registration — inject OrderServiceProxy wherever OrderService is expected
@@ -308,5 +312,7 @@ The generator intercepts all `virtual` and `override` ordinary methods including
 // Registers OrderServiceProxy as the implementation for OrderService
 services.RegisterTypesfromAssembly<OrderService>();
 ```
+
+> **Important:** Only classes decorated with `[Service(ServiceLifetime)]` are eligible for auto-registration. Classes without this attribute are ignored by the scanner.
 
 The scanner finds any type named `{OriginalName}Proxy` in the same namespace that is a subclass of the original type, and substitutes it transparently in the DI container.

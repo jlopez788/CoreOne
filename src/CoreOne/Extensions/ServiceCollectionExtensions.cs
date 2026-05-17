@@ -25,34 +25,35 @@ public static class ServiceCollectionExtensions
     {
         var assembly = typeof(T).Assembly;
 
-        Type[] allTypes;
+        Type[] types;
         try
         {
-            allTypes = assembly.GetTypes();
+            types = assembly.GetTypes();
         }
         catch (ReflectionTypeLoadException ex)
         {
-            allTypes = Array.FindAll(ex.Types, t => t != null)!;
+            types = Array.FindAll(ex.Types, t => t != null)!;
         }
 
         var definitions = new Data<Type, DefineService>();
-        foreach (var serviceType in allTypes)
+        var query = from p in types
+                    where p.IsClass && !p.IsInterface && !p.IsAbstract
+                    let attribute = p.GetCustomAttribute<ServiceAttribute>()
+                    where attribute != null
+                    select (p, attribute);
+        foreach (var (service, lifetimeDefinition) in query)
         {
-            var lifetimeDefinition = serviceType.GetCustomAttribute<ServiceRegistrationAttribute>();
-
             Type? proxyType = null;
-            var proxyName = serviceType.Name + "Proxy";
-            proxyType = allTypes.FirstOrDefault(t => t.Name.Matches(proxyName) && t.Namespace == serviceType.Namespace && t.IsSubclassOf(serviceType));
-            if (serviceType.IsClass)
-            {
-                var lifetime = lifetimeDefinition?.Lifetime ?? ServiceLifetime.Scoped;
-                var concrete = proxyType ?? serviceType;
-                definitions.Set(serviceType, new DefineService(serviceType, concrete, lifetime));
-                foreach (var iface in serviceType.GetInterfaces())
-                    definitions.Set(iface, new DefineService(iface, concrete, lifetime));
-            }
+            var proxyName = service.Name + "Proxy";
+            proxyType = types.FirstOrDefault(t => t.Name.Matches(proxyName) && t.Namespace == service.Namespace && t.IsSubclassOf(service));
 
-            var attributes = serviceType.GetCustomAttributes<InterceptedByAttribute>(false);
+            var lifetime = lifetimeDefinition?.Lifetime ?? ServiceLifetime.Scoped;
+            var concrete = proxyType ?? service;
+            definitions.Set(service, new DefineService(service, concrete, lifetime));
+            foreach (var iface in service.GetInterfaces())
+                definitions.Set(iface, new DefineService(iface, concrete, lifetime));
+
+            var attributes = service.GetCustomAttributes<InterceptedByAttribute>(false);
             if (attributes.Any())
             {
                 foreach (var attr in attributes)

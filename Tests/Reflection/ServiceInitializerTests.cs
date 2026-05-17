@@ -20,10 +20,10 @@ public class ServiceInitializerTests
 
     private class TestClass
     {
-        [Service]
+        [OInject]
         public ITestService? TestService { get; set; }
 
-        [Service(Optional = true)]
+        [OInject(Optional = true)]
         public ILogger? OptionalLogger { get; set; }
 
         public string? NoAttributeProperty { get; set; }
@@ -31,13 +31,13 @@ public class ServiceInitializerTests
 
     private class TestClassWithBackingField
     {
-        [Service]
+        [OInject]
         public ITestService? TestService { get; set; }
     }
 
     private class TestClassWithDefaultService
     {
-        [Service(DefaultServiceType = typeof(TestServiceImpl))]
+        [OInject(DefaultServiceType = typeof(TestServiceImpl))]
         public ITestService? TestService { get; set; }
     }
 

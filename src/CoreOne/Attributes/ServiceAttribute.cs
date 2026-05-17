@@ -1,8 +1,9 @@
-﻿namespace CoreOne.Attributes;
+using Microsoft.Extensions.DependencyInjection;
 
-[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
-public sealed class ServiceAttribute : Attribute
+namespace CoreOne.Attributes;
+
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+public class ServiceAttribute(ServiceLifetime lifetime) : Attribute
 {
-    public Type? DefaultServiceType { get; init; }
-    public bool Optional { get; init; }
+    public ServiceLifetime Lifetime { get; } = lifetime;
 }

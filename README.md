@@ -316,7 +316,8 @@ public class LoggingInterceptor : IAsyncInterceptor
     }
 }
 
-// 2. Decorate the target class (no other changes needed)
+// 2. Decorate the target class with [Service] and [InterceptedBy]
+[Service(ServiceLifetime.Scoped)]
 [InterceptedBy<LoggingInterceptor>]
 public class OrderService
 {
@@ -324,13 +325,14 @@ public class OrderService
     public virtual Order GetOrder(int id) { ... }
 }
 
-// 3. Register — the generated OrderServiceProxy is automatically substituted
+// 3. Register — [Service] is required for auto-discovery; the generated proxy is substituted automatically
 services.RegisterTypesfromAssembly<OrderService>();
 ```
 
 The generator emits `OrderServiceProxy : OrderService` at build time and overrides every `virtual` method with an interceptor pipeline. Multiple interceptors compose like middleware:
 
 ```csharp
+[Service(ServiceLifetime.Scoped)]
 [InterceptedBy<CachingInterceptor>]
 [InterceptedBy<TimingInterceptor>]
 [InterceptedBy<LoggingInterceptor>]
@@ -345,7 +347,7 @@ public class ProductService
 - ✅ Zero runtime proxy overhead — proxy code is compiled, not generated at runtime
 - ✅ Full IDE support — generated proxy is a real C# class
 - ✅ Middleware-style pipeline — interceptors can short-circuit or modify results
-- ✅ Automatic DI wiring via `RegisterTypesfromAssembly<T>()`
+- ✅ Automatic DI wiring via `RegisterTypesfromAssembly<T>()` — requires `[Service]` on the class
 - ✅ Supports `void`, `Task`, `Task<T>`, synchronous, and generic methods
 - ✅ Stack multiple `[InterceptedBy]` attributes for multiple interceptors
 
