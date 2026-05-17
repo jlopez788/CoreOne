@@ -8,7 +8,6 @@ public partial class StronglyTypedIdSourceGenerator
             return;
 
         var idType = context.IdType;
-
         using (writer.BeginBlock($"partial class {context.NewtonsoftJsonConverterTypeName} : global::Newtonsoft.Json.JsonConverter"))
         {
             WriteNewMember(writer, context, addNewLine: false, InheritDocComment);

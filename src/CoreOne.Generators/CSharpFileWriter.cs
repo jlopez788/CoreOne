@@ -1,4 +1,4 @@
-namespace CoreOne.Generators.StronglyTypedIds;
+namespace CoreOne.Generators;
 
 internal sealed class CSharpFileWriter
 {

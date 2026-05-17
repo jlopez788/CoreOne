@@ -75,7 +75,7 @@ public partial class StronglyTypedIdSourceGenerator
             }
         }
 
-        //  if (!context.IsDefaultCtorDefined)
+        //if (!context.IsDefaultCtorDefined)
         {
             WriteNewMember(
             XmlSummary("Initializes a new instance of the ", XmlSeeCref(context.TypeName), ""));

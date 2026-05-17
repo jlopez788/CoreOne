@@ -300,6 +300,57 @@ Utility.FormatPhoneNumber("1234567890") // "(123) 456-7890"
 Utility.FormatPhoneNumber("1234567890", mask: true) // "(***) ***-7890"
 ```
 
+### 🪄 **Compile-Time AOP / Proxy Generator**
+Add cross-cutting concerns (logging, caching, timing, authorization) to any class **without touching its code** — the proxy is generated at compile time by the `CoreOne.Generators` Roslyn source generator.
+
+```csharp
+// 1. Implement IAsyncInterceptor
+public class LoggingInterceptor : IAsyncInterceptor
+{
+    public async Task<object?> InterceptAsync(IInvocation invocation)
+    {
+        Console.WriteLine($"→ {invocation.MethodName}");
+        var result = await invocation.ProceedAsync();
+        Console.WriteLine($"← {invocation.MethodName}");
+        return result;
+    }
+}
+
+// 2. Decorate the target class (no other changes needed)
+[InterceptedBy<LoggingInterceptor>]
+public class OrderService
+{
+    public virtual async Task<Order> CreateOrderAsync(OrderRequest request) { ... }
+    public virtual Order GetOrder(int id) { ... }
+}
+
+// 3. Register — the generated OrderServiceProxy is automatically substituted
+services.RegisterTypesfromAssembly<OrderService>();
+```
+
+The generator emits `OrderServiceProxy : OrderService` at build time and overrides every `virtual` method with an interceptor pipeline. Multiple interceptors compose like middleware:
+
+```csharp
+[InterceptedBy<CachingInterceptor>]
+[InterceptedBy<TimingInterceptor>]
+[InterceptedBy<LoggingInterceptor>]
+public class ProductService
+{
+    public virtual Task<Product> GetProductAsync(int id) { ... }
+}
+// Pipeline: CachingInterceptor → TimingInterceptor → LoggingInterceptor → base method
+```
+
+**Why you'll love it:**
+- ✅ Zero runtime proxy overhead — proxy code is compiled, not generated at runtime
+- ✅ Full IDE support — generated proxy is a real C# class
+- ✅ Middleware-style pipeline — interceptors can short-circuit or modify results
+- ✅ Automatic DI wiring via `RegisterTypesfromAssembly<T>()`
+- ✅ Supports `void`, `Task`, `Task<T>`, synchronous, and generic methods
+- ✅ Stack multiple `[InterceptedBy]` attributes for multiple interceptors
+
+See [CoreOne.Generators README](src/CoreOne.Generators/README.md) for full documentation.
+
 ### 🎨 **Lookup Types**
 Type-safe enumerations with rich metadata.
 
@@ -373,7 +424,8 @@ See [.github/copilot-instructions.md](.github/copilot-instructions.md) for detai
 | `CoreOne.Threading` | Thread safety and async utilities |
 | `CoreOne.Services` | Base classes for DI-enabled services |
 | `CoreOne.Lookups` | Type-safe enumeration patterns |
-| `CoreOne.Attributes` | Custom attributes for DI and validation |
+| `CoreOne.Attributes` | Custom attributes for DI, validation, and AOP |
+| `CoreOne.Generators` | Roslyn source generators (StronglyTypedId, Proxy/AOP) |
 
 ## 🎯 Common Scenarios
 

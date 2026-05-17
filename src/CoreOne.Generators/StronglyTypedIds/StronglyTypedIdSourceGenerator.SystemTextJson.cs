@@ -8,7 +8,6 @@ public partial class StronglyTypedIdSourceGenerator
             return;
 
         var idType = context.IdType;
-
         using (writer.BeginBlock($"partial class {context.SystemTextJsonConverterTypeName} : global::System.Text.Json.Serialization.JsonConverter<{context.TypeName}>"))
         {
             // public override void WriteAsPropertyName(Utf8JsonWriter writer, [DisallowNull] Sample value, JsonSerializerOptions options)
