@@ -18,11 +18,11 @@ public static class ServiceCollectionExtensions
         services
             .AddSingleton<JsonSerializerSettings>(new NewtonSettings())
             .AddKeyedSingleton<ISerializer, NJsonService>("json")
-            .RegisterTypesfromAssembly<IClock>();
+            .AddTypesFromAssembly<IClock>();
         return services;
     }
 
-    public static IServiceCollection RegisterTypesfromAssembly<T>(this IServiceCollection services)
+    public static IServiceCollection AddTypesFromAssembly<T>(this IServiceCollection services)
     {
         var assembly = typeof(T).Assembly;
 
@@ -42,15 +42,16 @@ public static class ServiceCollectionExtensions
                     let attribute = p.GetCustomAttribute<ServiceAttribute>()
                     where attribute != null
                     select (p, attribute);
-        foreach (var (service, lifetimeDefinition) in query)
+        foreach (var (service, attribute) in query)
         {
             Type? proxyType = null;
             var proxyName = service.Name + "Proxy";
             proxyType = types.FirstOrDefault(t => t.Name.Matches(proxyName) && t.Namespace == service.Namespace && t.IsSubclassOf(service));
 
-            var lifetime = lifetimeDefinition?.Lifetime ?? ServiceLifetime.Scoped;
+            var lifetime = attribute?.Lifetime ?? ServiceLifetime.Scoped;
+            var servicing = attribute?.ServicingType ?? service;
             var concrete = proxyType ?? service;
-            definitions.Set(service, new DefineService(service, concrete, lifetime));
+            definitions.Set(servicing, new DefineService(service, concrete, lifetime));
             foreach (var iface in service.GetInterfaces())
                 definitions.Set(iface, new DefineService(iface, concrete, lifetime));
 
