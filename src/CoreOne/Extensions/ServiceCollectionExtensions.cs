@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json;
-using CoreOne.Hubs;
 
 namespace CoreOne.Extensions;
 
@@ -15,9 +15,10 @@ public static class ServiceCollectionExtensions
     /// <returns></returns>
     public static IServiceCollection AddCoreServices(this IServiceCollection services)
     {
-        services.AddScoped<IHub, Hub>()
+        services
             .AddSingleton<JsonSerializerSettings>(new NewtonSettings())
-            .AddKeyedSingleton<ISerializer, NJsonService>("json");
+            .AddKeyedSingleton<ISerializer, NJsonService>("json")
+            .RegisterTypesfromAssembly<IClock>();
         return services;
     }
 
@@ -65,12 +66,12 @@ public static class ServiceCollectionExtensions
 
         foreach (var (type, concrete, lifetime) in definitions.Values)
         {
-            _ = lifetime switch {
-                ServiceLifetime.Singleton => services.AddSingleton(type, concrete),
-                ServiceLifetime.Scoped => services.AddScoped(type, concrete),
-                ServiceLifetime.Transient => services.AddTransient(type, concrete),
-                _ => throw new InvalidOperationException(nameof(lifetime))
-            };
+            if (lifetime == ServiceLifetime.Singleton)
+                services.TryAddSingleton(type, concrete);
+            else if (lifetime == ServiceLifetime.Transient)
+                services.TryAddTransient(type, concrete);
+            else if (lifetime == ServiceLifetime.Scoped)
+                services.TryAddScoped(type, concrete);
         }
 
         return services;

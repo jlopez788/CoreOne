@@ -1,5 +1,6 @@
 ﻿namespace CoreOne.Hubs;
 
+[Service]
 public class Hub : Disposable, IHub
 {
     private sealed class GlobalHub() : Hub(Guid.Empty)

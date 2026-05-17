@@ -1,8 +1,10 @@
 ﻿using CoreOne.Reactive;
 using CoreOne.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CoreOne.Services;
 
+[Service(ServiceLifetime.Transient)]
 public class LoadingStore : IDisposable
 {
     private ImmutableList<Guid> Locks;

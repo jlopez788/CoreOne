@@ -1,8 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using System.Text;
 
 namespace CoreOne.Services;
 
+[Service(ServiceLifetime.Singleton)]
 public class NJsonService(JsonSerializerSettings? settings) : ISerializer
 {
     public static readonly NJsonService Instance = new(null);

@@ -2,6 +2,7 @@
 
 namespace CoreOne.Services;
 
+[Service]
 public class TargetCreator(IServiceProvider? oservices)
 {
     private class CtorInfo(ConstructorInfo? info, Create create)
