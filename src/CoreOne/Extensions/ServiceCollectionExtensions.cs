@@ -1,12 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace CoreOne.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    private record DefineService(Type Abstract, Type Concrete, ServiceLifetime Lifetime);
+    private record DefineService(Type Abstract, Type Concrete, ServiceLifetime Lifetime, bool ForceSet);
 
     /// <summary>
     /// Register core services to DI service container
@@ -39,9 +40,20 @@ public static class ServiceCollectionExtensions
         var definitions = new Data<Type, DefineService>();
         var query = from p in types
                     where p.IsClass && !p.IsInterface && !p.IsAbstract
-                    let attribute = p.GetCustomAttribute<ServiceAttribute>()
+                    let attribute = p.GetCustomAttribute<ServiceAttribute>(true)
                     where attribute != null
                     select (p, attribute);
+        var names = query.Select(p => p.p.FullName)
+            .ExcludeNullOrEmpty()
+            .OrderBy(p => p, MStringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (names.Any(p => p.Contains("CookieAuthStateProvider", StringComparison.OrdinalIgnoreCase)))
+            Debugger.Break();
+
+        var skipInterfaces = new HashSet<Type> {
+            typeof(IDisposable),
+            typeof(IAsyncDisposable)
+        };
         foreach (var (service, attribute) in query)
         {
             Type? proxyType = null;
@@ -51,28 +63,39 @@ public static class ServiceCollectionExtensions
             var lifetime = attribute?.Lifetime ?? ServiceLifetime.Scoped;
             var servicing = attribute?.ServicingType ?? service;
             var concrete = proxyType ?? service;
-            definitions.Set(servicing, new DefineService(service, concrete, lifetime));
+            definitions.SafeAdd(servicing, new DefineService(servicing, concrete, lifetime, attribute?.ServicingType is not null));
             foreach (var iface in service.GetInterfaces())
-                definitions.Set(iface, new DefineService(iface, concrete, lifetime));
+            {
+                if (!skipInterfaces.Contains(iface))
+                {
+                    definitions.SafeAdd(iface, new DefineService(iface, concrete, lifetime, false));
+                }
+            }
 
             var attributes = service.GetCustomAttributes<InterceptedByAttribute>(false);
             if (attributes.Any())
             {
                 foreach (var attr in attributes)
                 {
-                    definitions.Set(attr.InterceptorType, new DefineService(attr.InterceptorType, attr.InterceptorType, attr.Lifetime));
+                    definitions.SafeAdd(attr.InterceptorType, new DefineService(attr.InterceptorType, attr.InterceptorType, attr.Lifetime, false));
                 }
             }
         }
 
-        foreach (var (type, concrete, lifetime) in definitions.Values)
+        foreach (var (type, concrete, lifetime, forceSet) in definitions.Values)
         {
+            if (forceSet)
+            {
+                var registration = services.FirstOrDefault(descriptor => descriptor.ServiceType == type);
+                if (registration is not null)
+                    services.Remove(registration);
+            }
             if (lifetime == ServiceLifetime.Singleton)
                 services.TryAddSingleton(type, concrete);
-            else if (lifetime == ServiceLifetime.Transient)
-                services.TryAddTransient(type, concrete);
             else if (lifetime == ServiceLifetime.Scoped)
                 services.TryAddScoped(type, concrete);
+            else if (lifetime == ServiceLifetime.Transient)
+                services.TryAddTransient(type, concrete);
         }
 
         return services;

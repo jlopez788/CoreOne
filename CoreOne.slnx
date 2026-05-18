@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".github\workflows\nuget-publish.yml" />
+  </Folder>
+  <Project Path="src\CoreOne.Generators\CoreOne.Generators.csproj" />
+  <Project Path="src\CoreOne.Identity\CoreOne.Identity.csproj" />
+  <Project Path="src\CoreOne\CoreOne.csproj" />
+  <Project Path="Tests\Tests.csproj" />
+</Solution>

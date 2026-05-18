@@ -1,9 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace CoreOne.Services;
 
-[Service(ServiceLifetime.Transient)]
 public sealed class ModelTransaction : IDisposable
 {
     private interface ITargetObjectResolver
