@@ -143,7 +143,6 @@ public class ProxyGenerator : IIncrementalGenerator
         writer.WriteLine("using System;");
         writer.WriteLine("using System.Reflection;");
         writer.WriteLine("using System.Threading.Tasks;");
-        writer.WriteLine("using CompileTimeAop.Core;");
         writer.WriteLine();
 
         var namespaceBlock = namespaceName != null ? writer.BeginBlock($"namespace {namespaceName}") : null;
