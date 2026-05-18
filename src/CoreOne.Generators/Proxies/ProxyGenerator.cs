@@ -207,7 +207,7 @@ public class ProxyGenerator : IIncrementalGenerator
             if (attrClass == null)
                 continue;
 
-            if (attrClass.ToDisplayString() == "CompileTimeAop.Core.InterceptedByAttribute")
+            if (attrClass.ToDisplayString() == "CoreOne.Attributes.InterceptedByAttribute")
             {
                 // Non-generic form: [InterceptedBy(typeof(T))]
                 if (attr.ConstructorArguments.Length > 0
@@ -216,7 +216,7 @@ public class ProxyGenerator : IIncrementalGenerator
                     interceptors.Add(typeArg.ToDisplayString());
                 }
             }
-            else if (attrClass.BaseType?.ToDisplayString() == "CompileTimeAop.Core.InterceptedByAttribute"
+            else if (attrClass.BaseType?.ToDisplayString() == "CoreOne.Attributes.InterceptedByAttribute"
                      && attrClass.TypeArguments.Length > 0)
             {
                 // Generic form: [InterceptedBy<T>]
@@ -257,8 +257,8 @@ public class ProxyGenerator : IIncrementalGenerator
                     var containingType = attributeSymbol.ContainingType;
                     var fullName = containingType.ToDisplayString();
                     var baseFullName = containingType.BaseType?.ToDisplayString();
-                    if (fullName == "CompileTimeAop.Core.InterceptedByAttribute"
-                        || baseFullName == "CompileTimeAop.Core.InterceptedByAttribute")
+                    if (fullName == "CoreOne.Attributes.InterceptedByAttribute"
+                        || baseFullName == "CoreOne.Attributes.InterceptedByAttribute")
                     {
                         return classDeclaration;
                     }
