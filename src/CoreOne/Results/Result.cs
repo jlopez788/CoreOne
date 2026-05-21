@@ -106,7 +106,9 @@ public class Result<T> : Result, IResult<T>
         Message = message;
     }
 
-    public static implicit operator Result<T>(T model) => new(model);
+    public static implicit operator Result<T>(T? model) => new(model, true);
 
     public static implicit operator T?(Result<T> response) => (response is not null) ? response.Model : default;
+
+    public static implicit operator bool(Result<T> result) => result is not null && result.Success;
 }

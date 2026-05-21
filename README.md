@@ -316,9 +316,9 @@ public class LoggingInterceptor : IAsyncInterceptor
     }
 }
 
-// 2. Decorate the target class with [Service] and [InterceptedBy]
+// 2. Decorate the target class with [Service] and [Intercept]
 [Service(ServiceLifetime.Scoped)]
-[InterceptedBy<LoggingInterceptor>]
+[Intercept<LoggingInterceptor>]
 public class OrderService
 {
     public virtual async Task<Order> CreateOrderAsync(OrderRequest request) { ... }
@@ -333,9 +333,9 @@ The generator emits `OrderServiceProxy : OrderService` at build time and overrid
 
 ```csharp
 [Service(ServiceLifetime.Scoped)]
-[InterceptedBy<CachingInterceptor>]
-[InterceptedBy<TimingInterceptor>]
-[InterceptedBy<LoggingInterceptor>]
+[Intercept<CachingInterceptor>]
+[Intercept<TimingInterceptor>]
+[Intercept<LoggingInterceptor>]
 public class ProductService
 {
     public virtual Task<Product> GetProductAsync(int id) { ... }
@@ -349,7 +349,7 @@ public class ProductService
 - ✅ Middleware-style pipeline — interceptors can short-circuit or modify results
 - ✅ Automatic DI wiring via `RegisterTypesfromAssembly<T>()` — requires `[Service]` on the class
 - ✅ Supports `void`, `Task`, `Task<T>`, synchronous, and generic methods
-- ✅ Stack multiple `[InterceptedBy]` attributes for multiple interceptors
+- ✅ Stack multiple `[Intercept]` attributes for multiple interceptors
 
 See [CoreOne.Generators README](src/CoreOne.Generators/README.md) for full documentation.
 

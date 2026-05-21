@@ -72,7 +72,7 @@ public static class ServiceCollectionExtensions
                 }
             }
 
-            var attributes = service.GetCustomAttributes<InterceptedByAttribute>(false);
+            var attributes = service.GetCustomAttributes<InterceptAttribute>(false);
             if (attributes.Any())
             {
                 foreach (var attr in attributes)

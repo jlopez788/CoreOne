@@ -1,6 +1,6 @@
 namespace CoreOne.Models;
 
-public class Invocation : IInvocation
+public sealed class Invocation : IInvocation
 {
     public string MethodName { get; init; } = string.Empty;
     public MethodInfo Method { get; init; } = default!;
