@@ -235,7 +235,11 @@ public class ProxyGenerator : IIncrementalGenerator
                     }
                     else
                     {
-                        var paramTypes = string.Join(", ", mi.Method.Parameters.Select(p => $"typeof({p.Type.ToDisplayString()})"));
+                        var paramTypes = string.Join(", ", mi.Method.Parameters.Select(p =>
+                        {
+                            var typeStr = p.Type.WithNullableAnnotation(NullableAnnotation.None).ToDisplayString();
+                            return $"typeof({typeStr})";
+                        }));
                         writer.WriteLine($"return typeof({classSymbol.ToDisplayString()}).GetMethod(\"{mi.Method.Name}\", BindingFlags.Public | BindingFlags.Instance, null, new Type[] {{ {paramTypes} }}, null)!;");
                     }
                 }
