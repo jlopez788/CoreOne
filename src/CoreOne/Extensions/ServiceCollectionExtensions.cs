@@ -1,13 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
-using System.Diagnostics;
 
 namespace CoreOne.Extensions;
 
 public static class ServiceCollectionExtensions
 {
     private record DefineService(Type Abstract, Type Concrete, ServiceLifetime Lifetime, bool ForceSet);
+    private static readonly Type IHosted = typeof(IHostedService);
 
     /// <summary>
     /// Register core services to DI service container
@@ -38,22 +39,23 @@ public static class ServiceCollectionExtensions
         }
 
         var definitions = new Data<Type, DefineService>();
-        var query = from p in types
-                    where p.IsPublic && p.IsClass && !p.IsInterface && !p.IsAbstract
-                    let attribute = p.GetCustomAttribute<ServiceAttribute>(true)
-                    where attribute != null
-                    select (p, attribute);
-        var names = query.Select(p => p.p.FullName)
-            .ExcludeNullOrEmpty()
-            .OrderBy(p => p, MStringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        if (names.Any(p => p.Contains("NotificationService", StringComparison.OrdinalIgnoreCase)))
-        { }
-
         var skipInterfaces = new HashSet<Type> {
             typeof(IDisposable),
             typeof(IAsyncDisposable)
         };
+        static bool filterClasses(Type t) => t.IsPublic && t.IsClass && !t.IsInterface && !t.IsAbstract;
+        var query = from p in types
+                    where filterClasses(p)
+                    let attribute = p.GetCustomAttribute<ServiceAttribute>(true)
+                    where attribute != null
+                    select (p, attribute);
+        var hosted = from p in types
+                     where filterClasses(p) && IHosted.IsAssignableFrom(p)
+                     let attribute = p.GetCustomAttribute<HostedServiceAttribute>(true)
+                     where attribute != null
+                     select p;
+
+        hosted.Each(p => services.TryAddEnumerable(ServiceDescriptor.Singleton(IHosted, p)));
         foreach (var (service, attribute) in query)
         {
             Type? proxyType = null;
@@ -131,5 +133,10 @@ public static class ServiceCollectionExtensions
             services.Remove(service);
 
         return services;
+    }
+
+    public static IServiceCollection RunOnce(this IServiceCollection services, Func<IServiceProvider, CancellationToken, Task> callback)
+    {
+        return services.AddSingleton<IHostedService>(sp => new RunOnceHostedService(sp, callback));
     }
 }
