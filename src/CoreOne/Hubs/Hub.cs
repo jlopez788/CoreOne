@@ -21,7 +21,7 @@ public class Hub : Disposable, IHub
 
     public static readonly Hub Global = new GlobalHub();
     private static readonly List<Hub> Instances = [];
-    private readonly ID Id;
+    private readonly string Id;
     private readonly DataList<Type, IHubMessageIntercept> Intercepts = [];
     private readonly AsyncTaskQueue Queue = new();
     private readonly Data<StateKey, IStateMessage> States = [];
@@ -30,11 +30,11 @@ public class Hub : Disposable, IHub
 
     public Hub()
     {
-        Id = ID.Create();
+        Id = ID.Create().ToShortId();
         Instances.Add(this);
     }
 
-    protected Hub(Guid id) => Id = id;
+    protected Hub(Guid id) => Id = id.ToShortId();
 
     protected override void OnDispose()
     {
@@ -242,5 +242,5 @@ public class Hub : Disposable, IHub
         return state is not null;
     }
 
-    public override string ToString() => $"{Id.ToShortId()} - {Subscriptions.Count}";
+    public override string ToString() => $"{Id} - {Subscriptions.Count}";
 }

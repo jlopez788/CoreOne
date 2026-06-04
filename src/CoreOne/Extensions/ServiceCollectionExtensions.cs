@@ -18,8 +18,8 @@ public static class ServiceCollectionExtensions
     {
         services
             .AddSingleton<JsonSerializerSettings>(new NewtonSettings())
-            .AddKeyedSingleton<ISerializer, NJsonService>("json")
-            .AddTypesFromAssembly<IClock>();
+            .AddKeyedSingleton<ISerializer, NJsonService>("json");
+        services.AddTypesFromAssembly<IClock>();
         return services;
     }
 
@@ -39,7 +39,7 @@ public static class ServiceCollectionExtensions
 
         var definitions = new Data<Type, DefineService>();
         var query = from p in types
-                    where p.IsClass && !p.IsInterface && !p.IsAbstract
+                    where p.IsPublic && p.IsClass && !p.IsInterface && !p.IsAbstract
                     let attribute = p.GetCustomAttribute<ServiceAttribute>(true)
                     where attribute != null
                     select (p, attribute);
@@ -47,8 +47,8 @@ public static class ServiceCollectionExtensions
             .ExcludeNullOrEmpty()
             .OrderBy(p => p, MStringComparer.OrdinalIgnoreCase)
             .ToArray();
-        if (names.Any(p => p.Contains("CookieAuthStateProvider", StringComparison.OrdinalIgnoreCase)))
-            Debugger.Break();
+        if (names.Any(p => p.Contains("NotificationService", StringComparison.OrdinalIgnoreCase)))
+        { }
 
         var skipInterfaces = new HashSet<Type> {
             typeof(IDisposable),
@@ -82,8 +82,25 @@ public static class ServiceCollectionExtensions
             }
         }
 
+        var registeredConcretes = new HashSet<Type>();
+        foreach (var def in definitions.Values)
+        {
+            if (registeredConcretes.Add(def.Concrete))
+            {
+                if (def.Lifetime == ServiceLifetime.Singleton)
+                    services.TryAddSingleton(def.Concrete, def.Concrete);
+                else if (def.Lifetime == ServiceLifetime.Scoped)
+                    services.TryAddScoped(def.Concrete, def.Concrete);
+                else if (def.Lifetime == ServiceLifetime.Transient)
+                    services.TryAddTransient(def.Concrete, def.Concrete);
+            }
+        }
+
         foreach (var (type, concrete, lifetime, forceSet) in definitions.Values)
         {
+            if (type == concrete)
+                continue;
+
             if (forceSet)
             {
                 var registration = services.FirstOrDefault(descriptor => descriptor.ServiceType == type);
@@ -91,11 +108,11 @@ public static class ServiceCollectionExtensions
                     services.Remove(registration);
             }
             if (lifetime == ServiceLifetime.Singleton)
-                services.TryAddSingleton(type, concrete);
+                services.TryAddSingleton(type, sp => sp.GetRequiredService(concrete));
             else if (lifetime == ServiceLifetime.Scoped)
-                services.TryAddScoped(type, concrete);
+                services.TryAddScoped(type, sp => sp.GetRequiredService(concrete));
             else if (lifetime == ServiceLifetime.Transient)
-                services.TryAddTransient(type, concrete);
+                services.TryAddTransient(type, sp => sp.GetRequiredService(concrete));
         }
 
         return services;
