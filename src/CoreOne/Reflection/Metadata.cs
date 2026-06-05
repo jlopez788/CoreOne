@@ -35,6 +35,7 @@ public readonly struct Metadata : IEquatable<Metadata>
         else if (member is FieldInfo f)
         {
             IsStatic = f.IsStatic;
+            CanWrite = !f.IsInitOnly;
         }
     }
 
@@ -60,10 +61,7 @@ public readonly struct Metadata : IEquatable<Metadata>
 
     public override int GetHashCode() => Member?.GetHashCode() ?? 0;
 
-    public object? GetValue(object? instance) => CanRead && (instance is not null || IsStatic) ? Getter.Invoke(instance ?? StaticInstance, null) : null;
-
-    // Dummy instance passed to the Get delegate for static members (the compiled lambda ignores it)
-    private static readonly object StaticInstance = new();
+    public object? GetValue(object? instance) => CanRead && (instance is not null || IsStatic) ? Getter.Invoke(IsStatic ? null : instance, null) : null;
 
     public bool SetValue(object? instance, object? value)
     {
@@ -72,7 +70,7 @@ public readonly struct Metadata : IEquatable<Metadata>
         {
             if (CanWrite && Setter is not null && (instance is not null || IsStatic))
             {
-                Setter.Invoke(instance, value);
+                Setter.Invoke(IsStatic ? null : instance, value);
                 set = true;
             }
         }

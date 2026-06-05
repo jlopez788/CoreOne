@@ -114,7 +114,7 @@ public static class MetaType
         if (ClassCache.TryGetValue(key, out var props) && props?.Count > 0)
         { // See if we have ran it from the class previously
             meta = props.FirstOrDefault(p => p.Name.Matches(propertyName));
-            return meta;
+            return meta.Name.IsNullOrEmpty() ? Metadata.Empty : meta;
         }
 
         key = new(type, propertyName);
