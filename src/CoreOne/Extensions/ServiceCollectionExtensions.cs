@@ -137,6 +137,6 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection RunOnce(this IServiceCollection services, Func<IServiceProvider, CancellationToken, Task> callback)
     {
-        return services.AddSingleton<IHostedService>(sp => new RunOnceHostedService(sp, callback));
+        return services.AddHostedService(sp => new RunOnceHostedService(sp, callback));
     }
 }
