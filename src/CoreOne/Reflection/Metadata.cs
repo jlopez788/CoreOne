@@ -11,6 +11,7 @@ public readonly struct Metadata : IEquatable<Metadata>
     public bool CanWrite { get; }
     public Type FPType { get; }
     public InvokeCallback Getter { get; }
+    public bool IsStatic { get; }
     public string Name { get; }
     public Set? Setter { get; }
 
@@ -24,10 +25,16 @@ public readonly struct Metadata : IEquatable<Metadata>
         Setter = setter;
         CanRead = true;
         CanWrite = true;
+        IsStatic = false;
         if (member is PropertyInfo p)
         {
             CanRead = p.CanRead;
             CanWrite = p.CanWrite;
+            IsStatic = p.GetMethod?.IsStatic ?? p.SetMethod?.IsStatic ?? false;
+        }
+        else if (member is FieldInfo f)
+        {
+            IsStatic = f.IsStatic;
         }
     }
 
@@ -53,14 +60,17 @@ public readonly struct Metadata : IEquatable<Metadata>
 
     public override int GetHashCode() => Member?.GetHashCode() ?? 0;
 
-    public object? GetValue(object? instance) => CanRead && instance is not null ? Getter.Invoke(instance, null) : null;
+    public object? GetValue(object? instance) => CanRead && (instance is not null || IsStatic) ? Getter.Invoke(instance ?? StaticInstance, null) : null;
+
+    // Dummy instance passed to the Get delegate for static members (the compiled lambda ignores it)
+    private static readonly object StaticInstance = new();
 
     public bool SetValue(object? instance, object? value)
     {
         var set = false;
         try
         {
-            if (CanWrite && Setter is not null && instance is not null)
+            if (CanWrite && Setter is not null && (instance is not null || IsStatic))
             {
                 Setter.Invoke(instance, value);
                 set = true;

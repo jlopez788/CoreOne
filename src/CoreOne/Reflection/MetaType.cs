@@ -225,16 +225,19 @@ public static class MetaType
         var oinstance = Expression.Parameter(tobject, "instance");
         if (member is PropertyInfo property)
         {
-            var objtotyp = Expression.Convert(oinstance, key.Type!);
-            var mexp = Expression.Property(objtotyp, property);
+            var isStatic = property.GetMethod?.IsStatic ?? property.SetMethod?.IsStatic ?? false;
+            var mexp = isStatic ?
+                Expression.Property(null, property) :
+                Expression.Property(Expression.Convert(oinstance, key.Type!), property);
             actions = getAction(property.CanRead, property.CanWrite);
             return create(property, mexp, property.PropertyType, actions);
         }
         else if (member is FieldInfo field)
         {
-            var objtotyp = Expression.Convert(oinstance, key.Type!);
-            var mexp = Expression.Field(objtotyp, field);
-            actions = getAction(true, true);
+            var mexp = field.IsStatic ?
+                Expression.Field(null, field) :
+                Expression.Field(Expression.Convert(oinstance, key.Type!), field);
+            actions = getAction(true, !field.IsInitOnly);
             return create(field, mexp, field.FieldType, actions);
         }
 

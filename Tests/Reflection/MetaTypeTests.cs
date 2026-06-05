@@ -11,7 +11,7 @@ public class MetaTypeTests
         public string? PublicProperty { get; set; }
         public int IntProperty { get; set; }
         private string? PrivateProperty { get; set; } = "private";
-        public static string? StaticProperty { get; set; }
+        public static string? StaticProperty { get; set; } = "static";
 
         public string GetPrivate() => PrivateProperty ?? "";
 
@@ -22,6 +22,33 @@ public class MetaTypeTests
         public static string StaticMethod(string input) => input.ToLower();
 
         private string PrivateMethod(string input) => input + "_modified";
+    }
+
+    [Test]
+    public void GetMetadata_ForStaticProperty()
+    {
+        var metadata = MetaType.GetMetadata(typeof(TestClass), nameof(TestClass.StaticProperty));
+        Assert.Multiple(() => {
+            Assert.That(metadata, Is.Not.EqualTo(Metadata.Empty));
+            Assert.That(metadata.Name, Is.EqualTo(nameof(TestClass.StaticProperty)));
+            Assert.That(metadata.FPType, Is.EqualTo(typeof(string)));
+            Assert.That(metadata.GetValue(null), Is.EqualTo(TestClass.StaticProperty));
+        });
+    }
+
+    [Test]
+    public void GetMetadata_ForSetStaticProperty()
+    {
+        const string next = "nextValue";
+        var metadata = MetaType.GetMetadata(typeof(TestClass), nameof(TestClass.StaticProperty));
+        metadata.SetValue(null, next);
+
+        Assert.Multiple(() => {
+            Assert.That(metadata, Is.Not.EqualTo(Metadata.Empty));
+            Assert.That(metadata.Name, Is.EqualTo(nameof(TestClass.StaticProperty)));
+            Assert.That(metadata.FPType, Is.EqualTo(typeof(string)));
+            Assert.That(metadata.GetValue(null), Is.EqualTo(next));
+        });
     }
 
     [Test]
