@@ -7,11 +7,13 @@ internal class RunOnceHostedService(IServiceProvider sp, Func<IServiceProvider, 
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        var logger = sp.GetRequiredService<OLog<RunOnceHostedService>>();
+        var scopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
+        using var scope = scopeFactory.CreateScope();
+        var logger = scope.ServiceProvider.GetRequiredService<OLog<RunOnceHostedService>>();
         logger.LogInformation("Starting RunOnceHostedService");
         try
         {
-            await callback.Invoke(sp, cancellationToken);
+            await callback.Invoke(scope.ServiceProvider, cancellationToken);
         }
         catch (Exception ex)
         {
