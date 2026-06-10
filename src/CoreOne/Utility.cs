@@ -158,6 +158,30 @@ public static partial class Utility
         catch (Exception ex) { return Result.FromException<T>(ex); }
     }
 
+    public static IResult<T> TryResult<T>(Func<IResult<T>> callback)
+    {
+        try
+        {
+            return callback.Invoke();
+        }
+        catch (Exception ex)
+        {
+            return Result.FromException<T>(ex);
+        }
+    }
+
+    public static async Task<IResult<T>> TryResult<T>(Func<Task<IResult<T>>> callback)
+    {
+        try
+        {
+            return await callback.Invoke();
+        }
+        catch (Exception ex)
+        {
+            return Result.FromException<T>(ex);
+        }
+    }
+
     public static bool TryChangeType<TValue>(object? value, [NotNullWhen(true)] out TValue? result, CultureInfo? cultureInfo = null)
     {
         try

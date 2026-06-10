@@ -4,6 +4,7 @@ namespace CoreOne.Reflection;
 
 public readonly struct Metadata : IEquatable<Metadata>
 {
+    private static readonly object Static = new();
     public static readonly Metadata Empty = new(null, null, null, null);
     private readonly MemberInfo? Member;
     private readonly string RefId;
@@ -61,7 +62,7 @@ public readonly struct Metadata : IEquatable<Metadata>
 
     public override int GetHashCode() => Member?.GetHashCode() ?? 0;
 
-    public object? GetValue(object? instance) => CanRead && (instance is not null || IsStatic) ? Getter.Invoke(IsStatic ? null : instance, null) : null;
+    public object? GetValue(object? instance) => CanRead && (instance is not null || IsStatic) ? Getter.Invoke(IsStatic ? Static : instance, null) : null;
 
     public bool SetValue(object? instance, object? value)
     {
@@ -70,7 +71,7 @@ public readonly struct Metadata : IEquatable<Metadata>
         {
             if (CanWrite && Setter is not null && (instance is not null || IsStatic))
             {
-                Setter.Invoke(IsStatic ? null : instance, value);
+                Setter.Invoke(IsStatic ? Static : instance, value);
                 set = true;
             }
         }

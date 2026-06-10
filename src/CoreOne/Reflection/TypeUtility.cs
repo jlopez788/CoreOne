@@ -11,10 +11,10 @@ public static class TypeUtility
     public static BindingFlags Flags { get; set; } = BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy;
 
     [return: NotNullIfNotNull(nameof(instance))]
-    public static IResult<T> BasicMap<T>(object? instance) => BasicMap(instance, typeof(T)).Select(o => (T?)o);
+    public static IResult<T> BasicMap<T>(object? instance) => BasicMap(instance, typeof(T)).Select(o => (T)o);
 
     [return: NotNullIfNotNull(nameof(instance))]
-    public static IResult<object?> BasicMap(object? instance, Type toType)
+    public static IResult<object> BasicMap(object? instance, Type toType)
     {
         try
         {
@@ -47,11 +47,11 @@ public static class TypeUtility
                 }
             }
 
-            return new Result<object?>(target);
+            return new Result<object>(target);
         }
         catch (Exception ex)
         {
-            return Result.FromException<object?>(ex);
+            return Result.FromException<object>(ex);
         }
     }
 
@@ -59,7 +59,7 @@ public static class TypeUtility
     {
         var all = new[] { typeof(T1), typeof(T2), typeof(T3) };
         var args = new object?[] { t1, t2, t3 };
-        var key = new TypeKey(type, all,  "ctor");
+        var key = new TypeKey(type, all, "ctor");
         var invoke = CachedActivators.GetSet(key, () => CreateDelegate<T1, T2, T3>(type));
         return invoke!.DynamicInvoke(t1, t2, t3)!;
     }
