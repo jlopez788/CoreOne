@@ -137,7 +137,7 @@ public static partial class Utility
         try
         {
             var model = callback is not null ? await callback.Invoke() : default;
-            return new Result<T>(model);
+            return new Result<T>(model, true);
         }
         catch (Exception ex) { return Result.FromException<T>(ex); }
     }
@@ -153,7 +153,7 @@ public static partial class Utility
         try
         {
             var model = callback is not null ? callback.Invoke() : default;
-            return new Result<T>(model);
+            return new Result<T>(model, true);
         }
         catch (Exception ex) { return Result.FromException<T>(ex); }
     }
