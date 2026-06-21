@@ -68,16 +68,6 @@ public partial class Utility
         return result;
     }
 
-    [return: NotNullIfNotNull(nameof(model))]
-    public static StringContent? ToStringContent<T>(this T? model, Encoding? encoding = null)
-    {
-        if (model is null)
-            return null;
-
-        var content = Serialize(model);
-        return new StringContent(content, encoding ?? Encoding.UTF8, "application/json");
-    }
-
     public static void UseSettings(JsonSerializerSettings? settings = null)
     {
         JsonSettings = settings ?? NewtonSettings.Default;

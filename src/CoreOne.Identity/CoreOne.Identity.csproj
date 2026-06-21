@@ -5,7 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<LangVersion>preview</LangVersion>
-		<Version>1.2.2</Version>
+		<Version>1.2.3</Version>
 		<Title>CoreOne</Title>
 		<Authors>Juan Lopez</Authors>
 		<Company>Juan Lopez</Company>
@@ -14,6 +14,7 @@
 		<PackageId>CoreOne.Identity</PackageId>
 		<Product>CoreOne.Identity</Product>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageIcon>CoreOne.png</PackageIcon>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
@@ -23,6 +24,10 @@
 
 	<ItemGroup>
 		<None Include="README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\CoreOne.png">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>

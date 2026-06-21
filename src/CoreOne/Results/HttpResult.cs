@@ -95,9 +95,9 @@ public class HttpResult : IResult, IStatusResult<int>
     public static (bool success, ResultType resultType) GetResultFromStatusCode(int statusCode)
     {
         return statusCode switch {
+            _ when statusCode is 100 or (>= 200 and <= 299) => (true, ResultType.Success),
             _ when statusCode is >= 400 and <= 499 => (false, ResultType.Fail),
             _ when statusCode >= 500 => (false, ResultType.Exception),
-            _ when statusCode is 100 or (>= 200 and <= 299) => (true, ResultType.Success),
             _ => (false, ResultType.Fail)
         };
     }
