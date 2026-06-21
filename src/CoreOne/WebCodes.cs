@@ -105,4 +105,8 @@ public static class WebCodes
     public const int Status510NotExtended = 510;
 
     public const int Status511NetworkAuthenticationRequired = 511;
+
+    public static bool IsSuccessStatusCode(int code) => code is 100 or (>= 200 and <= 299);
+
+    public static bool IsSuccessStatusCode(int? code) => code.HasValue && code is 100 or (>= 200 and <= 299);
 }
