@@ -6,8 +6,8 @@ public class CursorResult<T> : BaseOperationRequest<CursorResult<T>>, ICollectio
     [MemberNotNullWhen(true, nameof(NextCursor))]
 #endif
     public bool HasNextCursor => !string.IsNullOrEmpty(NextCursor);
-    public ICollection<T>? Items { get; }
-    public string? Message { get; }
+    public ICollection<T>? Items { get; init; }
+    public string? Message { get; init; }
     public string? NextCursor { get; init; }
     public ResultType ResultType { get; set; }
     public bool Success => ResultType == ResultType.Success;
@@ -28,6 +28,18 @@ public class CursorResult<T> : BaseOperationRequest<CursorResult<T>>, ICollectio
     {
         var result = new CursorResult<TNext>(models, cursor, Token) {
             ResultType = resultType
+        };
+        result.Operations.AddRange(Operations);
+        return result;
+    }
+
+    public CursorResult<TNext> Select<TNext>(Func<T, TNext> callback)
+    {
+        var result = Items is not null ? new CursorResult<TNext>(Items.SelectList(callback), NextCursor, Token) {
+            ResultType = ResultType
+        } : new CursorResult<TNext> {
+            ResultType = ResultType,
+            Message = Message
         };
         result.Operations.AddRange(Operations);
         return result;

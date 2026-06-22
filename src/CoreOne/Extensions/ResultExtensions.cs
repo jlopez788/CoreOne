@@ -164,18 +164,40 @@ public static class ResultExtensions
         return result;
     }
 
-    public static IResult<TResult> Select<TResult>(this IResult result, Func<TResult> callback)
+    public static IResult<TResult> Select<TResult>(this IResult result, Func<TResult?> callback)
     {
         return result.Success ?
             Utility.Try(() => callback()) :
             result.ToResult<TResult>();
     }
 
-    public static IResult<TResult> Select<T, TResult>(this IResult<T> result, Func<T, TResult> callback)
+    public static IResult<TResult> Select<T, TResult>(this IResult<T> result, Func<T, TResult?> callback)
     {
         return result.Success && result.Model is not null ?
             Utility.Try(() => callback(result.Model)) :
             result.ToResult<TResult>();
+    }
+
+    public static ICollectionResult<TResult> Select<TModel, TResult>(this ICollectionResult<TModel> result, Func<TModel, TResult> callback)
+    {
+        return result.Success && result.Items is not null ?
+            new CollectionResult<TResult> {
+                ResultType = ResultType.Success,
+                Message = result.Message,
+                Items = result.Items.SelectList(callback)
+            } :
+            new CollectionResult<TResult>(result.ResultType, result.Message);
+    }
+
+    public static ICollectionResult<TResult> Select<TModel, TResult>(this ICollectionResult<TModel> result, Func<TModel, int, TResult> callback)
+    {
+        return result.Success && result.Items is not null ?
+            new CollectionResult<TResult> {
+                ResultType = ResultType.Success,
+                Message = result.Message,
+                Items = result.Items.SelectList(callback)
+            } :
+            new CollectionResult<TResult>(result.ResultType, result.Message);
     }
 
     public static async Task<IResult<TResult>> SelectAsync<TResult>(this IResult result, Func<Task<TResult?>> callback)
@@ -214,6 +236,35 @@ public static class ResultExtensions
         return result.Success && result.Model is not null ?
             await Utility.Try(() => callback.Invoke(result.Model)) :
             result.ToResult<TResult>();
+    }
+
+    public static async Task<ICollectionResult<TResult>> SelectAsync<TModel, TResult>(this Task<ICollectionResult<TModel>> task, Func<TModel, TResult> callback)
+    {
+        var result = await task;
+        return result.Select(callback);
+    }
+
+    public static async Task<ICollectionResult<TResult>> SelectAsync<TModel, TResult>(this Task<ICollectionResult<TModel>> task, Func<TModel, int, TResult> callback)
+    {
+        var result = await task;
+        return result.Select(callback);
+    }
+
+    public static ICollectionResult<TResult> SelectCollection<TModel, TResult>(this ICollectionResult<TModel> result, Func<ICollection<TModel>, ICollection<TResult>> callback)
+    {
+        return result.Success && result.Items is not null ?
+            new CollectionResult<TResult> {
+                ResultType = ResultType.Success,
+                Message = result.Message,
+                Items = callback.Invoke(result.Items)
+            } :
+            new CollectionResult<TResult>(result.ResultType, result.Message);
+    }
+
+    public static async Task<ICollectionResult<TResult>> SelectCollectionAsync<TModel, TResult>(this Task<ICollectionResult<TModel>> task, Func<ICollection<TModel>, ICollection<TResult>> callback)
+    {
+        var result = await task;
+        return result.SelectCollection(callback);
     }
 
     public static IResult<TResult> SelectResult<T, TResult>(this IResult<T> result, Func<T, IResult<TResult>> callback)
@@ -269,6 +320,23 @@ public static class ResultExtensions
                 };
     }
 
+    public static ICollectionResult<T> Where<T>(this ICollectionResult<T> result, Func<ICollection<T>, bool> predicate, string? errorMessage = null)
+    {
+        return result.Success && result.Items is not null ?
+            predicate(result.Items) ?
+                result :
+                new CollectionResult<T> {
+                    ResultType = ResultType.Fail,
+                    Message = errorMessage ?? "Predicate not satisfied.",
+                    Items = default
+                } :
+                new CollectionResult<T> {
+                    ResultType = result.ResultType,
+                    Message = result.Message ?? errorMessage ?? "Invalid state",
+                    Items = default
+                };
+    }
+
     public static async Task<IResult<T>> WhereAsync<T>(this Task<IResult<T>> task, Func<T, bool> predicate, string? errorMessage = null)
     {
         var result = await task;
@@ -302,6 +370,42 @@ public static class ResultExtensions
                     ResultType = result.ResultType,
                     Message = result.Message ?? getError?.Invoke(result.Model) ?? "Invalid state",
                     Model = default
+                };
+    }
+
+    public static async Task<ICollectionResult<T>> WhereAsync<T>(this Task<ICollectionResult<T>> task, Func<ICollection<T>, bool> predicate, string? errorMessage = null)
+    {
+        var result = await task;
+        return result.Success && result.Items is not null ?
+            predicate(result.Items) ?
+                result :
+                new CollectionResult<T> {
+                    ResultType = ResultType.Fail,
+                    Message = errorMessage ?? "Predicate not satisfied.",
+                    Items = default
+                } :
+                new CollectionResult<T> {
+                    ResultType = result.ResultType,
+                    Message = result.Message ?? errorMessage ?? "Invalid state",
+                    Items = default
+                };
+    }
+
+    public static async Task<ICollectionResult<T>> WhereAsync<T>(this Task<ICollectionResult<T>> task, Func<ICollection<T>, bool> predicate, Func<ICollection<T>?, string?>? getError = null)
+    {
+        var result = await task;
+        return result.Success && result.Items is not null ?
+            predicate(result.Items) ?
+                result :
+                new CollectionResult<T> {
+                    ResultType = ResultType.Fail,
+                    Message = getError?.Invoke(result.Items) ?? "Predicate not satisfied.",
+                    Items = default
+                } :
+                new CollectionResult<T> {
+                    ResultType = result.ResultType,
+                    Message = result.Message ?? getError?.Invoke(result.Items) ?? "Invalid state",
+                    Items = default
                 };
     }
 }
