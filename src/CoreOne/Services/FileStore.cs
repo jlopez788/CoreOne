@@ -38,9 +38,9 @@ public class FileStore<T>(ICypher? cypher, ISerializer? serializer, string? path
         }
     }
 
-    public Task<IResult<T>> LoadAsync(CancellationToken cancellationToken = default) => Loadsync(Path, cancellationToken);
+    public Task<IResult<T>> LoadAsync(CancellationToken cancellationToken = default) => LoadAsync(Path, cancellationToken);
 
-    public async Task<IResult<T>> Loadsync(string path, CancellationToken cancellationToken = default)
+    public async Task<IResult<T>> LoadAsync(string path, CancellationToken cancellationToken = default)
     {
         var result = Result.Fail<T>("File does not exist");
         if (File.Exists(path))

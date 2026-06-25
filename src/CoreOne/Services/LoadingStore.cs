@@ -79,10 +79,20 @@ public class LoadingStore : IDisposable
         return token;
     }
 
+    public Task InvokeAsync(Action callback, CancellationToken cancellationToken = default) => GetResultAsync(async p => {
+        callback.Invoke();
+        return Task.FromResult(1);
+    }, null, cancellationToken);
+
+    public Task InvokeAsync(Func<Task> callback, CancellationToken cancellationToken) => GetResultAsync(async p => {
+        await Utility.SafeAwait(callback.Invoke());
+        return 1;
+    }, null, cancellationToken);
+
     public Task InvokeAsync(InvokeCallback? callback, CancellationToken cancellationToken = default) => GetResultAsync(async p => {
         await Utility.SafeAwait(callback?.InvokeAsync(p));
         return 1;
-    }, cancellationToken: cancellationToken);
+    }, null, cancellationToken);
 
     public void Subscribe(Action<bool> callback, SToken token) => Stream?.Subscribe(callback, token);
 

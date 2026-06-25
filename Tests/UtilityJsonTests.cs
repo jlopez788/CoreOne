@@ -1,4 +1,5 @@
 using CoreOne;
+using CoreOne.Extensions;
 using CoreOne.Reflection;
 using NUnit.Framework;
 using System.Text;

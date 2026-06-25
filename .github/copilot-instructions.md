@@ -29,7 +29,7 @@
 - Depend on abstractions (interfaces), not concrete implementations
 - Use constructor injection: `public BaseService(IServiceProvider? services)`
 - Primary constructors for DI: `public class AsyncTaskQueue(int concurrency = 1)`
-- Property injection via attributes: `[Service(Optional = true)] protected ILogger<BaseService>? Logger { get; init; }`
+- Property injection via attributes: `[OInject(Optional = true)] protected ILogger<BaseService>? Logger { get; init; }`
 - Extension methods for service resolution: [ServiceProviderExtensions.cs](../src/CoreOne/Extensions/ServiceProviderExtensions.cs)
 
 ## Naming Conventions
@@ -176,9 +176,12 @@ public class MyClass : Disposable
     }
 }
 
-// ✅ Async disposal
+// ✅ Async disposal — prefer DisposeAsync; Dispose() is obsolete on BaseService
 public class BaseService : IDisposable, IAsyncDisposable
 {
+    [Obsolete("Prefer use DisposeAsync method")]
+    public void Dispose() { /* delegates to DisposeAsync internally */ }
+
     public async ValueTask DisposeAsync()
     {
         await Token.DisposeAsync();
@@ -186,7 +189,7 @@ public class BaseService : IDisposable, IAsyncDisposable
         await DisposeAsync(true);
         GC.SuppressFinalize(this);
     }
-    
+
     protected virtual ValueTask DisposeAsync(bool disposing) => ValueTask.CompletedTask;
 }
 ```
