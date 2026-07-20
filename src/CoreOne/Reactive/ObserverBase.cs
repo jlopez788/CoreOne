@@ -28,7 +28,7 @@ public abstract class ObserverBase<T> : Disposable, IObserver<T>, IDisposable
     /// </summary>
     /// <param name="exception"></param>
     public void OnError(Exception exception)
-    { 
+    {
         using (Sync.EnterScope())
         {
             Exception = exception;
@@ -46,8 +46,7 @@ public abstract class ObserverBase<T> : Disposable, IObserver<T>, IDisposable
     {
         if (!IsFinalized)
         {
-            using (Sync.EnterScope())
-                OnNextCore(value);
+            OnNextCore(value);
         }
     }
 
