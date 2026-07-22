@@ -5,7 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>preview</LangVersion>
-        <Version>1.5.7.3</Version>
+        <Version>1.5.7.4</Version>
         <Title>CoreOne</Title>
         <Authors>Juan Lopez</Authors>
         <Company>Juan Lopez</Company>
@@ -45,7 +45,7 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
-        <PackageReference Include="System.Text.Json" Version="10.0.10" />
+        <PackageReference Include="System.Text.Json" Version="9.0.8" />
     </ItemGroup>
 
 </Project>

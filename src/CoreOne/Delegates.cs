@@ -4,6 +4,6 @@ public delegate Task InvokeATask<TValue>(TValue value, CancellationToken cancell
 
 public delegate Task InvokeTask(CancellationToken cancellationToken);
 
-public delegate Task<TResult> InvokeTask<TResult>(CancellationToken cancellationToken);
+public delegate ValueTask<TResult> InvokeTask<TResult>(CancellationToken cancellationToken);
 
 public delegate void InvokeTaskAsync(InvokeTask task);

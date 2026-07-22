@@ -26,7 +26,7 @@ public class LoadingStore : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public async Task<TResult?> GetResultAsync<TResult>(InvokeTask<TResult>? callback, Action<Exception>? onException = null, CancellationToken cancellationToken = default)
+    public async ValueTask<TResult?> GetResultAsync<TResult>(InvokeTask<TResult>? callback, Action<Exception>? onException = null, CancellationToken cancellationToken = default)
     {
         TResult? result = default;
         if (callback != null)
@@ -37,7 +37,7 @@ public class LoadingStore : IDisposable
 #if DEBUG
                 try
                 {
-                    result = await Utility.SafeAwait(callback?.Invoke(cancellationToken));
+                    result = await Utility.SafeAwait(callback?.Invoke(cancellationToken).AsTask());
                 }
                 catch (OperationCanceledException)
                 {// do nothing..
@@ -53,7 +53,7 @@ public class LoadingStore : IDisposable
                     await callback.Invoke(cancellationToken);
                 }
 #else
-                result = await Utility.SafeAwait(callback?.Invoke(cancellationToken));
+                result = await Utility.SafeAwait(callback?.Invoke(cancellationToken).AsTask());
 #endif
             }
             catch (OperationCanceledException)
@@ -79,17 +79,17 @@ public class LoadingStore : IDisposable
         return token;
     }
 
-    public Task InvokeAsync(Action callback, CancellationToken cancellationToken = default) => GetResultAsync(async p => {
+    public async ValueTask InvokeAsync(Action callback, CancellationToken cancellationToken = default) => await GetResultAsync(_ => {
         callback.Invoke();
-        return Task.FromResult(1);
+        return new ValueTask<int>(1);
     }, null, cancellationToken);
 
-    public Task InvokeAsync(Func<Task> callback, CancellationToken cancellationToken) => GetResultAsync(async p => {
+    public async ValueTask InvokeAsync(Func<Task> callback, CancellationToken cancellationToken) => await GetResultAsync(async _ => {
         await Utility.SafeAwait(callback.Invoke());
         return 1;
     }, null, cancellationToken);
 
-    public Task InvokeAsync(InvokeCallback? callback, CancellationToken cancellationToken = default) => GetResultAsync(async p => {
+    public async ValueTask InvokeAsync(InvokeCallback? callback, CancellationToken cancellationToken = default) => await GetResultAsync(async p => {
         await Utility.SafeAwait(callback?.InvokeAsync(p));
         return 1;
     }, null, cancellationToken);
