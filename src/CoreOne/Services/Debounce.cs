@@ -4,16 +4,18 @@ public class Debounce(Action callback, TimeSpan delay) : Debounce<object?>(p => 
 {
     public Debounce(Action callback, int delayMS) : this(callback, TimeSpan.FromMilliseconds(delayMS)) { }
 
-    public void Invoke() => Invoke(null);
+    public void Invoke() => Invoke(null, false);
+
+    public void Invoke(bool skipDelay) => Invoke(null, skipDelay);
 }
 
-public class Debounce<T>(Action<T> callback, TimeSpan delay) : IDisposable
+public class Debounce<TModel>(Action<TModel> callback, TimeSpan delay) : IDisposable
 {
-    private readonly Action<T> Callback = callback;
+    private readonly Action<TModel> Callback = callback;
     private readonly TimeSpan Delay = delay;
     private CancellationTokenSource? Token = new();
 
-    public Debounce(Action<T> callback, int delayMS) : this(callback, TimeSpan.FromMilliseconds(delayMS)) { }
+    public Debounce(Action<TModel> callback, int delayMS) : this(callback, TimeSpan.FromMilliseconds(delayMS)) { }
 
     public void Dispose()
     {
@@ -21,13 +23,16 @@ public class Debounce<T>(Action<T> callback, TimeSpan delay) : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public void Invoke(T model)
+    public void Invoke(TModel model) => Invoke(model, false);
+
+    public void Invoke(TModel model, bool skipDelay)
     {
-        if (Delay == TimeSpan.Zero)
+        if (Delay == TimeSpan.Zero || skipDelay)
         {
             Callback.Invoke(model);
             return;
         }
+
         Token?.Cancel();
         Token = new CancellationTokenSource();
 
