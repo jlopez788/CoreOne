@@ -1,5 +1,8 @@
 ﻿# CoreOne
 
+<img src="CoreOne.png" width="120" alt="CoreOne" />
+
+
 **A modern, high-performance C# utility library designed to make your life easier.**
 
 [![.NET](https://img.shields.io/badge/.NET-10.0%20%7C%209.0%20%7C%20Standard%202.0%2F2.1-512BD4)](https://dotnet.microsoft.com/)
