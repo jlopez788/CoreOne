@@ -3,7 +3,7 @@ global using CoreOne.Collections;
 global using CoreOne.Comparers;
 global using CoreOne.Extensions;
 global using CoreOne.Models;
-global using CoreOne.Models.EventArgs;
+global using CoreOne.Models.EventModels;
 global using CoreOne.Reflection;
 global using CoreOne.Results;
 global using CoreOne.Services;
