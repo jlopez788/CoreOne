@@ -9,7 +9,7 @@ public class Debounce(Action callback, TimeSpan delay) : Debounce<object?>(p => 
     public void Invoke(bool skipDelay) => Invoke(null, skipDelay);
 }
 
-public class Debounce<TModel>(Action<TModel> callback, TimeSpan delay) : IDisposable
+public class Debounce<TModel>(Action<TModel> callback, TimeSpan delay) : IDebounce<TModel>, IDisposable
 {
     private readonly Action<TModel> Callback = callback;
     private readonly TimeSpan Delay = delay;
