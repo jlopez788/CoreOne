@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
 
-namespace CoreOne.Models.EventArgs;
+namespace CoreOne.Models.EventModels;
 
-public class BackingFieldChangingEventArgs<T>(T? current, T? next) : CancelEventArgs
+public class FieldChangingEventArgs<T>(T? current, T? next) : CancelEventArgs
 {
     public T? CurrentValue { get; } = current;
     public T? NextValue { get; } = next;

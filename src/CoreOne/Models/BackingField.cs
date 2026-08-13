@@ -1,11 +1,12 @@
-﻿using CoreOne.Reactive;
+﻿using CoreOne.Models.EventModels;
+using CoreOne.Reactive;
 
 namespace CoreOne.Models;
 
 public class BackingField<T> : Disposable
 {
-    public readonly Subject<BackingFieldChangedEventArgs<T>> ValueChanged = new();
-    public readonly Subject<BackingFieldChangingEventArgs<T>> ValueChanging = new();
+    public readonly Subject<FieldChangedEventArgs<T>> ValueChanged = new();
+    public readonly Subject<FieldChangingEventArgs<T>> ValueChanging = new();
     private static readonly Lazy<Comparison<T>> Method = new(InitializeMethod);
     private readonly IComparer<T>? Comparer;
     private readonly Comparison<T>? Comparison;
@@ -58,12 +59,12 @@ public class BackingField<T> : Disposable
         IsValueSet = true;
     }
 
-    public void SubscribeOnValueChanged(Action<BackingFieldChangedEventArgs<T>> callback, CancellationToken cancellationToken)
+    public void SubscribeOnValueChanged(Action<FieldChangedEventArgs<T>> callback, CancellationToken cancellationToken)
     {
         ValueChanged.Subscribe(callback, cancellationToken);
     }
 
-    public void SubscribeOnValueChanging(Action<BackingFieldChangingEventArgs<T>> callback, CancellationToken cancellationToken)
+    public void SubscribeOnValueChanging(Action<FieldChangingEventArgs<T>> callback, CancellationToken cancellationToken)
     {
         ValueChanging.Subscribe(callback, cancellationToken);
     }
@@ -73,7 +74,7 @@ public class BackingField<T> : Disposable
         var isChanged = Compare(nextValue);
         if (isChanged)
         {
-            var args = new BackingFieldChangingEventArgs<T>(Value, nextValue);
+            var args = new FieldChangingEventArgs<T>(Value, nextValue);
             IsValueSet = true;
             OnBeforeUpdateCore(args);
             if (args.Cancel)
@@ -84,7 +85,7 @@ public class BackingField<T> : Disposable
         return isChanged;
     }
 
-    public async Task<bool> UpdateValueAsync(T? nextValue, Func<BackingFieldChangingEventArgs<T>, Task>? beforeChange = null)
+    public async Task<bool> UpdateValueAsync(T? nextValue, Func<FieldChangingEventArgs<T>, Task>? beforeChange = null)
     {
         var isChanged = Compare(nextValue);
         if (isChanged)
@@ -93,7 +94,7 @@ public class BackingField<T> : Disposable
                 isChanged = Compare(nextValue); // Compare again... Juuuuuust in case it was updated by another thread
                 if (isChanged)
                 {
-                    var args = new BackingFieldChangingEventArgs<T>(Value, nextValue);
+                    var args = new FieldChangingEventArgs<T>(Value, nextValue);
                     IsValueSet = true;
                     OnBeforeUpdateCore(args);
                     if (args.Cancel)
@@ -124,7 +125,7 @@ public class BackingField<T> : Disposable
         return (!IgnoreNullValues || nextValue is not null) && flag;
     }
 
-    protected virtual void OnBeforeUpdate(BackingFieldChangingEventArgs<T> e)
+    protected virtual void OnBeforeUpdate(FieldChangingEventArgs<T> e)
     {
     }
 
@@ -149,10 +150,10 @@ public class BackingField<T> : Disposable
         IsChanged = true;
         PreviousValue = Value;
         Value = nextValue;
-        ValueChanged.OnNext(new BackingFieldChangedEventArgs<T>(Value));
+        ValueChanged.OnNext(new FieldChangedEventArgs<T>(Value));
     }
 
-    private void OnBeforeUpdateCore(BackingFieldChangingEventArgs<T> args)
+    private void OnBeforeUpdateCore(FieldChangingEventArgs<T> args)
     {
         ValueChanging.OnNext(args);
         if (!args.Cancel)
