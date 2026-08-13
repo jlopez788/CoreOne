@@ -1,6 +1,6 @@
 ﻿namespace CoreOne.Services;
 
-public class Debounce(Action callback, TimeSpan delay) : Debounce<object?>(p => callback(), delay)
+public class Debounce(Action callback, TimeSpan delay) : Debounce<object?>(p => callback(), delay), IDebounce
 {
     public Debounce(Action callback, int delayMS) : this(callback, TimeSpan.FromMilliseconds(delayMS)) { }
 

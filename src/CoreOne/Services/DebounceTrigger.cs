@@ -1,8 +1,11 @@
 ﻿namespace CoreOne.Services;
 
-public class DebounceTrigger(Func<CancellationToken, Task> callback, TimeSpan delay) : DebounceTrigger<object?>((_, ct) => callback(ct), delay)
+public class DebounceTrigger(Func<CancellationToken, Task> callback, TimeSpan delay) :
+    DebounceTrigger<object?>((_, ct) => callback(ct), delay), IDebounce
 {
     public DebounceTrigger(Func<CancellationToken, Task> callback, int delayMS) : this(callback, TimeSpan.FromMilliseconds(delayMS)) { }
+
+    public void Invoke() => Invoke(null);
 }
 
 /// <summary>Fires immediately on first trigger, then debounces subsequent triggers by <paramref name="delay"/>.</summary>
