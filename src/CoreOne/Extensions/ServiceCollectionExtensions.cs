@@ -109,12 +109,12 @@ public static class ServiceCollectionExtensions
                 if (registration is not null)
                     services.Remove(registration);
             }
-            if (lifetime == ServiceLifetime.Singleton)
-                services.TryAddSingleton(type, sp => sp.GetRequiredService(concrete));
-            else if (lifetime == ServiceLifetime.Scoped)
-                services.TryAddScoped(type, sp => sp.GetRequiredService(concrete));
-            else if (lifetime == ServiceLifetime.Transient)
-                services.TryAddTransient(type, sp => sp.GetRequiredService(concrete));
+            var descriptor = lifetime switch {
+                ServiceLifetime.Singleton => ServiceDescriptor.Singleton(type, concrete),
+                ServiceLifetime.Transient => ServiceDescriptor.Transient(type, concrete),
+                _ => ServiceDescriptor.Scoped(type, concrete),
+            };
+            services.TryAddEnumerable(descriptor);
         }
 
         return services;
