@@ -69,3 +69,59 @@ public class Subject<T> : ObserverBase<T>, IObserver<T>, IObservable<T>, IDispos
     protected virtual void OnSubscribe(IObserver<T> observer)
     { }
 }
+
+public class Subject
+{
+    private class Observer(CancellationToken cancellationToken)
+    {
+        public void Publish()
+        {
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
+            OnPublish();
+        }
+
+        protected virtual void OnPublish()
+        { }
+    }
+
+    private sealed class ActionObserver(Action callback, CancellationToken cancellationToken) : Observer(cancellationToken)
+    {
+        protected override void OnPublish() => callback.Invoke();
+    }
+
+    private sealed class TaskObserver(Func<Task> callback, CancellationToken cancellationToken) : Observer(cancellationToken)
+    {
+        protected override void OnPublish() => _ = callback.Invoke();
+    }
+
+    private readonly SafeLock Sync = new();
+    public bool HasObservers => Observers != null && !Observers.IsEmpty;
+    private ImmutableList<Observer> Observers { get; set; } = [];
+
+    public void Publish()
+    {
+        ImmutableList<Observer> observers = [];
+        using (Sync.EnterScope())
+            observers = [.. Observers];
+
+        observers.Each(p => p.Publish());
+    }
+
+    public void Subscribe(Func<Task> callback, CancellationToken cancellationToken)
+    {
+        if (callback is null)
+            return;
+        using (Sync.EnterScope())
+            Observers = Observers.Add(new TaskObserver(callback, cancellationToken));
+    }
+
+    public void Subscribe(Action callback, CancellationToken cancellationToken)
+    {
+        if (callback is null)
+            return;
+        using (Sync.EnterScope())
+            Observers = Observers.Add(new ActionObserver(callback, cancellationToken));
+    }
+}
