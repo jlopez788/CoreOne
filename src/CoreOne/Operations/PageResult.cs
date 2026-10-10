@@ -2,12 +2,18 @@
 
 public class PageResult<T> : PageRequest, ICollectionResult<T>
 {
-    public ICollection<T>? Items { get; set; }
+    public ICollection<T> Items { get; set; }
     public int PageCount { get; set; }
     public int TotalCount { get; set; }
     public ResultType ResultType { get; set; }
     public string? Message { get; }
     public bool Success => ResultType == ResultType.Success;
+
+    public PageResult()
+    {
+        Items = [];
+        CurrentPage = 1;
+    }
 
     public PageResult(int pageSize)
     {
@@ -19,7 +25,7 @@ public class PageResult<T> : PageRequest, ICollectionResult<T>
     public PageResult(IEnumerable<T>? data, int page, int pageSize, int total)
     {
         ResultType = ResultType.Success;
-        Items = data is not null ? [.. data] : new List<T>(10);
+        Items = data is not null ? [.. data] : [];
         CurrentPage = page;
         PageSize = pageSize;
         TotalCount = total;
