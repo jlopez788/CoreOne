@@ -7,22 +7,20 @@ namespace CoreOne.Services;
 /// Debounced busy flag. <see cref="IsVisible"/> only turns on once work has been active for <see cref="Delay"/>,
 /// and once on it stays on for at least <see cref="MinVisible"/> to avoid flicker.
 /// </summary>
-public sealed class DelayedBusyState : IDisposable
+public class DelayedBusyState : IDisposable
 {
     private readonly SafeLock Lock = new();
-    private readonly Action<bool>? OnVisibleChanged;
     private readonly Stopwatch VisibleWatch = new();
     private bool IsDisposed;
     private CancellationTokenSource? Pending;
-    private Subject<bool>? Stream = new();
     public TimeSpan Delay { get; private set; }
     public bool IsActive { get; private set; }
     public bool IsVisible { get; private set; }
     public TimeSpan MinVisible { get; private set; }
+    protected Subject<bool>? Stream { get; private set; } = new();
 
-    public DelayedBusyState(TimeSpan delay = default, TimeSpan minVisible = default, Action<bool>? onVisibleChanged = null)
+    public DelayedBusyState(TimeSpan delay = default, TimeSpan minVisible = default)
     {
-        OnVisibleChanged = onVisibleChanged;
         Configure(delay, minVisible);
     }
 
@@ -85,7 +83,7 @@ public sealed class DelayedBusyState : IDisposable
         return changed.HasValue;
     }
 
-    public void Subscribe(Action<bool> callback, SToken token) => Stream?.Subscribe(callback, token);
+    public void Subscribe(Action<bool> callback, CancellationToken cancellationToken) => Stream?.Subscribe(callback, cancellationToken);
 
     private void CancelPending()
     {
@@ -99,7 +97,6 @@ public sealed class DelayedBusyState : IDisposable
 
     private void Notify(bool visible)
     {
-        OnVisibleChanged?.Invoke(visible);
         Stream?.OnNext(visible);
     }
 

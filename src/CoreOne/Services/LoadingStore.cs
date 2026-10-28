@@ -5,38 +5,17 @@ using Microsoft.Extensions.DependencyInjection;
 namespace CoreOne.Services;
 
 [Service(ServiceLifetime.Transient)]
-public class LoadingStore : IDisposable
+public class LoadingStore(TimeSpan busyDelay, TimeSpan minBusyDuration = default) : DelayedBusyState(busyDelay, minBusyDuration)
 {
-    private readonly DelayedBusyState BusyState;
-    private ImmutableList<Guid> Locks;
+    private ImmutableList<Guid> Locks = [];
     /// <summary>Busy state consumers should render from; honors the configured busy delay and minimum duration.</summary>
-    public bool IsBusy => BusyState.IsVisible;
+    public bool IsBusy => IsVisible;
     /// <summary>Raw state: <c>true</c> as soon as any work is in progress, regardless of the busy delay.</summary>
     public bool IsWorking => !IsEmpty;
     protected bool IsEmpty => Locks.IsEmpty;
-    protected Subject<bool>? Stream { get; set; }
 
     public LoadingStore() : this(TimeSpan.Zero)
     { }
-
-    public LoadingStore(TimeSpan busyDelay, TimeSpan minBusyDuration = default)
-    {
-        Locks = [];
-        Stream = new Subject<bool>();
-        BusyState = new DelayedBusyState(busyDelay, minBusyDuration, visible => Stream?.OnNext(visible));
-    }
-
-    /// <summary>Sets how long work must run before <see cref="IsBusy"/> turns on, and how long it then stays on at minimum.</summary>
-    public void Configure(TimeSpan busyDelay, TimeSpan minBusyDuration = default) => BusyState.Configure(busyDelay, minBusyDuration);
-
-    public void Dispose()
-    {
-        BusyState.Dispose();
-        Stream?.Dispose();
-        Stream = null;
-
-        GC.SuppressFinalize(this);
-    }
 
     public async ValueTask<TResult?> GetResultAsync<TResult>(InvokeTask<TResult>? callback, Action<Exception>? onException = null, CancellationToken cancellationToken = default)
     {
@@ -106,12 +85,11 @@ public class LoadingStore : IDisposable
         return 1;
     }, null, cancellationToken);
 
-    public void Subscribe(Action<bool> callback, SToken token) => Stream?.Subscribe(callback, token);
-
+  
     private void OnCountChanged()
     {
         // Visible-state changes notify through the BusyState callback; otherwise still notify so completed work renders.
-        if (!BusyState.SetActive(!IsEmpty))
+        if (!SetActive(!IsEmpty))
             Stream?.OnNext(IsBusy);
     }
 }

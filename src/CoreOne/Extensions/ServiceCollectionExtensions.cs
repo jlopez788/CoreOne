@@ -9,6 +9,8 @@ public static class ServiceCollectionExtensions
 {
     private record DefineService(Type Abstract, Type Concrete, ServiceLifetime Lifetime, bool ForceSet);
     private static readonly Type IHosted = typeof(IHostedService);
+    private static readonly MethodInfo CreateDescriptorMethod = typeof(ServiceCollectionExtensions)
+        .GetMethod(nameof(CreateDescriptor), BindingFlags.NonPublic | BindingFlags.Static)!;
 
     /// <summary>
     /// Register core services to DI service container
@@ -109,15 +111,19 @@ public static class ServiceCollectionExtensions
                 if (registration is not null)
                     services.Remove(registration);
             }
-            var descriptor = lifetime switch {
-                ServiceLifetime.Singleton => ServiceDescriptor.Singleton(type, concrete),
-                ServiceLifetime.Transient => ServiceDescriptor.Transient(type, concrete),
-                _ => ServiceDescriptor.Scoped(type, concrete),
-            };
+            var descriptor = concrete.ContainsGenericParameters
+                ? ServiceDescriptor.Describe(type, concrete, lifetime)
+                : (ServiceDescriptor)CreateDescriptorMethod.MakeGenericMethod(concrete).Invoke(null, [type, lifetime])!;
             services.TryAddEnumerable(descriptor);
         }
 
         return services;
+    }
+
+    private static ServiceDescriptor CreateDescriptor<TConcrete>(Type serviceType, ServiceLifetime lifetime) where TConcrete : class
+    {
+        Func<IServiceProvider, TConcrete> factory = sp => sp.GetRequiredService<TConcrete>();
+        return ServiceDescriptor.Describe(serviceType, factory, lifetime);
     }
 
     /// <summary>
