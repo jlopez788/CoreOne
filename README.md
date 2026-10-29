@@ -8,8 +8,8 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0%20%7C%209.0%20%7C%20Standard%202.0%2F2.1-512BD4)](https://dotnet.microsoft.com/)
 [![NuGet](https://img.shields.io/nuget/v/CoreOne.svg)](https://www.nuget.org/packages/CoreOne)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-881%20passing-brightgreen)](Tests/)
-[![Coverage](https://img.shields.io/badge/coverage-53%25%20lines-yellow)](COVERAGE_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-926%20passing-brightgreen)](Tests/)
+[![Coverage](https://img.shields.io/badge/coverage-59.4%25%20lines-yellow)](COVERAGE_REPORT.md)
 
 CoreOne is a comprehensive utility library that provides battle-tested patterns, reactive extensions, and powerful helpers for building robust .NET applications. It eliminates boilerplate code and provides intuitive APIs for common programming tasks.
 
@@ -49,7 +49,7 @@ Hub.Global.Subscribe<OrderCreated>(async order => {
 // Publish messages
 Hub.Global.Publish(new OrderCreated(orderId: 123));
 
-// State management
+// State management (where UserState : IHubState<UserState>)
 Hub.Global.Publish(new UserState { IsLoggedIn = true });
 var currentState = Hub.Global.GetState<UserState>();
 
@@ -109,7 +109,7 @@ public IResult<User> GetUser(int id)
 
 // Functional composition
 var result = await ValidateInput(request)
-    .PipeResultAsync(() => SaveToDatabase(request))
+    .SelectResultAsync(() => SaveToDatabase(request))
     .SelectAsync(saved => MapToDto(saved))
     .OnSuccessAsync(dto => SendNotification(dto));
 
@@ -119,11 +119,11 @@ else
     return BadRequest(result.Message);
 ```
 
-- `Result.Ok`, `Result.Fail()`, `Result.FromException()`
-- Generic `IResult<T>` with model payload
-- Functional operators: `Select`, `PipeResult`, `OnSuccess`
-- Async extensions: `SelectAsync`, `OnSuccessAsync`
-- HTTP status code support via `IResult<TModel, TStatus>`
+- `Result.Ok`, `Result.Fail<T>()`, `Result.FromException<T>()`
+- Generic `IResult<T>` with model payload and `ICollectionResult<T>` for collections
+- Functional operators: `Select`, `SelectResult`, `Where`, `Match`, `OnSuccess`
+- Async extensions: `SelectAsync`, `SelectResultAsync`, `MatchAsync`, `OnSuccessAsync`, `OnFailAsync`
+- HTTP status code support via `IResult<TModel, TStatus>` and `HttpResult<T>`
 
 ### Enhanced Collections
 Type-safe, performant collections with rich APIs.
@@ -177,18 +177,18 @@ typeof(User).AttributeExists<RequiredAttribute>()   // Check for attribute
 typeof(User).Implements(typeof(IEntity<>))           // Check generic interface
 typeof(User).IsNullable()                            // Check if nullable
 
-// Model extensions
-model.ValidateModel()                    // Validate with data annotations
-model.ToODictionary()                   // Convert to dictionary
+// Model & Object extensions
+model.ValidateModel(services, requireInstance: false) // Validate object graph with data annotations
+model.ToODictionary()                                 // Convert object properties to dictionary
 
 // Query extensions (IQueryable)
-query.OrderBy("Name", SortDirection.Ascending)       // Dynamic ordering
-query.Paginate(page: 1, pageSize: 20)                // Pagination helper
+query.OrderBy("Name ASC")                             // Dynamic string-based or OrderBy collection sorting
+query.Paginate(request)                               // Pagination helper using PageRequest
 
 // Result extensions
 result.OnSuccess(() => LogSuccess())
 await result.SelectAsync(model => TransformAsync(model))
-result.PipeResult(() => NextOperation())
+result.SelectResult(model => NextOperation(model))
 
 // DateTime extensions
 date.CalculateAge()   // Get age from date
@@ -245,34 +245,34 @@ High-performance reflection with caching.
 
 ```csharp
 // Get metadata about types and members
-var metadata = MetaType.GetMetadata<User>(nameof(User.Email));
+var metadata = MetaType.GetMetadata(typeof(User), nameof(User.Email));
 var value = metadata.GetValue(userInstance);
 
 // Invoke methods dynamically (cached for performance)
-var invoker = MetaType.GetInvokeMethod(typeof(MyClass), "MethodName");
+var invoker = MetaType.GetInvokeMethod(typeof(MyClass), "MethodName", typeof(string), typeof(int));
 var result = invoker.Invoke(instance, [arg1, arg2]);
 
 // Type utilities
-Types.Parse<int>("123")     // IResult<int>
-Types.IsNullable<int?>()    // true
-typeof(User).GetDefault()   // default value for the type
+Types.Parse<int>("123")              // IResult<int>
+Types.IsNumberType(typeof(int?))     // true
+typeof(User).GetDefault()            // default value for the type
 ```
 
 ### Pagination & Filtering
 Built-in support for OData-style queries and pagination.
 
 ```csharp
-// PageRequest for pagination and filtering
+// PageRequest for pagination, filtering, and sorting
 var request = new PageRequest(currentPage: 1, pageSize: 20)
     .FilterBy("Active", "Status")
     .OrderBy("Name", SortDirection.Ascending);
 
 // Build OData query strings
-var builder = new ODataBuilder();
-builder.Url("api/users")
-    .FilterBy(BinaryOperator.Equal, "IsActive eq true")
+var builder = new ODataBuilder()
+    .Url("api/users")
+    .FilterByString("and", "IsActive eq true")
     .OrderBy(new OrderBy("LastName", SortDirection.Ascending))
-    .Top(50);
+    .Paginate(request);
 var query = builder.ToString();
 ```
 
@@ -314,7 +314,7 @@ bool same = id1 == id2;     // Value-based equality
 AES-based encryption and decryption with optional expiry support.
 
 ```csharp
-var key = new CryptKey(keyBytes);
+var key = new CryptKey("my-secret-passphrase");
 var cypher = new CypherService(key);
 
 // Encrypt
@@ -333,12 +333,12 @@ Persist and load typed objects to disk with optional encryption and custom seria
 ```csharp
 // Basic file store
 var store = new FileStore<Settings>("config.json");
-store.Save(settings);
-var loaded = store.Load(); // IResult<Settings>
+await store.Save(settings);
+var loaded = await store.LoadAsync(); // IResult<Settings>
 
 // Encrypted file store
-var encrypted = new FileStore<Settings>(cypherService, "config.enc");
-encrypted.Save(settings);
+var encrypted = new FileStore<Settings>(cypher, "config.enc");
+await encrypted.Save(settings);
 ```
 
 ### Compile-Time AOP / Proxy Generator
@@ -367,7 +367,7 @@ public class OrderService
 }
 
 // 3. Register — the generated proxy is substituted automatically
-services.RegisterTypesfromAssembly<OrderService>();
+services.AddTypesFromAssembly<OrderService>();
 ```
 
 Multiple interceptors compose like middleware:
@@ -389,7 +389,7 @@ A built-in `LogInterceptor` is provided that catches exceptions and returns them
 - Zero runtime proxy overhead — proxy is compiled, not generated at runtime
 - Full IDE support — generated proxy is a real C# class
 - Middleware-style pipeline with short-circuit support
-- Automatic DI wiring via `RegisterTypesfromAssembly<T>()` — requires `[Service]` on the class
+- Automatic DI wiring via `AddTypesFromAssembly<T>()` — requires `[Service]` on the class
 - Supports `void`, `Task`, `Task<T>`, synchronous, and generic methods
 
 See [CoreOne.Generators README](src/CoreOne.Generators/README.md) for full documentation.
@@ -419,7 +419,7 @@ See [CoreOne.Generators README](src/CoreOne.Generators/README.md) for all suppor
 Type-safe enumerations with rich metadata.
 
 ```csharp
-public class OrderStatus : LookupType<OrderStatus>
+public class OrderStatus(string code, string? description = null) : LookupType<OrderStatus>(code, description)
 {
     public static readonly OrderStatus Pending   = new("PENDING",   "Awaiting Processing");
     public static readonly OrderStatus Completed = new("COMPLETED", "Order Completed");
@@ -443,14 +443,11 @@ public class MyResource : Disposable
     }
 }
 
-// BaseService — DI-ready service base class
+// BaseService — DI-ready service base class (includes Logger, ServiceProvider, and Token)
 [Service(ServiceLifetime.Scoped)]
-public class UserService : BaseService
+public class UserService(IServiceProvider? services) : BaseService(services)
 {
-    [OInject] private IRepository<User> Repository { get; init; }
-    [OInject(Optional = true)] private ILogger<UserService>? Logger { get; init; }
-
-    public UserService(IServiceProvider services) : base(services) { }
+    [OInject] protected IRepository<User> Repository { get; init; } = default!;
 }
 ```
 
@@ -477,11 +474,13 @@ See [.github/copilot-instructions.md](.github/copilot-instructions.md) for detai
 | `CoreOne.Collections` | Enhanced dictionary, list, set, and ring buffer types |
 | `CoreOne.Extensions` | Extension methods for common types |
 | `CoreOne.Reflection` | High-performance reflection utilities |
-| `CoreOne.Operations` | Pagination, filtering, and OData query building |
+| `CoreOne.Operations` | Pagination, cursor requests, filtering, and sorting operations |
+| `CoreOne.ODataBuilders` | OData query string builders and filter handlers |
 | `CoreOne.Threading` | Thread safety and async utilities |
 | `CoreOne.Services` | Base classes, debounce, file store, loading state |
 | `CoreOne.Lookups` | Type-safe enumeration patterns and policy collections |
 | `CoreOne.Attributes` | Custom attributes for DI, validation, and AOP |
+| `CoreOne.Interceptors` | Built-in AOP interceptors (`LogInterceptor`) |
 | `CoreOne.Cryptography` | AES encryption and decryption |
 | `CoreOne.Comparers` | String and reference equality comparers |
 | `CoreOne.IO` | I/O utilities |
@@ -520,7 +519,7 @@ public class EmailService
 public async Task<IResult<CustomerDto>> GetCustomerAsync(int id)
 {
     return await ValidateId(id)
-        .PipeResultAsync(() => _repository.GetAsync(id))
+        .SelectResultAsync(() => _repository.GetAsync(id))
         .SelectAsync(customer => _mapper.Map(customer))
         .OnSuccessAsync(dto => _cache.SetAsync(id, dto));
 }
@@ -550,44 +549,60 @@ public class DashboardViewModel
 
 ## Testing & Quality
 
-CoreOne maintains high code quality with **881 comprehensive tests** providing **53% line coverage**.
+CoreOne maintains high code quality with **926 comprehensive tests** providing **59.4% line coverage** (49.1% branch coverage, 57.3% method coverage).
 
 ### Coverage by Component
-- **Extensions (27 classes):** 95%+ coverage
+- **Operations:** 95%+ coverage
+  - FilterBy: 100%
+  - MergeFilter: 100%
+  - OrderBy: 100%
+  - PageRequest: 100%
+  - BaseOperationRequest<T>: 97.6%
+  - SingleOrderBy: 94.7%
+
+- **Extensions (27 classes):** 95%+ coverage across core extensions
+  - ComparableExtensions: 100%
   - DelegateExtensions: 100%
-  - MemberExtensions: 100%
-  - ModelExtensions: 97.7%
   - ObjectExtensions: 100%
+  - TypeExtensions: 97.9%
+  - ModelExtensions: 97.8%
+  - StringExtensions: 97.8%
   - QueryExtensions: 95.8%
-  - StringExtensions: 97.7%
-  - TypeExtensions: 97.8%
-  - EnumerableExtensions: 93.6%
+  - DictionaryExtensions: 95.2%
+  - EnumerableExtensions: 93.7%
+  - CloneExtensions: 93.5%
 
 - **Collections:** 95%+ coverage
   - Data<K,V>: 100%
   - DataList<K,V>: 100%
+  - DataCollection: 95.5%
   - ConcurrentSet<T>: 95.1%
-  - DataCollection: 95.4%
 
-- **Core Infrastructure:**
-  - Hub System: 88.9%
+- **Core Infrastructure & Generators:**
   - Subject<T>: 100%
   - BehaviorSubject<T>: 100%
-  - Observable: 90.4%
-  - Result: 100%
-  - Types: 96%
-  - MetaType: 92.6%
+  - Result / HttpResult<T>: 100%
+  - ProxyGenerator: 96.7%
+  - MetaType: 92.7%
+  - CypherService: 91.4%
+  - Observable: 90.5%
+  - AsyncTaskQueue: 89.4%
+  - Hub System: 89.0%
+  - Types: 84.9%
 
 - **Services & DI:**
+  - DelayedBusyState: 98.0%
+  - Debounce<T>: 97.0%
   - ModelTransaction: 91.7%
   - TargetCreator: 80.7%
+  - ServiceCollectionExtensions: 66.7%
   - BaseService: 65.3%
-  - ServiceInitializer: 62.8%
+  - ServiceInitializer: 62.9%
 
 ### Testing Infrastructure
 - **Framework:** NUnit 4.3.2 with modern async test patterns
 - **Mocking:** Moq for dependency injection and callbacks
-- **Coverage:** Coverlet MSBuild with ReportGenerator
+- **Coverage:** Coverlet with ReportGenerator
 
 See [COVERAGE_REPORT.md](COVERAGE_REPORT.md) for detailed metrics.
 
@@ -596,11 +611,11 @@ See [COVERAGE_REPORT.md](COVERAGE_REPORT.md) for detailed metrics.
 dotnet test
 
 # Run with coverage
-dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura
+dotnet test Tests/Tests.csproj --collect:"XPlat Code Coverage" --results-directory ./TestResults
 
 # Generate coverage report
-reportgenerator -reports:Tests/TestResults/coverage.cobertura.xml `
-    -targetdir:Tests/TestResults/CoverageReport -reporttypes:Html
+reportgenerator -reports:TestResults/**/coverage.cobertura.xml `
+    -targetdir:TestResults/CoverageReport -reporttypes:Html
 ```
 
 ## Requirements

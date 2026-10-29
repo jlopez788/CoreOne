@@ -26,6 +26,12 @@ public class OrderBy : IOperation
 
     public static OrderBy Descending(string field) => new(field, SortDirection.Descending);
 
+    public virtual bool Apply(List<IOperation> operations)
+    {
+        operations.Add(this);
+        return false;
+    }
+
     public override bool Equals(object? obj) => obj is OrderBy p && ToString().Matches(p.ToString());
 
     public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode($"{Field} {Direction}");

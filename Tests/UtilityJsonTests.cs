@@ -199,16 +199,16 @@ public class UtilityJsonTests
     public void SerializeDeserialize_PageRequest_WithSingleFilter_ReconstructsFilterCorrectly()
     {
         var request = new PageRequest(2, 25);
-        request.Add(new FilterBy("John", "FirstName"));
+        request.Add(new FilterBy("John", "FirstName")); // Once a filter is applied, the CurrentPage is reset to 1
 
-        var json = Utility.Serialize(request);
+        var json = Utility.Serialize(request, true);
         var deserialized = Utility.DeserializeObject<PageRequest>(json);
 
         Assert.That(deserialized, Is.Not.Null);
         var filters = deserialized!.GetFilters().ToList();
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(deserialized.CurrentPage, Is.EqualTo(2));
+            Assert.That(deserialized.CurrentPage, Is.EqualTo(1));
             Assert.That(deserialized.PageSize, Is.EqualTo(25));
             Assert.That(filters, Has.Count.EqualTo(1));
             Assert.That(filters[0].Field, Is.EqualTo("FirstName"));
@@ -316,9 +316,9 @@ public class UtilityJsonTests
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(deserialized.CurrentPage, Is.EqualTo(4));
+            Assert.That(deserialized.CurrentPage, Is.EqualTo(1));
             Assert.That(deserialized.PageSize, Is.EqualTo(20));
-            Assert.That(deserialized.Operations, Has.Count.EqualTo(8));
+            Assert.That(deserialized.Operations, Has.Count.EqualTo(7));
 
             Assert.That(availableFields, Has.Count.EqualTo(3));
             Assert.That(availableFields[0].Field, Is.EqualTo("Name"));
@@ -338,8 +338,7 @@ public class UtilityJsonTests
             Assert.That(sorts[1].Field, Is.EqualTo("Name"));
             Assert.That(sorts[1].Direction, Is.EqualTo(SortDirection.Ascending));
 
-            Assert.That(resets, Has.Count.EqualTo(1));
-            Assert.That(resets[0].Field, Is.EqualTo("ObsoleteField"));
+            Assert.That(resets, Has.Count.EqualTo(0));
         }
     }
 

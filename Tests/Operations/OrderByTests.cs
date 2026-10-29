@@ -143,4 +143,61 @@ public class OrderByTests
             Assert.That(result, Does.Contain("Descending"));
         });
     }
+
+    [Test]
+    public void Apply_OrderBy_AddsToListAndReturnsFalse()
+    {
+        var operations = new List<IOperation>();
+        var orderBy = new OrderBy("Name", SortDirection.Ascending);
+
+        var changed = orderBy.Apply(operations);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(changed, Is.False);
+            Assert.That(operations, Has.Count.EqualTo(1));
+            Assert.That(operations[0], Is.SameAs(orderBy));
+        }
+    }
+
+    [Test]
+    public void Apply_SingleOrderBy_RemovesExistingOrderBysAndReturnsTrue()
+    {
+        var filter = new FilterBy("Active", "Status");
+        var operations = new List<IOperation> {
+            filter,
+            new OrderBy("Name", SortDirection.Ascending),
+            new SingleOrderBy("Age", SortDirection.Descending)
+        };
+        var single = new SingleOrderBy("CreatedDate", "ASC");
+
+        var changed = single.Apply(operations);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(changed, Is.True);
+            Assert.That(operations, Has.Count.EqualTo(2));
+            Assert.That(operations[0], Is.SameAs(filter));
+            Assert.That(operations[1], Is.SameAs(single));
+            Assert.That(single.Direction, Is.EqualTo(SortDirection.Ascending));
+        }
+    }
+
+    [Test]
+    public void SingleOrderBy_EqualsAndGetHashCode_BehaveCorrectly()
+    {
+        var single1 = new SingleOrderBy("Name", SortDirection.Ascending);
+        var single2 = new SingleOrderBy("name", "Ascending");
+        var single3 = new SingleOrderBy("Name", SortDirection.Descending);
+        var regularOrder = new OrderBy("Name", SortDirection.Ascending);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(single1, Is.EqualTo(single2));
+            Assert.That(single1.GetHashCode(), Is.EqualTo(single2.GetHashCode()));
+            Assert.That(single1, Is.Not.EqualTo(single3));
+            Assert.That(single1.Equals(regularOrder), Is.False);
+            Assert.That(single1.ToString(), Is.EqualTo("Name Ascending"));
+        }
+    }
 }

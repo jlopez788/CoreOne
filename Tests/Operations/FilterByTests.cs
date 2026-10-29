@@ -112,4 +112,39 @@ public class FilterByTests
 
         Assert.That(result, Does.Contain("Field"));
     }
+
+    [Test]
+    public void Apply_WhenNoMatchingFilter_AddsFilterAndReturnsTrue()
+    {
+        var operations = new List<IOperation>();
+        var filter = new FilterBy("Alice", "Name");
+
+        var changed = filter.Apply(operations);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(changed, Is.True);
+            Assert.That(operations, Has.Count.EqualTo(1));
+            Assert.That(operations[0], Is.SameAs(filter));
+        }
+    }
+
+    [Test]
+    public void Apply_WhenMatchingFilterExists_UpdatesAdvancedSearchInPlaceAndReturnsTrue()
+    {
+        var existing = new FilterBy("Alice", "Name");
+        var operations = new List<IOperation> { existing };
+        var advanced = new CoreOne.ODataBuilders.AdvancedFilterContext();
+        var incoming = new FilterBy(advanced, "name", "Alice");
+
+        var changed = incoming.Apply(operations);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(changed, Is.True);
+            Assert.That(operations, Has.Count.EqualTo(1));
+            Assert.That(operations[0], Is.SameAs(existing));
+            Assert.That(existing.AdvancedSearch, Is.SameAs(advanced));
+        }
+    }
 }

@@ -1,7 +1,7 @@
 ﻿# CoreOne Code Coverage Report
 
-**Generated:** June 23, 2026  
-**Tests:** 881 passing | **Coverage:** 53.4% lines | 45.6% branches | 49.3% methods
+**Generated:** October 29, 2026  
+**Tests:** 926 passing | **Coverage:** 59.4% lines | 49.1% branches | 57.3% methods
 
 ---
 
@@ -9,14 +9,14 @@
 
 | Metric | Coverage | Covered | Total |
 |--------|----------|---------|-------|
-| **Lines** | **53.4%** | 3,847 | 7,191 |
-| **Branches** | **45.6%** | 1,602 | 3,506 |
-| **Methods** | **49.3%** | 701 | 1,420 |
-| **Full method coverage** | **43.5%** | 619 | 1,420 |
-| **Classes** | — | 158 total | — |
-| **Tests** | — | 881 passing | — |
+| **Lines** | **59.4%** | 4,141 | 6,972 |
+| **Branches** | **49.1%** | 1,676 | 3,414 |
+| **Methods** | **57.3%** | 852 | 1,488 |
+| **Full method coverage** | **51.9%** | 773 | 1,488 |
+| **Classes** | — | 157 total | — |
+| **Tests** | — | 926 passing | — |
 
-> **Note:** Overall coverage is pulled down by intentionally untested infrastructure (ODataBuilders, IO, Lookups, several service helpers). Core runtime components average well above 85%.
+> **Note:** Overall coverage is pulled down by intentionally untested infrastructure (IO, several service helpers, and specialized extension overloads). Core runtime components average well above 85%.
 
 ---
 
@@ -25,28 +25,36 @@
 ### Core
 | Class | Line |
 |-------|------|
-| `Crc32` | 96.0% |
+| `Crc32` | 96.1% |
 | `Disposable` | 100% |
 | `Pool` | 100% |
 | `Subscription` | 100% |
-| `AsyncTaskQueue` | 89.3% |
 
 ### Collections
 | Class | Line |
 |-------|------|
 | `ConcurrentSet<T>` | 95.1% |
 | `Data<K,V>` | 100% |
-| `DataCollection<K,V,C>` | 95.4% |
+| `DataCollection<K,V,C>` | 95.5% |
 | `DataList<K,V>` | 100% |
+
+### Operations
+| Class | Line |
+|-------|------|
+| `BaseOperationRequest<T>` | 97.6% |
+| `FilterBy` | 100% |
+| `MergeFilter` | 100% |
+| `OrderBy` | 100% |
+| `PageRequest` | 100% |
+| `SingleOrderBy` | 94.7% |
 
 ### Reactive
 | Class | Line |
 |-------|------|
 | `BehaviorSubject<T>` | 100% |
-| `Observable` | 90.4% |
-| `ObserverBase<T>` | 93.9% |
+| `Observable` | 90.5% |
+| `ObserverBase<T>` | 93.8% |
 | `Subject<T>` | 100% |
-| `Observer` | 87.5% |
 
 ### Results
 | Class | Line |
@@ -58,7 +66,6 @@
 ### Hubs
 | Class | Line |
 |-------|------|
-| `Hub` | 88.9% |
 | `ExceptionMessage` | 100% |
 | `MessageIntercept<T>` | 100% |
 | `MessageSubscription<T>` | 100% |
@@ -69,28 +76,37 @@
 ### Reflection
 | Class | Line |
 |-------|------|
-| `MetaType` | 92.6% |
+| `MetaType` | 92.7% |
 | `TypeKey` | 90.2% |
 | `TypeKeyStore` | 100% |
-| `Metadata` | 85.0% |
 
 ### Services
 | Class | Line |
 |-------|------|
-| `Debounce` | 100% |
-| `Debounce<T>` | 96.8% |
+| `Debounce<T>` | 97.0% |
+| `DelayedBusyState` | 98.0% |
 | `ModelTransaction` | 91.7% |
 
 ### Cryptography
 | Class | Line |
 |-------|------|
 | `CryptKey` | 100% |
-| `CypherService` | 91.3% |
+| `CypherService` | 91.4% |
+
+### ODataBuilders
+| Class | Line |
+|-------|------|
+| `FilterTypeHandlerFactory` | 92.3% |
 
 ### Threading
 | Class | Line |
 |-------|------|
 | `SafeLock` | 100% |
+
+### Generators (`CoreOne.Generators`)
+| Class | Line |
+|-------|------|
+| `ProxyGenerator` | 96.7% |
 
 ### Attributes
 | Class | Line |
@@ -107,30 +123,26 @@
 | `ComparableExtensions` | 100% |
 | `DelegateExtensions` | 100% |
 | `ObjectExtensions` | 100% |
+| `TypeExtensions` | 97.9% |
+| `ModelExtensions` | 97.8% |
 | `StringExtensions` | 97.8% |
-| `TypeExtensions` | 97.8% |
-| `ModelExtensions` | 97.7% |
 | `QueryExtensions` | 95.8% |
 | `DictionaryExtensions` | 95.2% |
-| `EnumerableExtensions` | 93.6% |
-| `CloneExtensions` | 93.4% |
-| `IDExtensions` | 94.7% |
-| `DateTimeExtensions` | 86.4% |
-| `ArrayExtensions` | 85.7% |
+| `EnumerableExtensions` | 93.7% |
+| `CloneExtensions` | 93.5% |
 
 ### Models
 | Class | Line |
 |-------|------|
 | `ModelValidationContext` | 100% |
-| `BackingFieldChangedEventArgs<T>` | 100% |
-| `BackingFieldChangingEventArgs<T>` | 100% |
+| `FieldChangedEventArgs<T>` | 100% |
+| `FieldChangingEventArgs<T>` | 100% |
 
 ### Comparers
 | Class | Line |
 |-------|------|
 | `ReferenceEqualityComparer` | 100% |
 | `ReferenceEqualityComparer<T>` | 90.0% |
-| `MStringComparer` | 86.6% |
 
 ---
 
@@ -138,38 +150,62 @@
 
 | Class | Line |
 |-------|------|
-| `Types` | 84.8% |
-| `PlainService` (Cryptography) | 78.2% |
-| `NewtonSettings` | 78.2% |
-| `FilterBy` (Operations) | 77.4% |
-| `NumericExtensions` | 75.0% |
-| `Result<T>` | 71.8% |
-| `Utility` | 69.1% |
-| `AToken` | 63.6% |
-| `ServiceCollectionExtensions` | 63.3% |
-| `ServiceInitializer` | 62.8% |
-| `ImmutableList<T>` | 60.0% |
-| `ServiceProviderExtensions` | 61.5% |
-| `SToken` | 65.9% |
-| `BaseService` | 65.3% |
-| `BaseOperationRequest<T>` | 63.8% |
-| `HubExtensions` | 43.4% |
-| `BackingField<T>` | 41.8% |
-| `ResetFilter` | 40.0% |
-| `HttpResult` | 88.0% |
-| `MValidationResult` | 44.1% |
-| `PageRequest` | 50.0% |
-| `AvailableField` | 50.0% |
-| `TypeKeyConverter` | 50.0% |
+| `IDExtensions` | 89.5% |
+| `AsyncTaskQueue` | 89.4% |
+| `Hub` | 89.0% |
+| `ResetFilter` | 88.9% |
+| `AvailableField` | 88.5% |
+| `HttpResult` | 88.1% |
+| `Observer` | 87.5% |
+| `ArrayTraverse` | 87.0% |
+| `MStringComparer` | 86.7% |
+| `DateTimeExtensions` | 86.5% |
+| `ArrayExtensions` | 85.7% |
+| `Metadata` | 85.0% |
+| `Types` | 84.9% |
 | `TargetCreator` | 80.7% |
-| `MemberExtensions` | 79.4% |
-| `HubPublish<T>` | 20.0% |
+| `FilterTypeResult` | 80.0% |
+| `MemberExtensions` | 79.5% |
+| `PlainService` (Cryptography) | 78.3% |
+| `NewtonSettings` | 78.3% |
+| `FilterTypeHandler` | 77.8% |
+| `PageResult<T>` | 76.9% |
+| `NumericExtensions` | 75.0% |
+| `Debounce` | 75.0% |
+| `Utility` | 72.5% |
+| `Result<T>` | 71.9% |
+| `LookupType<T>` | 71.0% |
+| `SToken` | 70.3% |
+| `ServiceCollectionExtensions` | 66.7% |
+| `BaseService` | 65.3% |
+| `FilterSegment` | 64.6% |
+| `AToken` | 63.6% |
+| `ServiceInitializer` | 62.9% |
+| `ServiceProviderExtensions` | 61.5% |
+| `ImmutableList<T>` | 60.0% |
+| `LoadingStore` | 57.6% |
+| `Segment` | 57.1% |
+| `ODataPageRequestBuilder` | 55.6% |
+| `LookupTypeConverter<T>` | 52.4% |
+| `FilterContext` | 52.2% |
+| `ODataOperatorConverter` | 50.0% |
+| `TypeKeyConverter` | 50.0% |
+| `ODataArgument` | 46.2% |
+| `ODataOperator` | 44.9% |
+| `MValidationResult` | 44.1% |
+| `CursorRequest` | 43.5% |
+| `HubExtensions` | 43.5% |
+| `BackingField<T>` | 41.8% |
+| `CSharpFileWriter` (`CoreOne.Generators`) | 41.4% |
+| `ODataBuilder` | 39.8% |
 | `SemaphoneSlimExtensions` | 28.8% |
-| `ResultExtensions` | 4.8% |
-| `HttpClientExtensions` | 11.7% |
-| `FileSizeConverter` | 12.5% |
+| `InvokeCallback` | 25.0% |
 | `ID` | 25.0% |
-| `PageResult<T>` | 95.2% |
+| `HubPublish<T>` | 20.0% |
+| `AdvancedFilterContext` | 18.5% |
+| `FileSizeConverter` | 12.5% |
+| `HttpClientExtensions` | 11.8% |
+| `ResultExtensions` | 4.2% |
 
 ---
 
@@ -192,7 +228,7 @@ These classes have no test coverage, either because they are infrastructure/util
 - `InvocationExtensions`
 - `LoggerExtensions`
 - `RandomExtensions`
-- `ResultExtensions` (near-zero: 4.8%)
+- `ResultExtensions` (near-zero: 4.2%)
 - `StreamExtensions`
 - `TaskExtensions`
 
@@ -207,7 +243,7 @@ These classes have no test coverage, either because they are infrastructure/util
 - `FileSize`, `FileType`
 
 ### Lookups
-- `LookupType<T>`, `ILookupType<T>`
+- `ILookupType<T>`
 - `Policy`, `PolicyCollection`
 
 ### Models
@@ -216,23 +252,17 @@ These classes have no test coverage, either because they are infrastructure/util
 - `ValidationState`
 - `WebCode`
 
-### ODataBuilders (entire namespace)
-- `ODataBuilder`, `ODataPageRequestBuilder`
-- `FilterContext`, `FilterTypeHandler`, `FilterTypeHandlerFactory`
-- `ODataArgument`, `ODataOperator`
-- All supporting types
-
 ### Operations
-- `CursorRequest`, `CursorResult<T>`
+- `CursorResult<T>`
 - `FilterCriteria`
 
 ### Results
 - `CollectionResult<T>`
 
 ### Services
+- `DebounceTrigger`, `DebounceTrigger<T>`
 - `FileStore<T>`
 - `FixedClock`, `SystemClock`
-- `LoadingStore`
 - `NJsonService`
 - `OLog<T>`
 - `RunOnceHostedService`
@@ -250,15 +280,17 @@ These classes have no test coverage, either because they are infrastructure/util
 
 | Priority | Target | Current |
 |----------|--------|---------|
-| Reactive (Subject, BehaviorSubject, Observable) | 95%+ | ✅ 95%+ |
-| Hub system | 90%+ | ✅ 88.9% |
+| Operations (`BaseOperationRequest`, `PageRequest`, `FilterBy`, `OrderBy`) | 95%+ | ✅ 97.6%–100% |
+| Reactive (`Subject`, `BehaviorSubject`, `Observable`) | 95%+ | ✅ 90.5%–100% |
+| Hub system | 90%+ | ✅ 89.0% |
 | Result pattern | 95%+ | ✅ 100% |
 | Extensions (core set) | 90%+ | ✅ 90%+ |
 | Collections | 90%+ | ✅ 95%+ |
-| Cryptography | 85%+ | ✅ 91.3% |
-| Services (Debounce, ModelTransaction) | 85%+ | ✅ 96.8% / 91.7% |
-| ODataBuilders | — | ⚠️ 0% (integration tests needed) |
-| Lookups | 60%+ | ⚠️ 0% |
+| Cryptography | 85%+ | ✅ 91.4% |
+| Services (`DelayedBusyState`, `Debounce<T>`, `ModelTransaction`) | 85%+ | ✅ 98.0% / 97.0% / 91.7% |
+| ProxyGenerator (`CoreOne.Generators`) | 90%+ | ✅ 96.7% |
+| Lookups (`LookupType<T>`) | 60%+ | ✅ 71.0% |
+| ODataBuilders | 50%+ | ✅ 39.8%–92.3% |
 | IO | — | ⚠️ 0% |
 
 ---
@@ -267,13 +299,13 @@ These classes have no test coverage, either because they are infrastructure/util
 
 ```bash
 # Collect coverage
-dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=./TestResults/
+dotnet test Tests/Tests.csproj --collect:"XPlat Code Coverage" --results-directory ./TestResults
 
 # Generate HTML report
-reportgenerator -reports:Tests/TestResults/coverage.cobertura.xml \
-    -targetdir:Tests/TestResults/CoverageReport -reporttypes:Html
+reportgenerator -reports:TestResults/**/coverage.cobertura.xml \
+    -targetdir:TestResults/CoverageReport -reporttypes:Html
 
 # Generate text summary
-reportgenerator -reports:Tests/TestResults/coverage.cobertura.xml \
-    -targetdir:Tests/TestResults/CoverageReport -reporttypes:TextSummary
+reportgenerator -reports:TestResults/**/coverage.cobertura.xml \
+    -targetdir:TestResults/CoverageReport -reporttypes:TextSummary
 ```

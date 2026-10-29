@@ -5,6 +5,7 @@ public abstract class BaseOperationRequest<T> where T : BaseOperationRequest<T>
     public static readonly Type AVAILABLE = typeof(AvailableField);
     public static readonly Type FILTER = typeof(FilterBy);
     public static readonly Type ORDER = typeof(OrderBy);
+    public static readonly Type SINGLE_ORDER = typeof(SingleOrderBy);
 
     public List<IOperation> Operations { get; protected set; } = [];
 
@@ -21,8 +22,8 @@ public abstract class BaseOperationRequest<T> where T : BaseOperationRequest<T>
 
     public T Add(IOperation? operation)
     {
-        if (operation != null)
-            Operations.Add(operation);
+        if (operation?.Apply(Operations) == true)
+            OnFilterChanged();
         return (T)this;
     }
 
@@ -31,38 +32,6 @@ public abstract class BaseOperationRequest<T> where T : BaseOperationRequest<T>
         if (!string.IsNullOrWhiteSpace(field))
             Set(new AvailableField(type, field, format));
         return (T)this;
-    }
-
-    public T ApplyOperation(IOperation operation)
-    {
-        if (operation is ResetFilter reset)
-        {
-            ClearOperations(p => p is FilterBy fb && fb.Field.Matches(reset.Field));
-            OnFilterChanged();
-        }
-        else if (operation is FilterBy filter)
-        {
-            var target = Operations.OfType<FilterBy>().FirstOrDefault(p => p.Field.Matches(filter.Field)) ?? filter;
-            target.AdvancedSearch = filter.AdvancedSearch;
-            ApplyFilter(target);
-            OnFilterChanged();
-        }
-        else if (operation is MergeFilter merge)
-        {
-            var current = Operations.OfType<FilterBy>().FirstOrDefault(p => p.Field.Matches(merge.Field));
-            current = merge.Merge(current);
-            ApplyFilter(current);
-            OnFilterChanged();
-        }
-
-        return (T)this;
-
-        void ApplyFilter(FilterBy filter)
-        {
-            var next = Operations.ToList().AddOrUpdate(filter, p => p is FilterBy fb && fb.Field.Matches(filter.Field));
-            Operations.Clear();
-            Operations.AddRange(next);
-        }
     }
 
     public void CancelCurrentTokenThenRenew()
@@ -131,24 +100,7 @@ public abstract class BaseOperationRequest<T> where T : BaseOperationRequest<T>
 
     public IEnumerable<OrderBy> GetSortFields() => Operations.OfType<OrderBy>();
 
-    /// <summary>
-    /// Sets Order By to request
-    /// </summary>
-    /// <param name="orderBy">Order By operation</param>
-    /// <param name="single">TRUE: Single Order By, FALSE: Multiple Order By</param>
-    /// <returns></returns>
-    public T OrderBy(OrderBy? orderBy, bool single = false)
-    {
-        if (orderBy is not null)
-        {
-            if (single)
-                Operations.RemoveAll(p => p.GetType() == ORDER);
-            Operations = Operations.AddOrUpdate(orderBy, p => (single || p.Field.Matches(orderBy.Field)) && p.GetType() == ORDER);
-        }
-        return (T)this;
-    }
-
-    public T OrderBy(string field, SortDirection direction) => Set(new OrderBy(field, direction));
+    public T OrderBy(string field, SortDirection direction, bool single = false) => Add(single ? new SingleOrderBy(field, direction) : new OrderBy(field, direction));
 
     public bool TryGetFilter<TValue>(string field, out TValue? value)
     {

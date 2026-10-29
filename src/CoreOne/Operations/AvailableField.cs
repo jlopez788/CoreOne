@@ -26,6 +26,12 @@ public class AvailableField : IOperation
         }
     }
 
+    public bool Apply(List<IOperation> operations)
+    {
+        operations.Add(this);
+        return false;
+    }
+
     public override bool Equals(object? obj) => obj is AvailableField p && Field.Matches(p.Field) && IsNullable == p.IsNullable;
 
     public override int GetHashCode() => (Field, Format, IsNullable).GetHashCode();

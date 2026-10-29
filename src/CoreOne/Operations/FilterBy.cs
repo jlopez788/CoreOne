@@ -34,6 +34,14 @@ public class FilterBy : IOperation
         Value = value;
     }
 
+    public bool Apply(List<IOperation> operations)
+    {
+        var target = operations.OfType<FilterBy>().FirstOrDefault(p => p.Field.Matches(Field)) ?? this;
+        target.AdvancedSearch = AdvancedSearch;
+        operations.AddOrUpdate(target, p => p is FilterBy fb && fb.Field.Matches(Field));
+        return true;
+    }
+
     public override bool Equals(object? obj) => obj is FilterBy p && ToString().Matches(p.ToString());
 
     public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode($"{Field} {Value}");
