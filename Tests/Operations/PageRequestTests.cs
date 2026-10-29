@@ -209,4 +209,149 @@ public class PageRequestTests
 
         Assert.That(request.Operations, Is.Empty);
     }
+
+    [Test]
+    public void TryGetFilter_WhenStringFilterExists_ReturnsTrueAndValue()
+    {
+        var request = new PageRequest()
+            .FilterBy("Alice", "Name");
+
+        var found = request.TryGetFilter<string>("Name", out var value);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(found, Is.True);
+            Assert.That(value, Is.EqualTo("Alice"));
+        }
+    }
+
+    [Test]
+    public void TryGetFilter_CaseInsensitiveFieldMatch_ReturnsTrueAndValue()
+    {
+        var request = new PageRequest()
+            .FilterBy("42", "UserAge");
+
+        var found = request.TryGetFilter<int>("userage", out var value);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(found, Is.True);
+            Assert.That(value, Is.EqualTo(42));
+        }
+    }
+
+    [Test]
+    public void TryGetFilter_WithPrimitiveAndCommonTypes_ParsesCorrectly()
+    {
+        var expectedGuid = Guid.NewGuid();
+        var request = new PageRequest()
+            .FilterBy("123", "Count")
+            .FilterBy("99.95", "Price")
+            .FilterBy("true", "IsActive")
+            .FilterBy(expectedGuid.ToString(), "CorrelationId")
+            .FilterBy("05/15/2026", "CreatedDate");
+
+        var hasCount = request.TryGetFilter<int>("Count", out var count);
+        var hasPrice = request.TryGetFilter<decimal>("Price", out var price);
+        var hasActive = request.TryGetFilter<bool>("IsActive", out var isActive);
+        var hasGuid = request.TryGetFilter<Guid>("CorrelationId", out var correlationId);
+        var hasDate = request.TryGetFilter<DateTime>("CreatedDate", out var createdDate);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(hasCount, Is.True);
+            Assert.That(count, Is.EqualTo(123));
+            Assert.That(hasPrice, Is.True);
+            Assert.That(price, Is.EqualTo(99.95m));
+            Assert.That(hasActive, Is.True);
+            Assert.That(isActive, Is.True);
+            Assert.That(hasGuid, Is.True);
+            Assert.That(correlationId, Is.EqualTo(expectedGuid));
+            Assert.That(hasDate, Is.True);
+            Assert.That(createdDate, Is.EqualTo(new DateTime(2026, 5, 15)));
+        }
+    }
+
+    [Test]
+    public void TryGetFilter_WithNullableType_ParsesCorrectly()
+    {
+        var request = new PageRequest()
+            .FilterBy("77", "OptionalId");
+
+        var found = request.TryGetFilter<int?>("OptionalId", out var value);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(found, Is.True);
+            Assert.That(value, Is.EqualTo(77));
+        }
+    }
+
+    [Test]
+    public void TryGetFilter_WhenFilterDoesNotExist_ReturnsFalseAndDefault()
+    {
+        var request = new PageRequest()
+            .FilterBy("Alice", "Name");
+
+        var foundInt = request.TryGetFilter<int>("MissingInt", out var intValue);
+        var foundStr = request.TryGetFilter<string>("MissingStr", out var strValue);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(foundInt, Is.False);
+            Assert.That(intValue, Is.EqualTo(0));
+            Assert.That(foundStr, Is.False);
+            Assert.That(strValue, Is.Null);
+        }
+    }
+
+    [Test]
+    public void TryGetFilter_WhenValueCannotBeParsed_ReturnsFalseAndDefault()
+    {
+        var request = new PageRequest()
+            .FilterBy("not-a-number", "Age")
+            .FilterBy("not-a-guid", "Id");
+
+        var foundAge = request.TryGetFilter<int>("Age", out var age);
+        var foundId = request.TryGetFilter<Guid>("Id", out var id);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(foundAge, Is.False);
+            Assert.That(age, Is.EqualTo(0));
+            Assert.That(foundId, Is.False);
+            Assert.That(id, Is.EqualTo(Guid.Empty));
+        }
+    }
+
+    [Test]
+    public void TryGetFilter_WhenFilterHasNullValue_ReturnsFalseAndDefault()
+    {
+        var request = new PageRequest();
+        request.Add(new FilterBy(null!, "EmptyFilter"));
+
+        var found = request.TryGetFilter<int>("EmptyFilter", out var value);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(found, Is.False);
+            Assert.That(value, Is.EqualTo(0));
+        }
+    }
+
+    [Test]
+    public void TryGetFilter_IgnoresNonFilterOperationsWithSameField()
+    {
+        var request = new PageRequest()
+            .AddField(typeof(int), "Age")
+            .OrderBy("Age", SortDirection.Ascending);
+
+        var found = request.TryGetFilter<int>("Age", out var value);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(found, Is.False);
+            Assert.That(value, Is.EqualTo(0));
+        }
+    }
 }

@@ -1,9 +1,12 @@
 ﻿using CoreOne;
+using CoreOne.Converters;
 using CoreOne.Lookups;
 using CoreOne.ODataBuilders;
 
 namespace CoreOne.ODataBuilders;
 
+[NJsonConverter(typeof(ODataOperatorConverter.NewtonsoftConverter))]
+[SJsonConverter(typeof(ODataOperatorConverter.SystemJsonConverter))]
 public class ODataOperator : LookupType<ODataOperator>
 {
     #region Operators
@@ -229,7 +232,6 @@ public class ODataOperator : LookupType<ODataOperator>
     internal delegate string ParseToString(object? value);
 
     public static readonly ODataOperator
-        Default = new DefaultOperator(),
         Contains = new ContainsOperator(),
         Equal = new EqualOperator(),
         GreaterThan = new GreaterThanOperator(),
@@ -238,7 +240,8 @@ public class ODataOperator : LookupType<ODataOperator>
         InArray = new InArrayOperator(),
         StartsWith = new StartsWithOperator(),
         NullOrEmpty = new NullOrEmptyOperator(),
-        NotNull = new NotNullOperator();
+        NotNull = new NotNullOperator(),
+        Default = new DefaultOperator();
 
     internal static readonly Lazy<Data<Type, ParseToString>> Parsers = new(InitializeParsers);
     public string? IconCssClass { get; init; }
@@ -260,7 +263,11 @@ public class ODataOperator : LookupType<ODataOperator>
 
     public virtual bool CanUseOperatorOnType(Type? type) => type is not null && !type.IsEnum;
 
-    public override bool Equals(object? obj) => obj is ODataOperator o && Code.Matches(o.Code);
+    public override bool Equals(object? obj) => obj switch {
+        string str => Code.Matches(str),
+        ODataOperator op => Code.Matches(op.Code),
+        _ => false,
+    };
 
     public override int GetHashCode() => Code?.GetHashCode() ?? 0;
 

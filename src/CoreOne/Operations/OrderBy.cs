@@ -5,8 +5,10 @@ namespace CoreOne.Operations;
 [DebuggerDisplay("OrderBy: {Field} {Direction}")]
 public class OrderBy : IOperation
 {
-    public SortDirection Direction { get; }
-    public string Field { get; }
+    public SortDirection Direction { get; init; }
+    public string Field { get; init; }
+
+    public OrderBy() => Field = string.Empty;
 
     public OrderBy(string field, string direction)
     {

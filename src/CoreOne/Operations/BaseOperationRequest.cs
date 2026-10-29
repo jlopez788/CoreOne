@@ -150,6 +150,19 @@ public abstract class BaseOperationRequest<T> where T : BaseOperationRequest<T>
 
     public T OrderBy(string field, SortDirection direction) => Set(new OrderBy(field, direction));
 
+    public bool TryGetFilter<TValue>(string field, out TValue? value)
+    {
+        var filter = Operations.OfType<FilterBy>().FirstOrDefault(p => p.Field.Matches(field));
+        if (filter != null && Types.TryParse<TValue>(filter.Value, out var castValue))
+        {
+            value = castValue;
+            return true;
+        }
+
+        value = default;
+        return false;
+    }
+
     public T UseToken(CancellationToken cancellationToken)
     {
         Token = SToken.CreateLinkedTokens(cancellationToken, Token);
@@ -162,7 +175,7 @@ public abstract class BaseOperationRequest<T> where T : BaseOperationRequest<T>
 
     private T Set<TOperation>(TOperation operation) where TOperation : IOperation
     {
-        Operations = Operations.AddOrUpdate(operation, p => p.Field == operation.Field && p.GetType() == typeof(T));
+        Operations = Operations.AddOrUpdate(operation, p => p.Field == operation.Field && p.GetType() == typeof(TOperation));
         return (T)this;
     }
 }

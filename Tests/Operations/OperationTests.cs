@@ -17,6 +17,10 @@ public class OperationTests
         var content = Utility.Serialize(request, true);
         var preq = Utility.DeserializeObject<PageRequest>(content);
         Assert.That(preq, Is.Not.Null);
-        Assert.That(preq.GetFilters().Count(), Is.EqualTo(1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(preq!.GetFilters().Count(), Is.EqualTo(1));
+            Assert.That(preq.GetFilterValue("field"), Is.EqualTo("tes"));
+        }
     }
 }

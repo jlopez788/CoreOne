@@ -8,9 +8,10 @@ namespace CoreOne.Operations;
 public class FilterBy : IOperation
 {
     public AdvancedFilterContext? AdvancedSearch { get; set; }
-    public string Field { get; }
-    public string Id { get; }
-    public string? Value { get; }
+    public string Field { get; init; }
+    public string? Value { get; init; }
+    [NJsonIgnore, SJsonIgnore]
+    public string Id { get; init; }
 
     public FilterBy()
     {
