@@ -100,6 +100,12 @@ public abstract class BaseOperationRequest<T> where T : BaseOperationRequest<T>
 
     public IEnumerable<OrderBy> GetSortFields() => Operations.OfType<OrderBy>();
 
+    public T OrderBy(OrderBy? orderBy, bool single = false) => orderBy switch {
+        SingleOrderBy sob => Add(sob),
+        OrderBy ob => Add(single ? new SingleOrderBy(ob.Field, ob.Direction) : ob),
+        _ => (T)this
+    };
+
     public T OrderBy(string field, SortDirection direction, bool single = false) => Add(single ? new SingleOrderBy(field, direction) : new OrderBy(field, direction));
 
     public bool TryGetFilter<TValue>(string field, out TValue? value)
