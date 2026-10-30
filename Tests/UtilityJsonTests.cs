@@ -459,4 +459,181 @@ public class UtilityJsonTests
             Assert.That(deserializeResult.Model.GetSortFields().First().Field, Is.EqualTo("OrderDate"));
         }
     }
+
+    [Test]
+    public void Serialize_PageRequest_DeserializeAsPageResult_PreservesRequestStateAndOperations()
+    {
+        var request = new PageRequest(1, 25)
+            .AddField(typeof(string), "Name", "text")
+            .AddField(typeof(int), "Id", "number")
+            .Add(new FilterBy("Alice", "Name"))
+            .Add(new FilterBy(new AdvancedFilterContext(ODataOperator.GreaterThan, 10), "Id", "10"))
+            .OrderBy("Name", SortDirection.Ascending);
+        request.CurrentPage = 3;
+
+        var json = Utility.Serialize(request, prettyPrint: true);
+        var pageResult = Utility.DeserializeObject<PageResult<TestModel>>(json);
+
+        Assert.That(pageResult, Is.Not.Null);
+        var availableFields = pageResult!.GetAvailableFields().ToList();
+        var filters = pageResult.GetFilters().ToList();
+        var sorts = pageResult.GetSortFields().ToList();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(pageResult.CurrentPage, Is.EqualTo(3));
+            Assert.That(pageResult.PageSize, Is.EqualTo(25));
+            Assert.That(pageResult.Items, Is.Not.Null);
+            Assert.That(pageResult.Items, Is.Empty);
+            Assert.That(pageResult.TotalCount, Is.EqualTo(0));
+            Assert.That(pageResult.PageCount, Is.EqualTo(0));
+            Assert.That(availableFields, Has.Count.EqualTo(2));
+            Assert.That(filters, Has.Count.EqualTo(2));
+            Assert.That(pageResult.GetFilterValue("Name"), Is.EqualTo("Alice"));
+            Assert.That(pageResult.TryGetFilter<int>("Id", out var id), Is.True);
+            Assert.That(id, Is.EqualTo(10));
+            Assert.That(sorts, Has.Count.EqualTo(1));
+            Assert.That(sorts[0].Field, Is.EqualTo("Name"));
+            Assert.That(sorts[0].Direction, Is.EqualTo(SortDirection.Ascending));
+        }
+    }
+
+    [Test]
+    public void ServiceSimulation_ReceivePageRequestAndRespondWithPageResult_PreservesDataAndOperations()
+    {
+        // 1. Client builds and serializes a PageRequest
+        var clientRequest = new PageRequest(1, 2)
+            .AddField(typeof(string), "Name", "text")
+            .FilterBy("Item", "Name")
+            .OrderBy("Id", SortDirection.Ascending);
+        clientRequest.CurrentPage = 2;
+
+        var requestPayload = Utility.Serialize(clientRequest);
+
+        // 2. Service deserializes the incoming PageRequest, processes query, and creates PageResult via request.Result(...)
+        var serverRequest = Utility.DeserializeObject<PageRequest>(requestPayload);
+        Assert.That(serverRequest, Is.Not.Null);
+
+        var allData = new List<TestModel>
+        {
+            new() { Id = 1, Name = "Item 1", Created = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new() { Id = 2, Name = "Item 2", Created = new DateTime(2026, 1, 2, 0, 0, 0, DateTimeKind.Utc) },
+            new() { Id = 3, Name = "Item 3", Created = new DateTime(2026, 1, 3, 0, 0, 0, DateTimeKind.Utc) },
+            new() { Id = 4, Name = "Item 4", Created = new DateTime(2026, 1, 4, 0, 0, 0, DateTimeKind.Utc) },
+            new() { Id = 5, Name = "Other", Created = new DateTime(2026, 1, 5, 0, 0, 0, DateTimeKind.Utc) }
+        };
+
+        var nameFilter = serverRequest!.GetFilterValue("Name") ?? string.Empty;
+        var filtered = allData.Where(x => x.Name != null && x.Name.Contains(nameFilter)).ToList();
+        var pagedItems = filtered
+            .Skip((serverRequest.CurrentPage - 1) * serverRequest.PageSize)
+            .Take(serverRequest.PageSize)
+            .ToList();
+
+        var serverResult = serverRequest.Result(pagedItems, filtered.Count);
+        var responsePayload = Utility.Serialize(serverResult, prettyPrint: true);
+
+        // 3. Client deserializes the response as PageResult<TestModel>
+        var clientResult = Utility.DeserializeObject<PageResult<TestModel>>(responsePayload);
+
+        Assert.That(clientResult, Is.Not.Null);
+        var items = clientResult!.Items.ToList();
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(clientResult.Success, Is.True);
+            Assert.That(clientResult.ResultType, Is.EqualTo(CoreOne.Results.ResultType.Success));
+            Assert.That(clientResult.CurrentPage, Is.EqualTo(2));
+            Assert.That(clientResult.PageSize, Is.EqualTo(2));
+            Assert.That(clientResult.TotalCount, Is.EqualTo(4));
+            Assert.That(clientResult.PageCount, Is.EqualTo(2));
+            Assert.That(items, Has.Count.EqualTo(2));
+            Assert.That(items[0].Id, Is.EqualTo(3));
+            Assert.That(items[0].Name, Is.EqualTo("Item 3"));
+            Assert.That(items[1].Id, Is.EqualTo(4));
+            Assert.That(items[1].Name, Is.EqualTo("Item 4"));
+            Assert.That(clientResult.GetFilterValue("Name"), Is.EqualTo("Item"));
+            Assert.That(clientResult.GetAvailableFields().Single().Field, Is.EqualTo("Name"));
+            Assert.That(clientResult.GetSortFields().Single().Field, Is.EqualTo("Id"));
+            Assert.That(clientResult.GetSortFields().Single().Direction, Is.EqualTo(SortDirection.Ascending));
+        }
+    }
+
+    [Test]
+    public void ServiceSimulation_StreamRequestToPageResultResponse_RoundTripsOverStreams()
+    {
+        var clientRequest = new PageRequest(1, 10)
+            .Add(new FilterBy(new AdvancedFilterContext(ODataOperator.Between, 1, 50), "Id", "1-50"))
+            .OrderBy("Created", SortDirection.Descending, single: true);
+
+        using var requestStream = new MemoryStream();
+        var requestSerialize = Utility.SerializeToStream(clientRequest, requestStream);
+        Assert.That(requestSerialize.Success, Is.True);
+
+        using var serverReadStream = new MemoryStream(requestStream.ToArray());
+        var serverRequestResult = Utility.DeserializeObject<PageRequest>(serverReadStream);
+        Assert.That(serverRequestResult.Success, Is.True);
+        Assert.That(serverRequestResult.Model, Is.Not.Null);
+
+        var responseItems = new[]
+        {
+            new TestModel { Id = 10, Name = "Ten", Created = new DateTime(2026, 3, 10, 0, 0, 0, DateTimeKind.Utc) },
+            new TestModel { Id = 20, Name = "Twenty", Created = new DateTime(2026, 3, 20, 0, 0, 0, DateTimeKind.Utc) }
+        };
+        var serverPageResult = serverRequestResult.Model!.Result(responseItems, total: 25);
+
+        using var responseStream = new MemoryStream();
+        var responseSerialize = Utility.SerializeToStream(serverPageResult, responseStream);
+        Assert.That(responseSerialize.Success, Is.True);
+
+        using var clientReadStream = new MemoryStream(responseStream.ToArray());
+        var clientResult = Utility.DeserializeObject<PageResult<TestModel>>(clientReadStream);
+
+        Assert.That(clientResult.Success, Is.True);
+        Assert.That(clientResult.Model, Is.Not.Null);
+        var pageResult = clientResult.Model!;
+        var filter = pageResult.GetFilters().Single();
+        var sort = pageResult.GetSortFields().Single();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(pageResult.Success, Is.True);
+            Assert.That(pageResult.CurrentPage, Is.EqualTo(1));
+            Assert.That(pageResult.PageSize, Is.EqualTo(10));
+            Assert.That(pageResult.TotalCount, Is.EqualTo(25));
+            Assert.That(pageResult.PageCount, Is.EqualTo(3));
+            Assert.That(pageResult.Items, Has.Count.EqualTo(2));
+            Assert.That(filter.Field, Is.EqualTo("Id"));
+            Assert.That(filter.AdvancedSearch, Is.Not.Null);
+            Assert.That(filter.AdvancedSearch!.Operator, Is.EqualTo(ODataOperator.Between));
+            Assert.That(sort, Is.TypeOf<SingleOrderBy>());
+            Assert.That(sort.Field, Is.EqualTo("Created"));
+            Assert.That(sort.Direction, Is.EqualTo(SortDirection.Descending));
+        }
+    }
+
+    [Test]
+    public void ServiceSimulation_FailedPageResultResponse_PreservesResultTypeAndRequestOperations()
+    {
+        var clientRequest = new PageRequest(1, 20)
+            .FilterBy("InvalidQuery", "Name");
+
+        var requestJson = Utility.Serialize(clientRequest);
+        var serverRequest = Utility.DeserializeObject<PageRequest>(requestJson);
+        Assert.That(serverRequest, Is.Not.Null);
+
+        var failedServerResult = serverRequest!.Result<TestModel>(null, 0, CoreOne.Results.ResultType.Fail);
+        var responseJson = Utility.Serialize(failedServerResult);
+
+        var clientResult = Utility.DeserializeObject<PageResult<TestModel>>(responseJson);
+
+        Assert.That(clientResult, Is.Not.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(clientResult!.Success, Is.False);
+            Assert.That(clientResult.ResultType, Is.EqualTo(CoreOne.Results.ResultType.Fail));
+            Assert.That(clientResult.Items, Is.Empty);
+            Assert.That(clientResult.TotalCount, Is.EqualTo(0));
+            Assert.That(clientResult.GetFilterValue("Name"), Is.EqualTo("InvalidQuery"));
+        }
+    }
 }
