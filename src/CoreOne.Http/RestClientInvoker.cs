@@ -28,18 +28,21 @@ public static class RestClientInvoker
             {
                 using var response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 string? message = null;
+                byte[]? errorBytes = null;
                 if (!response.IsSuccessStatusCode && response.Content is not null)
                 {
 #if NET9_0_OR_GREATER
-                    var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                    errorBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
 #else
-                    var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    errorBytes = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 #endif
+                    var body = errorBytes.Length > 0 ? Encoding.UTF8.GetString(errorBytes) : null;
                     message = string.IsNullOrWhiteSpace(body) ? response.ReasonPhrase : body;
                 }
 
                 return new HttpResult((int)response.StatusCode, message) {
-                    Uri = response.RequestMessage?.RequestUri?.ToString()
+                    Uri = response.RequestMessage?.RequestUri?.ToString(),
+                    ErrorContent = errorBytes ?? (response.IsSuccessStatusCode ? null : [])
                 };
             }
         }

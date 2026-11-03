@@ -758,4 +758,32 @@ public class RestClientIntegrationTests
             Assert.That(cancelledResult.StatusCode, Is.EqualTo(500));
         }
     }
+
+    [Test]
+    public async Task GetCustomerAsync_WhenConflict_MapsTypedErrorViaFluentOnFailAsync()
+    {
+        using var sp = BuildProvider<ICustomerApi>((_, _) => {
+            var errorJson = Utility.Serialize(new ProblemErrorDto {
+                Code = "CONFLICT_DUPLICATE",
+                Detail = "A customer with this identifier already exists."
+            });
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.Conflict) {
+                Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+            });
+        });
+        var api = sp.GetRequiredService<ICustomerApi>();
+        ProblemErrorDto? duplicateError = null;
+
+        var result = await api.GetCustomerAsync(42)
+            .OnFailAsync(WebCodes.Status409Conflict, (ProblemErrorDto? err) => duplicateError = err);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(WebCodes.Status409Conflict));
+            Assert.That(duplicateError, Is.Not.Null);
+            Assert.That(duplicateError?.Code, Is.EqualTo("CONFLICT_DUPLICATE"));
+            Assert.That(duplicateError?.Detail, Is.EqualTo("A customer with this identifier already exists."));
+        }
+    }
 }

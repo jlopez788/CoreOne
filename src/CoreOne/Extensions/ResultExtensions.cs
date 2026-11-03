@@ -137,28 +137,6 @@ public static class ResultExtensions
         return result;
     }
 
-    public static async Task<IResult<T>> OnSuccessAsync<T>(this Task<HttpResult<T>> task, Action<T> callback)
-    {
-        var result = await task;
-        if (result.Success && result.Model is not null)
-        {
-            var next = Utility.Try(() => callback.Invoke(result.Model));
-            return next.ToResult(result.Model);
-        }
-        return result;
-    }
-
-    public static async Task<IResult<T>> OnSuccessAsync<T, TResult>(this Task<HttpResult<T>> task, Func<T, TResult?> callback)
-    {
-        var result = await task;
-        if (result.Success && result.Model is not null)
-        {
-            var next = Utility.Try(() => callback.Invoke(result.Model));
-            return next.ToResult(result.Model);
-        }
-        return result;
-    }
-
     public static async Task<IResult<T>> OnSuccessAsync<T>(this IResult<T> result, Func<T, Task> callback)
     {
         if (result.Success && result.Model is not null)
@@ -228,16 +206,6 @@ public static class ResultExtensions
                 Items = result.Items.SelectList(callback)
             } :
             new CollectionResult<TResult>(result.ResultType, result.Message);
-    }
-
-    public static async Task<IResult<TResult>> SelectAsync<T, TResult>(this Task<HttpResult<T>> task, Func<T, TResult?> callback)
-    {
-        var result = await task;
-        if (result.Success && result.Model is not null)
-        {
-            var next = Utility.Try(() => callback.Invoke(result.Model));
-        }
-        return result.ToResult<TResult>(default);
     }
 
     public static async Task<IResult<TResult>> SelectAsync<TResult>(this IResult result, Func<Task<TResult?>> callback)
@@ -311,14 +279,6 @@ public static class ResultExtensions
     {
         return result.Success && result.Model is not null ?
             Utility.TryResult(() => callback(result.Model)) :
-            result.ToResult<TResult>();
-    }
-
-    public static async Task<IResult<TResult>> SelectResultAsync<T, TResult>(this Task<HttpResult<T>> task, Func<T, IResult<TResult>> callback)
-    {
-        var result = await task;
-        return result.Success && result.Model is not null ?
-            callback.Invoke(result.Model) :
             result.ToResult<TResult>();
     }
 

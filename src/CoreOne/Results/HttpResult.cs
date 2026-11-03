@@ -15,20 +15,32 @@ public class HttpResult : IResult, IStatusResult<int>
         try
         {
             var status = (int)response.StatusCode;
-#if NET9_0_OR_GREATER
-            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
-#else
-            using var stream = await response.Content.ReadAsStreamAsync();
-#endif
             if (response.IsSuccessStatusCode)
             {
+#if NET9_0_OR_GREATER
+                using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+#else
+                using var stream = await response.Content.ReadAsStreamAsync();
+#endif
                 var result = Utility.DeserializeObject<TModel>(stream);
                 return new HttpResult<TModel, TError>(result.Model, status);
             }
 
-            var resultError = Utility.DeserializeObject<TError>(stream);
+            byte[]? errorBytes = null;
+            if (response.Content is not null)
+            {
+#if NET9_0_OR_GREATER
+                errorBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+#else
+                errorBytes = await response.Content.ReadAsByteArrayAsync();
+#endif
+            }
+
+            using var errorStream = new MemoryStream(errorBytes ?? []);
+            var resultError = Utility.DeserializeObject<TError>(errorStream);
             return new HttpResult<TModel, TError>(resultError.Model, status) {
-                Message = $"Error Code: {status}"
+                Message = $"Error Code: {status}",
+                ErrorContent = errorBytes ?? []
             };
         }
         catch (Exception ex)
@@ -52,7 +64,9 @@ public class HttpResult : IResult, IStatusResult<int>
 #else
                     var str = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 #endif
-                    return new HttpResult<TModel>((TModel?)(object?)str, status, uri);
+                    return new HttpResult<TModel>((TModel?)(object?)str, status, uri) {
+                        Serializer = serializer
+                    };
                 }
 
                 if (typeof(TModel) == Types.Bytes)
@@ -62,7 +76,9 @@ public class HttpResult : IResult, IStatusResult<int>
 #else
                     var bytes = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 #endif
-                    return new HttpResult<TModel>((TModel?)(object?)bytes, status, uri);
+                    return new HttpResult<TModel>((TModel?)(object?)bytes, status, uri) {
+                        Serializer = serializer
+                    };
                 }
 
 #if NET9_0_OR_GREATER
@@ -74,14 +90,29 @@ public class HttpResult : IResult, IStatusResult<int>
                 if (!result.Success)
                 {
                     return new HttpResult<TModel>(WebCodes.Status500InternalServerError, result.Message ?? "Failed to deserialize response") {
-                        Uri = uri
+                        Uri = uri,
+                        Serializer = serializer
                     };
                 }
-                return new HttpResult<TModel>(result.Model is TModel typed ? typed : default, status, uri);
+                return new HttpResult<TModel>(result.Model is TModel typed ? typed : default, status, uri) {
+                    Serializer = serializer
+                };
+            }
+
+            byte[]? errorBytes = null;
+            if (response.Content is not null)
+            {
+#if NET9_0_OR_GREATER
+                errorBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+#else
+                errorBytes = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+#endif
             }
 
             return new HttpResult<TModel>(status, $"Error Code: {status}") {
-                Uri = uri
+                Uri = uri,
+                ErrorContent = errorBytes ?? [],
+                Serializer = serializer
             };
         }
         catch (Exception ex)
@@ -96,29 +127,44 @@ public class HttpResult : IResult, IStatusResult<int>
         {
             var status = (int)response.StatusCode;
             var uri = response.RequestMessage?.RequestUri?.ToString();
-#if NET9_0_OR_GREATER
-            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#else
-            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#endif
             if (response.IsSuccessStatusCode)
             {
+#if NET9_0_OR_GREATER
+                using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#else
+                using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#endif
                 var result = await serializer.DeserializeAsync(stream, typeof(TModel), cancellationToken).ConfigureAwait(false);
                 if (!result.Success)
                 {
                     return new HttpResult<TModel, TError>(WebCodes.Status500InternalServerError, result.Message ?? "Failed to deserialize response") {
-                        Uri = uri
+                        Uri = uri,
+                        Serializer = serializer
                     };
                 }
                 return new HttpResult<TModel, TError>(result.Model is TModel typed ? typed : default, status) {
-                    Uri = uri
+                    Uri = uri,
+                    Serializer = serializer
                 };
             }
 
-            var resultError = await serializer.DeserializeAsync(stream, typeof(TError), cancellationToken).ConfigureAwait(false);
+            byte[]? errorBytes = null;
+            if (response.Content is not null)
+            {
+#if NET9_0_OR_GREATER
+                errorBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+#else
+                errorBytes = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+#endif
+            }
+
+            using var errorStream = new MemoryStream(errorBytes ?? []);
+            var resultError = await serializer.DeserializeAsync(errorStream, typeof(TError), cancellationToken).ConfigureAwait(false);
             return new HttpResult<TModel, TError>(resultError.Model is TError typedError ? typedError : default, status) {
                 Message = $"Error Code: {status}",
-                Uri = uri
+                Uri = uri,
+                ErrorContent = errorBytes ?? [],
+                Serializer = serializer
             };
         }
         catch (Exception ex)
@@ -137,7 +183,16 @@ public class HttpResult : IResult, IStatusResult<int>
                 var model = await callback(response.Content);
                 return new HttpResult<T>(model, status);
             }
-            return new HttpResult<T>(status, $"Error Code: {status}");
+
+            byte[]? errorBytes = null;
+            if (response.Content is not null)
+            {
+                errorBytes = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+            }
+
+            return new HttpResult<T>(status, $"Error Code: {status}") {
+                ErrorContent = errorBytes ?? []
+            };
         }
         catch (Exception ex)
         {
@@ -160,9 +215,11 @@ public class HttpResult : IResult, IStatusResult<int>
 
     #endregion -- Static --
 
+    public byte[]? ErrorContent { get; init; }
     public bool IsSuccessStatusCode { get; protected set; }
     public string? Message { get; set; }
     public ResultType ResultType { get; protected set; }
+    protected internal ISerializer? Serializer { get; init; }
     public int StatusCode { get; protected set; }
     public bool Success => ResultType == ResultType.Success && IsSuccessStatusCode;
     public string? Uri { get; init; }
@@ -180,6 +237,38 @@ public class HttpResult : IResult, IStatusResult<int>
         var (success, resultType) = GetResultFromStatusCode(statusCode);
         IsSuccessStatusCode = success;
         ResultType = resultType;
+    }
+
+    public virtual IResult<TError> GetContent<TError>(ISerializer? serializer = null)
+    {
+        var activeSerializer = serializer ?? Serializer ?? NJsonService.Instance;
+        var bytes = ErrorContent;
+        if (bytes is null && !string.IsNullOrWhiteSpace(Message))
+        {
+            bytes = activeSerializer.Encoding.GetBytes(Message);
+        }
+
+        if (bytes is null || bytes.Length == 0)
+            return new Result<TError>(default, "Error content is empty.", ResultType.Fail);
+
+        if (typeof(TError) == Types.String)
+        {
+            var str = activeSerializer.Encoding.GetString(bytes);
+            return new Result<TError>((TError?)(object?)str);
+        }
+
+        if (typeof(TError) == Types.Bytes)
+        {
+            return new Result<TError>((TError?)(object?)bytes);
+        }
+
+        var deserialized = activeSerializer.Deserialize(bytes, typeof(TError));
+        if (!deserialized.Success)
+            return new Result<TError>(default, deserialized.Message ?? "Failed to deserialize error content.", deserialized.ResultType);
+
+        return deserialized.Model is TError typed
+            ? new Result<TError>(typed)
+            : new Result<TError>(default, "Failed to deserialize error content.", ResultType.Fail);
     }
 
     public static (bool success, ResultType resultType) GetResultFromStatusCode(int statusCode)
@@ -213,7 +302,9 @@ public class HttpResult<T> : HttpResult, IResult<T>, IResult<T, int>
     {
     }
 
-    public HttpResult<TResult> Select<TResult>(Func<T?, TResult?> next) => Success ? new HttpResult<TResult>(next(Model), StatusCode) : new HttpResult<TResult>(StatusCode, Message);
+    public HttpResult<TResult> Select<TResult>(Func<T?, TResult?> next) => Success
+        ? new HttpResult<TResult>(next(Model), StatusCode, Uri) { Serializer = Serializer }
+        : new HttpResult<TResult>(StatusCode, Message) { Uri = Uri, ErrorContent = ErrorContent, Serializer = Serializer };
 }
 
 public class HttpResult<TModel, TError> : HttpResult, IResult<TModel>, IResult<TModel, int>
@@ -234,5 +325,13 @@ public class HttpResult<TModel, TError> : HttpResult, IResult<TModel>, IResult<T
     public HttpResult(int statusCode, string? msg) : base(statusCode, msg)
     {
         Message = msg;
+    }
+
+    public override IResult<TTarget> GetContent<TTarget>(ISerializer? serializer = null)
+    {
+        if (!Success && ErrorModel is TTarget typed)
+            return new Result<TTarget>(typed);
+
+        return base.GetContent<TTarget>(serializer);
     }
 }

@@ -1,4 +1,5 @@
 using CoreOne;
+using CoreOne.Extensions;
 using CoreOne.Http;
 using CoreOne.Results;
 using CoreOne.Services;
@@ -472,6 +473,25 @@ public class RestClientInvokerTests
 
         Assert.CatchAsync<OperationCanceledException>(() =>
             RestClientInvoker.SendForModelAsync<ItemDto>(client, CreateRequest(), NJsonService.Instance, cts.Token));
+    }
+
+    [Test]
+    public async Task SendForHttpResultAsyncOfT_ConflictWithErrorBody_SupportsFluentOnFailMapping()
+    {
+        using var client = CreateClient(HttpStatusCode.Conflict, JsonContent(new ItemDto { Id = 409, Name = "DuplicateItem" }));
+        ItemDto? duplicate = null;
+
+        var result = await RestClientInvoker.SendForHttpResultAsync<ItemDto>(client, CreateRequest(), NJsonService.Instance)
+            .OnFailAsync(WebCodes.Status409Conflict, (ItemDto? err) => duplicate = err);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(WebCodes.Status409Conflict));
+            Assert.That(duplicate, Is.Not.Null);
+            Assert.That(duplicate?.Id, Is.EqualTo(409));
+            Assert.That(duplicate?.Name, Is.EqualTo("DuplicateItem"));
+        }
     }
 
     private sealed class TokenTrackingSerializer(Action<CancellationToken> onDeserialize) : ISerializer
