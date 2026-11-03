@@ -22,6 +22,8 @@ jobs:
             path: src/CoreOne/CoreOne.csproj
           - name: coreone.identity
             path: src/CoreOne.Identity/CoreOne.Identity.csproj
+          - name: coreone.http
+            path: src/CoreOne.Http/CoreOne.Http.csproj
           - name: coreone.generators
             path: src/CoreOne.Generators/CoreOne.Generators.csproj
 

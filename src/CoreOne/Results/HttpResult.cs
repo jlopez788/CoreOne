@@ -37,6 +37,96 @@ public class HttpResult : IResult, IStatusResult<int>
         }
     }
 
+    public static async Task<HttpResult<TModel>> FromResponseAsync<TModel>(HttpResponseMessage response, ISerializer serializer, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var status = (int)response.StatusCode;
+            var uri = response.RequestMessage?.RequestUri?.ToString();
+            if (response.IsSuccessStatusCode)
+            {
+                if (typeof(TModel) == Types.String)
+                {
+#if NET9_0_OR_GREATER
+                    var str = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+#else
+                    var str = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+#endif
+                    return new HttpResult<TModel>((TModel?)(object?)str, status, uri);
+                }
+
+                if (typeof(TModel) == Types.Bytes)
+                {
+#if NET9_0_OR_GREATER
+                    var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+#else
+                    var bytes = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+#endif
+                    return new HttpResult<TModel>((TModel?)(object?)bytes, status, uri);
+                }
+
+#if NET9_0_OR_GREATER
+                using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#else
+                using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#endif
+                var result = await serializer.DeserializeAsync(stream, typeof(TModel), cancellationToken).ConfigureAwait(false);
+                if (!result.Success)
+                {
+                    return new HttpResult<TModel>(WebCodes.Status500InternalServerError, result.Message ?? "Failed to deserialize response") {
+                        Uri = uri
+                    };
+                }
+                return new HttpResult<TModel>(result.Model is TModel typed ? typed : default, status, uri);
+            }
+
+            return new HttpResult<TModel>(status, $"Error Code: {status}") {
+                Uri = uri
+            };
+        }
+        catch (Exception ex)
+        {
+            return new HttpResult<TModel>(WebCodes.Status500InternalServerError, $"Error reading Http response: {ex.Message}");
+        }
+    }
+
+    public static async Task<HttpResult<TModel, TError>> FromResponseAsync<TModel, TError>(HttpResponseMessage response, ISerializer serializer, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var status = (int)response.StatusCode;
+            var uri = response.RequestMessage?.RequestUri?.ToString();
+#if NET9_0_OR_GREATER
+            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#else
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#endif
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await serializer.DeserializeAsync(stream, typeof(TModel), cancellationToken).ConfigureAwait(false);
+                if (!result.Success)
+                {
+                    return new HttpResult<TModel, TError>(WebCodes.Status500InternalServerError, result.Message ?? "Failed to deserialize response") {
+                        Uri = uri
+                    };
+                }
+                return new HttpResult<TModel, TError>(result.Model is TModel typed ? typed : default, status) {
+                    Uri = uri
+                };
+            }
+
+            var resultError = await serializer.DeserializeAsync(stream, typeof(TError), cancellationToken).ConfigureAwait(false);
+            return new HttpResult<TModel, TError>(resultError.Model is TError typedError ? typedError : default, status) {
+                Message = $"Error Code: {status}",
+                Uri = uri
+            };
+        }
+        catch (Exception ex)
+        {
+            return new HttpResult<TModel, TError>(WebCodes.Status500InternalServerError, $"Error reading Http response: {ex.Message}");
+        }
+    }
+
     public static async Task<HttpResult<T>> FromResponse<T>(HttpResponseMessage response, Func<HttpContent, Task<T>> callback)
     {
         try

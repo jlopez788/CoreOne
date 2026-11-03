@@ -4,6 +4,7 @@ namespace CoreOne;
 
 public interface ISerializer
 {
+    string ContentType { get; }
     Encoding Encoding { get; }
 
     IResult<object> Deserialize(byte[]? data, Type objectType);

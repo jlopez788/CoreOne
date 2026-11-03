@@ -8,6 +8,7 @@ namespace CoreOne.Services;
 public class NJsonService(JsonSerializerSettings? settings) : ISerializer
 {
     public static readonly NJsonService Instance = new(null);
+    public string ContentType { get; set; } = "application/json";
     public Encoding Encoding { get; set; } = Encoding.UTF8;
     public JsonSerializerSettings Settings { get; } = settings ?? new NewtonSettings();
 

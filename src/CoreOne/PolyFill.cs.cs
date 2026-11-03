@@ -8,6 +8,26 @@ namespace System.Runtime.CompilerServices
     { }
 }
 
+namespace System.Diagnostics.CodeAnalysis
+{
+    [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+    public sealed class StringSyntaxAttribute : Attribute
+    {
+        public StringSyntaxAttribute(string syntax)
+        {
+            Syntax = syntax;
+            Arguments = Array.Empty<object?>();
+        }
+        public StringSyntaxAttribute(string syntax, params object?[] arguments)
+        {
+            Syntax = syntax;
+            Arguments = arguments;
+        }
+        public string Syntax { get; }
+        public object?[] Arguments { get; }
+    }
+}
+
 #endif
 
 #if NETSTANDARD2_0
@@ -312,6 +332,7 @@ namespace System.Diagnostics.CodeAnalysis
         /// <summary>Gets the return value condition.</summary>
         public bool ReturnValue { get; } = returnValue;
     }
+
 }
 
 #endif
