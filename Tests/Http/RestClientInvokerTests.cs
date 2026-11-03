@@ -261,4 +261,233 @@ public class RestClientInvokerTests
         Assert.CatchAsync<OperationCanceledException>(() =>
             RestClientInvoker.SendForModelAsync<ItemDto>(client, CreateRequest(), NJsonService.Instance, cts.Token));
     }
+
+    [Test]
+    public void SendAsync_PreCancelledToken_ThrowsOperationCanceled()
+    {
+        using var client = CreateClient((_, ct) => {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        });
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        Assert.CatchAsync<OperationCanceledException>(() =>
+            RestClientInvoker.SendAsync(client, CreateRequest(), cts.Token));
+    }
+
+    [Test]
+    public async Task SendAsync_ActiveToken_ForwardsCancellationTokenToHandler()
+    {
+        var observedToken = CancellationToken.None;
+        using var client = CreateClient((_, ct) => {
+            observedToken = ct;
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        });
+        using var cts = new CancellationTokenSource();
+
+        await RestClientInvoker.SendAsync(client, CreateRequest(), cts.Token);
+
+        Assert.That(observedToken.CanBeCanceled, Is.True);
+    }
+
+    [Test]
+    public async Task SendForHttpResultAsyncOfT_PreCancelledToken_ReturnsExceptionResult()
+    {
+        using var client = CreateClient((_, ct) => {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        });
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var result = await RestClientInvoker.SendForHttpResultAsync<ItemDto>(client, CreateRequest(), NJsonService.Instance, cts.Token);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(500));
+            Assert.That(result.Model, Is.Null);
+        }
+    }
+
+    [Test]
+    public async Task SendForHttpResultAsyncWithError_PreCancelledToken_ReturnsExceptionResult()
+    {
+        using var client = CreateClient((_, ct) => {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        });
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var result = await RestClientInvoker.SendForHttpResultAsync<ItemDto, ItemDto>(client, CreateRequest(), NJsonService.Instance, cts.Token);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(500));
+            Assert.That(result.Model, Is.Null);
+            Assert.That(result.ErrorModel, Is.Null);
+        }
+    }
+
+    [Test]
+    public async Task SendForIResultAsync_PreCancelledToken_ReturnsFailureResult()
+    {
+        using var client = CreateClient((_, ct) => {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        });
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var result = await RestClientInvoker.SendForIResultAsync(client, CreateRequest(), cts.Token);
+
+        Assert.That(result.Success, Is.False);
+    }
+
+    [Test]
+    public async Task SendForIResultAsyncOfT_PreCancelledToken_ReturnsFailureResult()
+    {
+        using var client = CreateClient((_, ct) => {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        });
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var result = await RestClientInvoker.SendForIResultAsync<ItemDto>(client, CreateRequest(), NJsonService.Instance, cts.Token);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.False);
+            Assert.That(result.Model, Is.Null);
+        }
+    }
+
+    [Test]
+    public async Task SendForResultAsync_PreCancelledToken_ReturnsExceptionResult()
+    {
+        using var client = CreateClient((_, ct) => {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        });
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var result = await RestClientInvoker.SendForResultAsync(client, CreateRequest(), cts.Token);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.False);
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Exception));
+        }
+    }
+
+    [Test]
+    public async Task SendForResultAsyncOfT_PreCancelledToken_ReturnsExceptionResult()
+    {
+        using var client = CreateClient((_, ct) => {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        });
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var result = await RestClientInvoker.SendForResultAsync<ItemDto>(client, CreateRequest(), NJsonService.Instance, cts.Token);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.False);
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Exception));
+            Assert.That(result.Model, Is.Null);
+        }
+    }
+
+    [Test]
+    public async Task SendForModelAsync_ForwardsCancellationTokenToSerializer()
+    {
+        var serializerToken = CancellationToken.None;
+        var trackingSerializer = new TokenTrackingSerializer(ct => serializerToken = ct);
+        using var client = CreateClient(HttpStatusCode.OK, JsonContent(new ItemDto { Id = 1, Name = "Tracked" }));
+        using var cts = new CancellationTokenSource();
+
+        var model = await RestClientInvoker.SendForModelAsync<ItemDto>(client, CreateRequest(), trackingSerializer, cts.Token);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(model?.Id, Is.EqualTo(1));
+            Assert.That(serializerToken, Is.EqualTo(cts.Token));
+        }
+    }
+
+    [Test]
+    public async Task SendForHttpResultAsyncOfT_ForwardsCancellationTokenToSerializer()
+    {
+        var serializerToken = CancellationToken.None;
+        var trackingSerializer = new TokenTrackingSerializer(ct => serializerToken = ct);
+        using var client = CreateClient(HttpStatusCode.OK, JsonContent(new ItemDto { Id = 2, Name = "TrackedResult" }));
+        using var cts = new CancellationTokenSource();
+
+        var result = await RestClientInvoker.SendForHttpResultAsync<ItemDto>(client, CreateRequest(), trackingSerializer, cts.Token);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.True);
+            Assert.That(result.Model?.Id, Is.EqualTo(2));
+            Assert.That(serializerToken, Is.EqualTo(cts.Token));
+        }
+    }
+
+    [Test]
+    public async Task SendForHttpResultAsyncWithError_ForwardsCancellationTokenToSerializerOnError()
+    {
+        var serializerToken = CancellationToken.None;
+        var trackingSerializer = new TokenTrackingSerializer(ct => serializerToken = ct);
+        using var client = CreateClient(HttpStatusCode.BadRequest, JsonContent(new ItemDto { Id = 99, Name = "ErrorPayload" }));
+        using var cts = new CancellationTokenSource();
+
+        var result = await RestClientInvoker.SendForHttpResultAsync<ItemDto, ItemDto>(client, CreateRequest(), trackingSerializer, cts.Token);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.False);
+            Assert.That(result.ErrorModel?.Id, Is.EqualTo(99));
+            Assert.That(serializerToken, Is.EqualTo(cts.Token));
+        }
+    }
+
+    [Test]
+    public void SendForModelAsync_CancelledDuringInFlightRequest_ThrowsOperationCanceled()
+    {
+        using var cts = new CancellationTokenSource();
+        using var client = CreateClient(async (_, ct) => {
+            await Task.Delay(Timeout.Infinite, ct);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+
+        cts.CancelAfter(30);
+
+        Assert.CatchAsync<OperationCanceledException>(() =>
+            RestClientInvoker.SendForModelAsync<ItemDto>(client, CreateRequest(), NJsonService.Instance, cts.Token));
+    }
+
+    private sealed class TokenTrackingSerializer(Action<CancellationToken> onDeserialize) : ISerializer
+    {
+        public string ContentType => "application/json";
+        public Encoding Encoding => Encoding.UTF8;
+
+        public IResult<object> Deserialize(byte[]? data, Type objectType) =>
+            NJsonService.Instance.Deserialize(data, objectType);
+
+        public Task<IResult<object>> DeserializeAsync(Stream stream, Type objectType, CancellationToken cancellationToken = default)
+        {
+            onDeserialize(cancellationToken);
+            return NJsonService.Instance.DeserializeAsync(stream, objectType, cancellationToken);
+        }
+
+        public byte[] Serialize(object? model, Type? objectType = null) =>
+            NJsonService.Instance.Serialize(model, objectType);
+    }
 }

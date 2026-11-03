@@ -136,6 +136,10 @@ public class RestClientGeneratorTests
             Assert.That(generatedCode, Does.Contain("new global::CoreOne.Http.RestRequestBuilder(\"GET\", \"/api/v1\", \"/users/{id}\")"));
             Assert.That(generatedCode, Does.Contain("new global::CoreOne.Http.RestRequestBuilder(\"QUERY\", \"/api/v1\", \"/users/query\")"));
             Assert.That(generatedCode, Does.Contain("_builder.AddQueryParam(\"page\", pageNumber, null);"));
+            Assert.That(generatedCode, Does.Contain("SendForHttpResultAsync<UserDto>(HttpClient, _request, Serializer, cancellationToken)"));
+            Assert.That(generatedCode, Does.Contain("SendForHttpResultAsync<UserDto, ApiError>(HttpClient, _request, Serializer, cancellationToken)"));
+            Assert.That(generatedCode, Does.Contain("SendForHttpResultAsync(HttpClient, _request, global::System.Threading.CancellationToken.None)"));
+            Assert.That(generatedCode, Does.Not.Contain("AddQueryParam(\"cancellationToken\""));
         }
     }
 

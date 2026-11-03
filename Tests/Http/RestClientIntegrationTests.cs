@@ -49,7 +49,7 @@ public interface ICustomerApi
 public interface IInterceptedApi
 {
     [Get("/items/{id}")]
-    Task<HttpResult<CustomerDto>> GetItemAsync(int id);
+    Task<HttpResult<CustomerDto>> GetItemAsync(int id, CancellationToken cancellationToken = default);
 }
 
 [RestClient("/api/v2")]
@@ -342,7 +342,7 @@ public class RestClientIntegrationTests
             Assert.That(result.Success, Is.True);
             Assert.That(result.Model?.Id, Is.EqualTo(55));
             Assert.That(interceptor.InvokedMethods, Has.Count.EqualTo(1));
-            Assert.That(interceptor.InvokedMethods[0], Is.EqualTo("GetItemAsync(55)"));
+            Assert.That(interceptor.InvokedMethods[0], Does.StartWith("GetItemAsync(55"));
         }
     }
 
@@ -588,6 +588,174 @@ public class RestClientIntegrationTests
             Assert.That(customerApi, Is.Not.Null);
             Assert.That(interceptedApi, Is.Not.Null);
             Assert.That(interceptedApi!.GetType().Name, Is.EqualTo("InterceptedApiClientProxy"));
+        }
+    }
+
+    [Test]
+    public async Task GetCustomerAsync_WithCancellationToken_ForwardsTokenToHandler()
+    {
+        var handlerTokenCanBeCanceled = false;
+        using var sp = BuildProvider<ICustomerApi>((_, ct) => {
+            handlerTokenCanBeCanceled = ct.CanBeCanceled;
+            var json = Utility.Serialize(new CustomerDto { Id = 12, Name = "Token User" });
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            });
+        });
+        var api = sp.GetRequiredService<ICustomerApi>();
+        using var cts = new CancellationTokenSource();
+
+        var result = await api.GetCustomerAsync(12, cts.Token);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.True);
+            Assert.That(result.Model?.Id, Is.EqualTo(12));
+            Assert.That(handlerTokenCanBeCanceled, Is.True);
+        }
+    }
+
+    [Test]
+    public async Task GetCustomerAsync_WithPreCancelledToken_ReturnsFailureHttpResult()
+    {
+        var tokenWasCancelled = false;
+        using var sp = BuildProvider<ICustomerApi>((_, ct) => {
+            tokenWasCancelled = ct.IsCancellationRequested;
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        });
+        var api = sp.GetRequiredService<ICustomerApi>();
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var result = await api.GetCustomerAsync(42, cts.Token);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(500));
+            Assert.That(result.Model, Is.Null);
+            Assert.That(tokenWasCancelled, Is.True);
+        }
+    }
+
+    [Test]
+    public async Task GetCustomerAsync_WhenCancelledMidFlight_CancelsPendingRequestAndReturnsFailureResult()
+    {
+        var requestStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cancellationObserved = false;
+
+        using var sp = BuildProvider<ICustomerApi>(async (_, ct) => {
+            requestStarted.TrySetResult(true);
+            try
+            {
+                await Task.Delay(Timeout.Infinite, ct);
+                return new HttpResponseMessage(HttpStatusCode.OK);
+            }
+            catch (OperationCanceledException)
+            {
+                cancellationObserved = true;
+                throw;
+            }
+        });
+        var api = sp.GetRequiredService<ICustomerApi>();
+        using var cts = new CancellationTokenSource();
+
+        var pendingCall = api.GetCustomerAsync(42, cts.Token);
+        await requestStarted.Task;
+        cts.Cancel();
+
+        var result = await pendingCall;
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(500));
+            Assert.That(cancellationObserved, Is.True);
+        }
+    }
+
+    [Test]
+    public async Task CreateCustomerAsync_WithPreCancelledToken_ReturnsFailureHttpResult()
+    {
+        using var sp = BuildProvider<ICustomerApi>((_, ct) => {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.Created));
+        });
+        var api = sp.GetRequiredService<ICustomerApi>();
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var result = await api.CreateCustomerAsync(new CustomerDto { Id = 1, Name = "Cancelled" }, "token", cts.Token);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(500));
+            Assert.That(result.Model, Is.Null);
+            Assert.That(result.ErrorModel, Is.Null);
+        }
+    }
+
+    [Test]
+    public async Task SearchCustomersAsync_WithCancellationToken_DoesNotIncludeTokenInQueryParams()
+    {
+        string? requestUri = null;
+        var handlerTokenCanBeCanceled = false;
+
+        using var sp = BuildProvider<ICustomerApi>((req, ct) => {
+            requestUri = req.RequestUri?.ToString();
+            handlerTokenCanBeCanceled = ct.CanBeCanceled;
+            var json = Utility.Serialize(new List<CustomerDto>());
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            });
+        });
+        var api = sp.GetRequiredService<ICustomerApi>();
+        using var cts = new CancellationTokenSource();
+
+        var result = await api.SearchCustomersAsync(new CustomerSearchRequest { Department = "QA" }, null, cts.Token);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Success, Is.True);
+            Assert.That(handlerTokenCanBeCanceled, Is.True);
+            Assert.That(requestUri, Is.EqualTo("https://example.test/api/v1/customers/search"));
+            Assert.That(requestUri, Does.Not.Contain("cancellationToken"));
+        }
+    }
+
+    [Test]
+    public async Task InterceptedApi_WithCancellationToken_ForwardsTokenThroughProxyPipeline()
+    {
+        var handlerTokenCanBeCanceled = false;
+        var services = new ServiceCollection();
+        services.AddCoreServices();
+        services.AddSingleton<TrackingInterceptor>();
+        services.AddRestClient<IInterceptedApi>(client => client.BaseAddress = new Uri("https://example.test"))
+            .ConfigurePrimaryHttpMessageHandler(() => new MockHttpMessageHandler((_, ct) => {
+                handlerTokenCanBeCanceled = ct.CanBeCanceled;
+                ct.ThrowIfCancellationRequested();
+                var json = Utility.Serialize(new CustomerDto { Id = 10, Name = "Intercepted" });
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                });
+            }));
+
+        using var sp = services.BuildServiceProvider();
+        var api = sp.GetRequiredService<IInterceptedApi>();
+        using var cts = new CancellationTokenSource();
+
+        var activeResult = await api.GetItemAsync(10, cts.Token);
+        cts.Cancel();
+        var cancelledResult = await api.GetItemAsync(10, cts.Token);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(activeResult.Success, Is.True);
+            Assert.That(handlerTokenCanBeCanceled, Is.True);
+            Assert.That(cancelledResult.Success, Is.False);
+            Assert.That(cancelledResult.StatusCode, Is.EqualTo(500));
         }
     }
 }
