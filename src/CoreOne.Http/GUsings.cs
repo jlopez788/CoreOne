@@ -1,10 +1,9 @@
 global using CoreOne.Attributes;
-global using CoreOne.Collections;
 global using CoreOne.Extensions;
 global using CoreOne.Http.Attributes;
 global using CoreOne.Http.Extensions;
 global using CoreOne.Http.Models;
-global using CoreOne.Models;
+global using CoreOne.Lookups;
 global using CoreOne.ODataBuilders;
 global using CoreOne.Reflection;
 global using CoreOne.Results;
@@ -15,3 +14,5 @@ global using System.Globalization;
 global using System.Net.Http.Headers;
 global using System.Reflection;
 global using System.Text;
+global using NJsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
+global using SJsonIgnore = System.Text.Json.Serialization.JsonIgnoreAttribute;

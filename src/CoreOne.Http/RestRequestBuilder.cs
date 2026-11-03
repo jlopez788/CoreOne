@@ -176,7 +176,7 @@ public class RestRequestBuilder
         var metadatas = MetaType.GetMetadatas(valueType);
         foreach (var meta in metadatas)
         {
-            if (!meta.CanRead)
+            if (IsIgnoredMember(meta))
                 continue;
 
             var propValue = meta.GetValue(value);
@@ -337,7 +337,7 @@ public class RestRequestBuilder
         var metadatas = MetaType.GetMetadatas(body.GetType());
         foreach (var meta in metadatas)
         {
-            if (!meta.CanRead)
+            if (IsIgnoredMember(meta))
                 continue;
 
             var val = meta.GetValue(body);
@@ -367,6 +367,9 @@ public class RestRequestBuilder
         if (value is string str)
             return str;
 
+        if (value is ILookupType lookup)
+            return lookup.Code;
+
         if (value is bool b)
             return b ? "true" : "false";
 
@@ -388,6 +391,12 @@ public class RestRequestBuilder
         return value.ToString() ?? string.Empty;
     }
 
+    private static bool IsIgnoredMember(Metadata meta) =>
+        !meta.CanRead ||
+        meta.IsStatic ||
+        meta.GetCustomAttribute<NJsonIgnore>(true) is not null ||
+        meta.GetCustomAttribute<SJsonIgnore>(true) is not null;
+
     private static bool IsSimpleValueType(Type type)
     {
         var underlying = Nullable.GetUnderlyingType(type) ?? type;
@@ -400,7 +409,8 @@ public class RestRequestBuilder
             underlying == typeof(DateTimeOffset) ||
             underlying == typeof(TimeSpan) ||
             underlying == typeof(Uri) ||
-            Types.DotNetTypes.Contains(underlying))
+            Types.DotNetTypes.Contains(underlying) ||
+            typeof(ILookupType).IsAssignableFrom(underlying))
         {
             return true;
         }

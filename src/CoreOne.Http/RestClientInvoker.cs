@@ -27,7 +27,18 @@ public static class RestClientInvoker
             using (request)
             {
                 using var response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                return new HttpResult(response) {
+                string? message = null;
+                if (!response.IsSuccessStatusCode && response.Content is not null)
+                {
+#if NET9_0_OR_GREATER
+                    var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+#else
+                    var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+#endif
+                    message = string.IsNullOrWhiteSpace(body) ? response.ReasonPhrase : body;
+                }
+
+                return new HttpResult((int)response.StatusCode, message) {
                     Uri = response.RequestMessage?.RequestUri?.ToString()
                 };
             }

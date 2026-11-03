@@ -334,4 +334,28 @@ public class RestRequestBuilderTests
             Assert.That(request.RequestUri?.ToString(), Is.EqualTo("https://api.example.com/v1/records?min=5&max=10&date=2026-11-02&active=true"));
         }
     }
+
+    public sealed class SampleLookup(string code) : CoreOne.Lookups.LookupType<SampleLookup>(code)
+    {
+        public static readonly SampleLookup Active = new("active");
+    }
+
+    public sealed class PageQueryWithLookup : CoreOne.Operations.PageRequest
+    {
+        public SampleLookup? Status { get; set; }
+    }
+
+    [Test]
+    public void Build_PageRequestWithLookupType_IgnoresTokenAndFormatsLookupAndOperations()
+    {
+        var query = new PageQueryWithLookup { CurrentPage = 2, PageSize = 15, Status = SampleLookup.Active };
+        query.FilterBy("acme", "Name");
+        query.OrderBy("CreatedAt", CoreOne.Operations.SortDirection.Descending);
+
+        var builder = new RestRequestBuilder("GET", "/api", "/items")
+            .AddQueryParam("query", query);
+
+        using var request = builder.Build();
+        Assert.That(request.RequestUri?.OriginalString, Is.EqualTo("/api/items?Status=active&CurrentPage=1&PageSize=15&Operations=Name%20acme&Operations=CreatedAt%20Descending"));
+    }
 }

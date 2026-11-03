@@ -53,7 +53,7 @@ public class RestClientInvokerTests
     [Test]
     public async Task SendForHttpResultAsync_ErrorStatus_ReturnsFailureWithoutThrowing()
     {
-        using var client = CreateClient(HttpStatusCode.NotFound);
+        using var client = CreateClient(HttpStatusCode.NotFound, new StringContent("item missing"));
 
         var result = await RestClientInvoker.SendForHttpResultAsync(client, CreateRequest());
 
@@ -61,6 +61,7 @@ public class RestClientInvokerTests
         {
             Assert.That(result.Success, Is.False);
             Assert.That(result.StatusCode, Is.EqualTo(404));
+            Assert.That(result.Message, Is.EqualTo("item missing"));
         }
     }
 
