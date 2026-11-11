@@ -1,8 +1,10 @@
 <Project>
 
     <PropertyGroup>
-        <!-- Consumers can opt out by setting <CoreOneInstallAgentSkills>false</CoreOneInstallAgentSkills> -->
+        <!-- Consumers can opt out of skill provisioning by setting <CoreOneInstallAgentSkills>false</CoreOneInstallAgentSkills> -->
         <CoreOneInstallAgentSkills Condition="'$(CoreOneInstallAgentSkills)' == ''">true</CoreOneInstallAgentSkills>
+        <!-- Consumers can opt in to the always-on IResult instruction standard by setting <CoreOneEnforceResultStandard>true</CoreOneEnforceResultStandard> -->
+        <CoreOneEnforceResultStandard Condition="'$(CoreOneEnforceResultStandard)' == ''">false</CoreOneEnforceResultStandard>
         <_CoreOneRepoRoot Condition="'$(SolutionDir)' != '' and '$(SolutionDir)' != '*Undefined*'">$(SolutionDir)</_CoreOneRepoRoot>
         <_CoreOneRepoRoot Condition="'$(_CoreOneRepoRoot)' == ''">$(MSBuildProjectDirectory)</_CoreOneRepoRoot>
     </PropertyGroup>
@@ -15,6 +17,18 @@
         </ItemGroup>
         <Copy SourceFiles="@(_CoreOneSkillFiles)"
               DestinationFiles="@(_CoreOneSkillFiles->'$(_CoreOneRepoRoot)\.github\skills\%(RecursiveDir)%(Filename)%(Extension)')"
+              SkipUnchangedFiles="true"
+              ContinueOnError="true" />
+    </Target>
+
+    <Target Name="CoreOneProvisionResultStandardInstruction"
+            BeforeTargets="BeforeBuild;Restore"
+            Condition="'$(CoreOneEnforceResultStandard)' == 'true' and '$(DesignTimeBuild)' != 'true'">
+        <ItemGroup>
+            <_CoreOneResultStandardFile Include="$(MSBuildThisFileDirectory)..\skills\coreone\assets\result-standard.instructions.md" />
+        </ItemGroup>
+        <Copy SourceFiles="@(_CoreOneResultStandardFile)"
+              DestinationFiles="$(_CoreOneRepoRoot)\.github\instructions\result-standard.instructions.md"
               SkipUnchangedFiles="true"
               ContinueOnError="true" />
     </Target>

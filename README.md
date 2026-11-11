@@ -47,6 +47,19 @@ dotnet add package CoreOne
 1. **Automatic Discovery**: Ask your AI agent to build a feature using `IResult`, `IHub`, `Observable`, `BaseService`, `ODataBuilder`, or `[RestClient]` — the agent automatically loads the matching reference file.
 2. **Slash Command**: Type `/coreone` in GitHub Copilot Chat to explicitly load the skill into your prompt.
 
+### Optional: Enforce `IResult` Over Exceptions Across a Project (Opt-In)
+By default, `CoreOne` only installs the on-demand `/coreone` skill and does **not** force coding rules on your project. If you want AI agents to **always** return `IResult` / `IResult<T>` instead of throwing exceptions across every `.cs` file in your project, you can opt in using either method:
+
+1. **Via Agent Prompt**: Tell your agent:
+   > *"Enable the CoreOne IResult standard from the `/coreone` skill assets."*
+   *(Copies `.github/skills/coreone/assets/result-standard.instructions.md` to `.github/instructions/result-standard.instructions.md`.)*
+2. **Via MSBuild Property** (in your `.csproj` or `Directory.Build.props`):
+   ```xml
+   <PropertyGroup>
+       <CoreOneEnforceResultStandard>true</CoreOneEnforceResultStandard>
+   </PropertyGroup>
+   ```
+
 ### How to Opt Out (Disable Skill Installation)
 Add `<CoreOneInstallAgentSkills>false</CoreOneInstallAgentSkills>` to your `.csproj` (or `Directory.Build.props`) to stop MSBuild from copying the skill folder into `.github/skills/`:
 

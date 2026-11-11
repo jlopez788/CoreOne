@@ -38,3 +38,11 @@ Load the relevant reference file below based on the task you are working on:
    - Use **`Subject<T>` / `BehaviorSubject<T>`** ([./references/reactive.md](./references/reactive.md)) for direct observable streams, property/value streams, and operator pipelines (`Select`, `Where`, `Distinct`, `Throttle`).
 3. **Cancellation & Unsubscription**:
    - CoreOne subscriptions (`IHub.Subscribe`, `Observable.Subscribe`, `Subject.Subscribe`) bind directly to a `CancellationToken` (usually `AToken` or `SToken`). When the token is cancelled/disposed (such as `BaseService.Token` during `DisposeAsync()`), all bound subscriptions automatically unsubscribe. See [./references/services-and-lifecycle.md](./references/services-and-lifecycle.md).
+
+---
+
+## Opt-In Project Standards (`./assets/`)
+
+This skill bundles an optional, always-on C# instruction template at [./assets/result-standard.instructions.md](./assets/result-standard.instructions.md) (`applyTo: "**/*.cs"`) that enforces returning `IResult` over throwing exceptions across a project.
+- **When asked by the user to enable or enforce the CoreOne `IResult` standard**: Copy `.github/skills/coreone/assets/result-standard.instructions.md` to `.github/instructions/result-standard.instructions.md` (or add `<CoreOneEnforceResultStandard>true</CoreOneEnforceResultStandard>` to the project's `.csproj` / `Directory.Build.props`).
+
