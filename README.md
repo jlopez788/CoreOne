@@ -35,6 +35,29 @@ Targets .NET 10.0, .NET 9.0, .NET Standard 2.0, and 2.1 — use it anywhere.
 dotnet add package CoreOne
 ```
 
+## AI Agent Skill (`/coreone`)
+
+`CoreOne` ships with a built-in AI Agent Skill ([.github/skills/coreone/SKILL.md](.github/skills/coreone/SKILL.md)) and an `AGENTS.md` package manifest. It gives GitHub Copilot, Claude Code, and Cursor a compact C# signature index and domain guides so agents write idiomatic `CoreOne` code without wasting tokens reading decompiled or source files.
+
+### How It Works When You Install the NuGet Package
+1. **Automatic Workspace Provisioning**: On `dotnet restore` / `dotnet build`, MSBuild copies the `coreone` skill files into your repository's `.github/skills/coreone/` folder (including projects that transitively reference `CoreOne` via `CoreOne.Http` or `CoreOne.Identity`).
+2. **NuGet MCP Support**: Packs `\AGENTS.md` at the root of the `.nupkg` for agents using the NuGet MCP server (`get_package_context`).
+
+### How to Use It
+1. **Automatic Discovery**: Ask your AI agent to build a feature using `IResult`, `IHub`, `Observable`, `BaseService`, `ODataBuilder`, or `[RestClient]` — the agent automatically loads the matching reference file.
+2. **Slash Command**: Type `/coreone` in GitHub Copilot Chat to explicitly load the skill into your prompt.
+
+### How to Opt Out (Disable Skill Installation)
+Add `<CoreOneInstallAgentSkills>false</CoreOneInstallAgentSkills>` to your `.csproj` (or `Directory.Build.props`) to stop MSBuild from copying the skill folder into `.github/skills/`:
+
+```xml
+<PropertyGroup>
+    <CoreOneInstallAgentSkills>false</CoreOneInstallAgentSkills>
+</PropertyGroup>
+```
+
+> **Tip for Git**: You can either commit `.github/skills/coreone/` so your whole team's AI agents have immediate context, or add `.github/skills/coreone/` to `.gitignore` and let MSBuild restore it locally on build.
+
 ## Key Features
 
 ### Hub: Lightweight Event Bus

@@ -1,5 +1,10 @@
 # CoreOne Copilot Instructions
 
+## Token-Efficient Context & `coreone` Skill Usage (Read First)
+- **Do NOT read or grep `src/CoreOne/**` just to look up API signatures when consuming CoreOne** (e.g., when writing tests, consumers, or new features that call existing CoreOne APIs).
+- Instead, consult the **`coreone` skill** at [.github/skills/coreone/SKILL.md](skills/coreone/SKILL.md) and its compact C# signature index at [.github/skills/coreone/references/api-signatures.md](skills/coreone/references/api-signatures.md).
+- Only read files in `src/CoreOne/**` when you are directly modifying or debugging the implementation of those specific source files.
+
 ## Architecture & SOLID Principles
 
 ### Single Responsibility Principle (SRP)

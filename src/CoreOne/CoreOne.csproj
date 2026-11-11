@@ -5,7 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>preview</LangVersion>
-        <Version>1.6.0.1</Version>
+        <Version>1.7</Version>
         <Title>CoreOne</Title>
         <Authors>Juan Lopez</Authors>
         <Company>Juan Lopez</Company>
@@ -35,6 +35,22 @@
         <None Include="..\..\CoreOne.png">
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>
+        </None>
+        <None Include="..\..\.github\skills\coreone\SKILL.md" Link="Skills\AGENTS.md" Visible="false">
+            <Pack>True</Pack>
+            <PackagePath>\AGENTS.md</PackagePath>
+        </None>
+        <None Include="..\..\.github\skills\coreone\**\*" LinkBase="Skills\coreone" Visible="false">
+            <Pack>True</Pack>
+            <PackagePath>skills\coreone\%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
+        </None>
+        <None Include="buildTransitive\CoreOne.targets" Visible="false">
+            <Pack>True</Pack>
+            <PackagePath>buildTransitive\CoreOne.targets</PackagePath>
+        </None>
+        <None Include="buildTransitive\CoreOne.targets" Link="build\CoreOne.targets" Visible="false">
+            <Pack>True</Pack>
+            <PackagePath>build\CoreOne.targets</PackagePath>
         </None>
     </ItemGroup>
 

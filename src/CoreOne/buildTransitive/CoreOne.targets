@@ -1,0 +1,22 @@
+<Project>
+
+    <PropertyGroup>
+        <!-- Consumers can opt out by setting <CoreOneInstallAgentSkills>false</CoreOneInstallAgentSkills> -->
+        <CoreOneInstallAgentSkills Condition="'$(CoreOneInstallAgentSkills)' == ''">true</CoreOneInstallAgentSkills>
+        <_CoreOneRepoRoot Condition="'$(SolutionDir)' != '' and '$(SolutionDir)' != '*Undefined*'">$(SolutionDir)</_CoreOneRepoRoot>
+        <_CoreOneRepoRoot Condition="'$(_CoreOneRepoRoot)' == ''">$(MSBuildProjectDirectory)</_CoreOneRepoRoot>
+    </PropertyGroup>
+
+    <Target Name="CoreOneProvisionAgentSkills"
+            BeforeTargets="BeforeBuild;Restore"
+            Condition="'$(CoreOneInstallAgentSkills)' == 'true' and '$(DesignTimeBuild)' != 'true'">
+        <ItemGroup>
+            <_CoreOneSkillFiles Include="$(MSBuildThisFileDirectory)..\skills\**\*" />
+        </ItemGroup>
+        <Copy SourceFiles="@(_CoreOneSkillFiles)"
+              DestinationFiles="@(_CoreOneSkillFiles->'$(_CoreOneRepoRoot)\.github\skills\%(RecursiveDir)%(Filename)%(Extension)')"
+              SkipUnchangedFiles="true"
+              ContinueOnError="true" />
+    </Target>
+
+</Project>
