@@ -40,10 +40,10 @@
                    Condition="'$(_CoreOneRepoRoot)' != '$(_CoreOneProjectDir)' and Exists('$(_CoreOneProjectDir)\.github\skills\coreone')"
                    ContinueOnError="true" />
         <RemoveDir Directories="$(_CoreOneProjectDir)\.github\skills"
-                   Condition="'$(_CoreOneRepoRoot)' != '$(_CoreOneProjectDir)' and Exists('$(_CoreOneProjectDir)\.github\skills') and $([System.IO.Directory]::GetFileSystemEntries('$(_CoreOneProjectDir)\.github\skills').Length) == 0"
+                   Condition="'$(_CoreOneRepoRoot)' != '$(_CoreOneProjectDir)' and Exists('$(_CoreOneProjectDir)\.github\skills') and $([System.IO.Directory]::GetFiles('$(_CoreOneProjectDir)\.github\skills').Length) == 0 and $([System.IO.Directory]::GetDirectories('$(_CoreOneProjectDir)\.github\skills').Length) == 0"
                    ContinueOnError="true" />
         <RemoveDir Directories="$(_CoreOneProjectDir)\.github"
-                   Condition="'$(_CoreOneRepoRoot)' != '$(_CoreOneProjectDir)' and Exists('$(_CoreOneProjectDir)\.github') and $([System.IO.Directory]::GetFileSystemEntries('$(_CoreOneProjectDir)\.github').Length) == 0"
+                   Condition="'$(_CoreOneRepoRoot)' != '$(_CoreOneProjectDir)' and Exists('$(_CoreOneProjectDir)\.github') and $([System.IO.Directory]::GetFiles('$(_CoreOneProjectDir)\.github').Length) == 0 and $([System.IO.Directory]::GetDirectories('$(_CoreOneProjectDir)\.github').Length) == 0"
                    ContinueOnError="true" />
     </Target>
 
@@ -63,7 +63,7 @@
                 Condition="'$(_CoreOneRepoRoot)' != '$(_CoreOneProjectDir)' and Exists('$(_CoreOneProjectDir)\.github\instructions\result-standard.instructions.md')"
                 ContinueOnError="true" />
         <RemoveDir Directories="$(_CoreOneProjectDir)\.github\instructions"
-                   Condition="'$(_CoreOneRepoRoot)' != '$(_CoreOneProjectDir)' and Exists('$(_CoreOneProjectDir)\.github\instructions') and $([System.IO.Directory]::GetFileSystemEntries('$(_CoreOneProjectDir)\.github\instructions').Length) == 0"
+                   Condition="'$(_CoreOneRepoRoot)' != '$(_CoreOneProjectDir)' and Exists('$(_CoreOneProjectDir)\.github\instructions') and $([System.IO.Directory]::GetFiles('$(_CoreOneProjectDir)\.github\instructions').Length) == 0 and $([System.IO.Directory]::GetDirectories('$(_CoreOneProjectDir)\.github\instructions').Length) == 0"
                    ContinueOnError="true" />
     </Target>
 
