@@ -5,32 +5,66 @@
         <CoreOneInstallAgentSkills Condition="'$(CoreOneInstallAgentSkills)' == ''">true</CoreOneInstallAgentSkills>
         <!-- Consumers can opt in to the always-on IResult instruction standard by setting <CoreOneEnforceResultStandard>true</CoreOneEnforceResultStandard> -->
         <CoreOneEnforceResultStandard Condition="'$(CoreOneEnforceResultStandard)' == ''">false</CoreOneEnforceResultStandard>
+
+        <_CoreOneParent1>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/..'))</_CoreOneParent1>
+        <_CoreOneParent2>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../..'))</_CoreOneParent2>
+        <_CoreOneParent3>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../../..'))</_CoreOneParent3>
+
         <_CoreOneRepoRoot Condition="'$(SolutionDir)' != '' and '$(SolutionDir)' != '*Undefined*'">$(SolutionDir)</_CoreOneRepoRoot>
+        <_CoreOneRepoRoot Condition="'$(_CoreOneRepoRoot)' == '' and $([System.IO.Directory]::GetFiles('$(MSBuildProjectDirectory)', '*.sln*').Length) &gt; 0">$(MSBuildProjectDirectory)</_CoreOneRepoRoot>
+        <_CoreOneRepoRoot Condition="'$(_CoreOneRepoRoot)' == '' and Exists('$(_CoreOneParent1)') and $([System.IO.Directory]::GetFiles('$(_CoreOneParent1)', '*.sln*').Length) &gt; 0">$(_CoreOneParent1)</_CoreOneRepoRoot>
+        <_CoreOneRepoRoot Condition="'$(_CoreOneRepoRoot)' == '' and Exists('$(_CoreOneParent2)') and $([System.IO.Directory]::GetFiles('$(_CoreOneParent2)', '*.sln*').Length) &gt; 0">$(_CoreOneParent2)</_CoreOneRepoRoot>
+        <_CoreOneRepoRoot Condition="'$(_CoreOneRepoRoot)' == '' and Exists('$(_CoreOneParent3)') and $([System.IO.Directory]::GetFiles('$(_CoreOneParent3)', '*.sln*').Length) &gt; 0">$(_CoreOneParent3)</_CoreOneRepoRoot>
+        <_CoreOneRepoRoot Condition="'$(_CoreOneRepoRoot)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildProjectDirectory)', 'Directory.Packages.props'))</_CoreOneRepoRoot>
+        <_CoreOneRepoRoot Condition="'$(_CoreOneRepoRoot)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildProjectDirectory)', 'Directory.Build.props'))</_CoreOneRepoRoot>
+        <_CoreOneRepoRoot Condition="'$(_CoreOneRepoRoot)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildProjectDirectory)', '.gitignore'))</_CoreOneRepoRoot>
         <_CoreOneRepoRoot Condition="'$(_CoreOneRepoRoot)' == ''">$(MSBuildProjectDirectory)</_CoreOneRepoRoot>
+        <_CoreOneRepoRoot>$(_CoreOneRepoRoot.TrimEnd('\').TrimEnd('/'))</_CoreOneRepoRoot>
+        <_CoreOneProjectDir>$(MSBuildProjectDirectory.TrimEnd('\').TrimEnd('/'))</_CoreOneProjectDir>
     </PropertyGroup>
 
     <Target Name="CoreOneProvisionAgentSkills"
-            BeforeTargets="BeforeBuild;Restore"
-            Condition="'$(CoreOneInstallAgentSkills)' == 'true' and '$(DesignTimeBuild)' != 'true'">
+            BeforeTargets="BeforeBuild;Restore;ResolvePackageAssets"
+            Condition="'$(CoreOneInstallAgentSkills)' == 'true'">
         <ItemGroup>
             <_CoreOneSkillFiles Include="$(MSBuildThisFileDirectory)..\skills\**\*" />
         </ItemGroup>
         <Copy SourceFiles="@(_CoreOneSkillFiles)"
               DestinationFiles="@(_CoreOneSkillFiles->'$(_CoreOneRepoRoot)\.github\skills\%(RecursiveDir)%(Filename)%(Extension)')"
               SkipUnchangedFiles="true"
+              Retries="3"
+              RetryDelayMilliseconds="100"
               ContinueOnError="true" />
+        <!-- Clean up any duplicate project-level skill folder when a solution/repo root above the project is used -->
+        <RemoveDir Directories="$(_CoreOneProjectDir)\.github\skills\coreone"
+                   Condition="'$(_CoreOneRepoRoot)' != '$(_CoreOneProjectDir)' and Exists('$(_CoreOneProjectDir)\.github\skills\coreone')"
+                   ContinueOnError="true" />
+        <RemoveDir Directories="$(_CoreOneProjectDir)\.github\skills"
+                   Condition="'$(_CoreOneRepoRoot)' != '$(_CoreOneProjectDir)' and Exists('$(_CoreOneProjectDir)\.github\skills') and $([System.IO.Directory]::GetFileSystemEntries('$(_CoreOneProjectDir)\.github\skills').Length) == 0"
+                   ContinueOnError="true" />
+        <RemoveDir Directories="$(_CoreOneProjectDir)\.github"
+                   Condition="'$(_CoreOneRepoRoot)' != '$(_CoreOneProjectDir)' and Exists('$(_CoreOneProjectDir)\.github') and $([System.IO.Directory]::GetFileSystemEntries('$(_CoreOneProjectDir)\.github').Length) == 0"
+                   ContinueOnError="true" />
     </Target>
 
     <Target Name="CoreOneProvisionResultStandardInstruction"
-            BeforeTargets="BeforeBuild;Restore"
-            Condition="'$(CoreOneEnforceResultStandard)' == 'true' and '$(DesignTimeBuild)' != 'true'">
+            BeforeTargets="BeforeBuild;Restore;ResolvePackageAssets"
+            Condition="'$(CoreOneEnforceResultStandard)' == 'true'">
         <ItemGroup>
             <_CoreOneResultStandardFile Include="$(MSBuildThisFileDirectory)..\skills\coreone\assets\result-standard.instructions.md" />
         </ItemGroup>
         <Copy SourceFiles="@(_CoreOneResultStandardFile)"
               DestinationFiles="$(_CoreOneRepoRoot)\.github\instructions\result-standard.instructions.md"
               SkipUnchangedFiles="true"
+              Retries="3"
+              RetryDelayMilliseconds="100"
               ContinueOnError="true" />
+        <Delete Files="$(_CoreOneProjectDir)\.github\instructions\result-standard.instructions.md"
+                Condition="'$(_CoreOneRepoRoot)' != '$(_CoreOneProjectDir)' and Exists('$(_CoreOneProjectDir)\.github\instructions\result-standard.instructions.md')"
+                ContinueOnError="true" />
+        <RemoveDir Directories="$(_CoreOneProjectDir)\.github\instructions"
+                   Condition="'$(_CoreOneRepoRoot)' != '$(_CoreOneProjectDir)' and Exists('$(_CoreOneProjectDir)\.github\instructions') and $([System.IO.Directory]::GetFileSystemEntries('$(_CoreOneProjectDir)\.github\instructions').Length) == 0"
+                   ContinueOnError="true" />
     </Target>
 
 </Project>

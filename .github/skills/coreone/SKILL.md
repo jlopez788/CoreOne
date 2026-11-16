@@ -1,6 +1,6 @@
 ---
 name: coreone
-description: 'Umbrella guide for using the CoreOne library: Result pattern (IResult, IStatusResult, ICollectionResult, Result, CollectionResult, HttpResult, ResultExtensions, HttpResultExtensions, Utility.Try), Pub/Sub & State Hub (IHub, Hub, IHubMessage, IGlobalHubMessage, IHubState, HubExtensions), Reactive streams (Subject, BehaviorSubject, ObserverBase, Observable), Reflection & Metadata (MetaType, Metadata, InvokeCallback, TypeUtility, ServiceInitializer, Types), Services & Lifecycle (BaseService, AToken, SToken, Disposable, AsyncTaskQueue, Debounce, SafeLock, Data/DataList/ConcurrentSet), Operations & OData (PageRequest, PageResult, CursorResult, FilterBy, OrderBy, ODataBuilder), DI Attributes, Interceptors, Validation & Lookups (ServiceAttribute, OInjectAttribute, InterceptAttribute, IAsyncInterceptor, ValidateModel, BackingField, LookupType), Extensions & Utilities (ID, StronglyTypedId, EnumerableExtensions, StringExtensions, Pool, Utility), and CoreOne.Http / CoreOne.Generators / CoreOne.Identity. Load this skill instead of reading CoreOne source files.'
+description: 'Guide for the CoreOne .NET library and companion packages (Http, Generators, Identity, Crypto, IO): Result pattern, Pub/Sub & State Hub, Reactive streams, Services & Lifecycle, Paging & OData, DI, Interceptors, Validation & Lookups, IDs, Extensions, Pool & Utility. Load this skill instead of reading CoreOne source files.'
 ---
 
 # CoreOne Library Skill & Architecture Guide
